@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Permit Arbitrage Broker Command Center v3</title>
+<title>Permit Arbitrage Broker Command Center v4</title>
 
 <style>
 :root{
@@ -71,18 +71,19 @@ align-items:center;
 background:var(--panel);
 border:1px solid var(--accent);
 padding:20px;
-width:600px;
-max-width:90%;
+width:650px;
+max-width:95%;
 font-family:var(--mono);
+max-height:90%;
+overflow:auto;
 }
-.modal-content h3{margin-bottom:10px;color:var(--neon)}
 .close-btn{margin-top:12px;background:var(--accent);border:none;padding:6px 10px;cursor:pointer}
 </style>
 </head>
 <body>
 
 <header>
-<h1>Permit Arbitrage Broker Command Center v3</h1>
+<h1>Permit Arbitrage Broker Command Center v4</h1>
 <div class="controls">
 <select id="buyer-filter">
 <option value="all">All Buyers</option>
@@ -168,6 +169,7 @@ this.render();
 
 normalize(city,r){
 let o={city,permit_id:"",description:"",value:0,issued_date:"",address:"",developer_name:"",contractor_name:""};
+
 if(city==="Chicago"){
 o.permit_id=r.permit_||"";
 o.description=(r.work_description||"").toLowerCase();
@@ -184,8 +186,40 @@ o.issued_date=r.issued_date||"";
 o.address=[r.street_number,r.street_name,r.street_suffix].filter(Boolean).join(" ").toUpperCase();
 o.developer_name=r.owner_name||"";
 }
+
 if(!o.address||!o.issued_date)return null;
+
+/* TIMELINE */
+let issued = new Date(o.issued_date.split('T')[0]);
+o.days_since_issue = Math.floor((Date.now() - issued) / (1000*60*60*24));
+o.project_phase =
+o.days_since_issue <= 7 ? "Early Filing Window" :
+o.days_since_issue <= 30 ? "Active Planning Phase" :
+o.days_since_issue <= 90 ? "Mid Execution Phase" :
+"Late Stage / Stalled";
+
 return o;
+}
+
+inferValue(r){
+
+if(r.value>0)return r.value;
+
+let desc=r.description;
+let base=0;
+
+if(desc.includes("new construction"))base=750000;
+else if(desc.includes("addition"))base=250000;
+else if(desc.includes("demolition"))base=150000;
+else if(desc.includes("electrical"))base=75000;
+else if(desc.includes("plumbing"))base=60000;
+else if(desc.includes("roof"))base=50000;
+else base=100000;
+
+if(r.cluster_size>=3)base*=1.4;
+if(r.subtrades && r.subtrades.length>=2)base*=1.3;
+
+return Math.round(base);
 }
 
 process(records){
@@ -194,72 +228,55 @@ let clusters={},devs={};
 
 records.forEach(r=>{
 clusters[r.address]=clusters[r.address]||{c:0,v:0};
-clusters[r.address].c++;clusters[r.address].v+=r.value;
+clusters[r.address].c++;
 let d=r.developer_name||"UNKNOWN";
 devs[d]=devs[d]||{cap:0,count:0};
-devs[d].cap+=r.value;
 devs[d].count++;
 });
 
 this.data=records.map(r=>{
 
-let desc=r.description,val=r.value;
-
-/* DEAL */
-r.deal_score=val>=750000?8:val>=250000?5:val>=100000?3:1;
-
-/* SUBTRADES */
-let subs=[];
-if(desc.includes("electrical"))subs.push("Electrical");
-if(desc.includes("plumbing"))subs.push("Plumbing");
-if(desc.includes("hvac"))subs.push("HVAC");
-if(desc.includes("roof"))subs.push("Roofing");
-if(desc.includes("demolition"))subs.push("Demolition");
-r.subtrades=subs;
-
-/* SCOPE */
-r.scope_score=subs.length>=2?4:subs.length?2:0;
-
-/* VELOCITY */
 r.cluster_size=clusters[r.address].c;
-let dev=devs[r.developer_name||"UNKNOWN"];
-r.velocity_score=(dev.count>=3?3:0)+(r.cluster_size>=3?2:0);
 
-/* LIQUIDITY */
-r.liquidity_score=(val>=500000?3:0)+(r.cluster_size>1?2:0)+(subs.length?1:0);
+r.subtrades=[];
+if(r.description.includes("electrical"))r.subtrades.push("Electrical");
+if(r.description.includes("plumbing"))r.subtrades.push("Plumbing");
+if(r.description.includes("hvac"))r.subtrades.push("HVAC");
+if(r.description.includes("roof"))r.subtrades.push("Roofing");
+if(r.description.includes("demolition"))r.subtrades.push("Demolition");
 
-/* FRICTION */
-r.friction_score=(!r.developer_name?2:0)+(val<50000?2:0)+(subs.length===0?2:0);
+r.value=this.inferValue(r);
 
-/* BUYERS */
+r.deal_score=r.value>=750000?8:r.value>=250000?5:r.value>=100000?3:1;
+r.scope_score=r.subtrades.length>=2?4:r.subtrades.length?2:0;
+
+r.velocity_score=(devs[r.developer_name||"UNKNOWN"].count>=3?3:0)+(r.cluster_size>=3?2:0);
+r.liquidity_score=(r.value>=500000?3:0)+(r.cluster_size>1?2:0)+(r.subtrades.length?1:0);
+r.friction_score=(!r.developer_name?2:0)+(r.value<50000?2:0)+(r.subtrades.length===0?2:0);
+
 let targets=[];
-if(subs.includes("Electrical"))targets.push("Electrical Subcontractors");
-if(val>750000)targets.push("Commercial Lenders");
+if(r.subtrades.includes("Electrical"))targets.push("Electrical Subcontractors");
+if(r.value>750000)targets.push("Commercial Lenders");
 if(r.cluster_size>1)targets.push("Redevelopment Investors");
-if(subs.length&&val<300000)targets.push("Trade-Level Resale");
+if(r.subtrades.length&&r.value<300000)targets.push("Trade-Level Resale");
 if(!r.contractor_name)targets.push("GC Prospect");
 r.buyer_targets=targets;
 
-/* FLIP TYPE */
-if(val>=1000000)r.flip_type="Institutional Capital Play";
+if(r.value>=1000000)r.flip_type="Institutional Capital Play";
 else if(r.cluster_size>=3)r.flip_type="Stacked Redevelopment";
-else if(subs.length>=2)r.flip_type="Multi-Trade Package";
-else if(subs.length===1&&val<300000)r.flip_type="Trade Flip";
-else if(r.velocity_score>=3)r.flip_type="Repeat Builder";
+else if(r.subtrades.length>=2)r.flip_type="Multi-Trade Package";
+else if(r.subtrades.length===1&&r.value<300000)r.flip_type="Trade Flip";
 else r.flip_type="Emerging Builder";
 
-/* RESALE */
 if(r.flip_type==="Trade Flip")r.resale_estimate=500;
 else if(r.flip_type==="Institutional Capital Play")r.resale_estimate=5000;
 else if(r.flip_type==="Stacked Redevelopment")r.resale_estimate=2500;
 else r.resale_estimate=1000;
 
-/* HYBRID */
 let arb=(r.deal_score*0.6)+(r.scope_score*1.2)+(r.liquidity_score*1.3)+(r.velocity_score*1.2)-(r.friction_score*0.8)+(targets.length*1.2);
 r.arbitrage_score=Math.round(Math.max(0,Math.min(20,arb)));
 r.fast_close=r.arbitrage_score>=15;
 
-/* CONFIDENCE */
 let conf=100-(r.friction_score*6)+(r.liquidity_score*4);
 r.confidence=Math.max(55,Math.min(98,Math.round(conf)));
 
@@ -315,30 +332,37 @@ Projected Resale: ${this.money(r.resale_estimate)}
 showIntel(id){
 let r=this.data.find(x=>x.permit_id===id);
 if(!r)return;
-let angle="";
-if(r.flip_type==="Institutional Capital Play")
-angle="Institutional capital deploying. Position before trade stacking.";
-else if(r.flip_type==="Stacked Redevelopment")
-angle="Permit stacking indicates redevelopment momentum.";
-else if(r.flip_type==="Trade Flip")
-angle="Trade scope detected. Immediate subcontractor resale possible.";
-else angle="Emerging builder activity. Early positioning window.";
+
+let sellPaths=r.buyer_targets.map(t=>"Sell to "+t);
+
+let timelineNote=
+r.project_phase==="Early Filing Window" ?
+"Maximum leverage window." :
+r.project_phase==="Active Planning Phase" ?
+"Contractors likely being sourced now." :
+"Execution phase.";
 
 let html=`
-<h3>Intelligence Brief</h3>
-<p><b>Project:</b> ${r.address}</p>
-<p><b>City:</b> ${r.city}</p>
-<p><b>Value:</b> ${this.money(r.value)}</p>
-<p><b>Flip Type:</b> ${r.flip_type}</p>
-<p><b>Arbitrage Score:</b> ${r.arbitrage_score}</p>
-<p><b>Confidence:</b> ${r.confidence}%</p>
+<h3>Deal Monetization Blueprint</h3>
+<b>Project:</b> ${r.address}<br>
+<b>City:</b> ${r.city}<br>
+<b>Value:</b> ${this.money(r.value)}<br>
+<b>Flip Type:</b> ${r.flip_type}<br>
+<b>Arbitrage Score:</b> ${r.arbitrage_score}<br>
+<b>Confidence:</b> ${r.confidence}%<br>
+<b>Project Phase:</b> ${r.project_phase}<br>
+<b>Days Since Issued:</b> ${r.days_since_issue}<br>
 <hr>
-<p><b>Strategic Angle:</b></p>
-<p>${angle}</p>
+<b>Monetization Paths:</b>
+<ul>${sellPaths.map(p=>`<li>${p}</li>`).join("")}</ul>
 <hr>
-<p><b>Targets:</b> ${r.buyer_targets.join(", ")}</p>
+<b>Timeline Leverage:</b><br>${timelineNote}
+<hr>
+<b>Estimated Packaging Value:</b> ${this.money(sellPaths.length*r.resale_estimate)}
+<br><br>
 <button class="close-btn" onclick="document.getElementById('intel-modal').style.display='none'">Close</button>
 `;
+
 document.getElementById("modal-content").innerHTML=html;
 document.getElementById("intel-modal").style.display="flex";
 }
