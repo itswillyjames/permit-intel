@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tactical Broker Mode v2 – Closing Weapon</title>
+<style>
+:root{
+--bg:#0b0b0f;
+--panel:#16161d;
+--border:#26262f;
+--text:#e5e7eb;
+--muted:#9ca3af;
+--accent:#ef4444;
+--neon:#39ff14;
+--blue:#3b82f6;
+--green:#10b981;
+--yellow:#f59e0b;
+--mono:ui-monospace, SFMono-Regular, Menlo, monospace;
+--sans:ui-sans-serif, system-ui, -apple-system, Segoe UI;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:15px}
+h1{font-family:var(--mono);color:var(--accent);font-size:18px}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button,select{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:6px 10px;font-family:var(--mono);font-size:12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent)}
+button:hover{opacity:.85}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin:20px 0}
+.stat{background:var(--panel);padding:12px;border-left:3px solid var(--accent)}
+.stat.green{border-left-color:var(--green)}
+.stat.yellow{border-left-color:var(--yellow)}
+.stat.blue{border-left-color:var(--blue)}
+.stat .val{font-size:18px;font-family:var(--mono);margin-top:5px}
+.section{margin-top:35px}
+.section h2{font-family:var(--mono);font-size:14px;margin-bottom:10px;border-bottom:1px dashed var(--border);padding-bottom:5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:15px}
+.card{background:var(--panel);border:1px solid var(--border);padding:12px;border-radius:6px}
+.card:hover{border-color:var(--accent)}
+.card-header{display:flex;justify-content:space-between;margin-bottom:8px}
+.title{font-family:var(--mono);color:var(--neon);font-size:13px}
+.badge{font-size:10px;padding:2px 6px;border-radius:3px}
+.major{background:#7f1d1d;color:#fecaca}
+.mid{background:#78350f;color:#fde68a}
+.minor{background:#1e3a8a;color:#bfdbfe}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;margin:8px 0}
+.money{color:var(--green)}
+.score-row{display:flex;justify-content:space-between;background:#0f0f14;padding:6px;font-family:var(--mono);font-size:10px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tag{font-size:9px;background:#23232c;padding:2px 5px;border-radius:3px}
+.tag.target{color:var(--yellow)}
+.tag.fast{color:var(--neon)}
+.hidden{display:none}
+#loader{display:none;margin-top:15px;font-family:var(--mono);color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Tactical Broker Mode v2 // Closing Weapon</h1>
+<div class="controls">
+<select id="buyer-filter">
+<option value="all">All Buyers</option>
+<option value="Electrical Subcontractors">Electrical</option>
+<option value="Commercial Lenders">Lenders</option>
+<option value="Apartment Syndicators">Syndicators</option>
+<option value="Redevelopment Investors">Redevelopment</option>
+<option value="Trade-Level Resale">Trade Resale</option>
+<option value="GC Prospect">GC Prospects</option>
+</select>
+<label style="font-size:11px;font-family:var(--mono)">
+<input type="checkbox" id="high-toggle"> High Probability Only
+</label>
+<button id="btn-run" class="primary">Run Engine</button>
+<button id="btn-json" disabled>JSON</button>
+<button id="btn-csv" disabled>CSV</button>
+<button id="btn-dossier" disabled>Dossier</button>
+</div>
+</header>
+
+<div id="loader">Running Arbitrage Engine...</div>
+
+<div class="stats">
+<div class="stat">
+<div>Signals</div>
+<div class="val" id="stat-signals">0</div>
+</div>
+<div class="stat green">
+<div>Total Value</div>
+<div class="val money" id="stat-value">$0</div>
+</div>
+<div class="stat yellow">
+<div>Major</div>
+<div class="val" id="stat-major">0</div>
+</div>
+<div class="stat blue">
+<div>Immediate Close</div>
+<div class="val" id="stat-close">0</div>
+</div>
+</div>
+
+<div class="section">
+<h2>🎯 Immediate Close Targets</h2>
+<div class="grid" id="grid-immediate"></div>
+</div>
+
+<div class="section">
+<h2>🔥 Top 10 Flip Now</h2>
+<div class="grid" id="grid-top"></div>
+</div>
+
+<div class="section">
+<h2>⚡ Fast Close</h2>
+<div class="grid" id="grid-fast"></div>
+</div>
+
+<script>
+class Engine{
+constructor(){
+this.data=[];
+this.lookback=7;
+this.buyerFilter="all";
+this.highOnly=false;
+this.sources={
+"Chicago":{url:"https://data.cityofchicago.org/resource/ydr8-5enu.json",date:"issue_date"},
+"San Francisco":{url:"https://data.sfgov.org/resource/i98e-djp9.json",date:"issued_date"}
+};
+this.bind();
+}
+bind(){
+document.getElementById("btn-run").onclick=()=>this.run();
+document.getElementById("btn-json").onclick=()=>this.downloadJSON();
+document.getElementById("btn-csv").onclick=()=>this.downloadCSV();
+document.getElementById("btn-dossier").onclick=()=>this.generateDossier();
+document.getElementById("buyer-filter").onchange=e=>{
+this.buyerFilter=e.target.value;this.render();
+};
+document.getElementById("high-toggle").onchange=e=>{
+this.highOnly=e.target.checked;this.render();
+};
+}
+safeFloat(v){let n=parseFloat(v);return isNaN(n)?0:n;}
+money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0)}
+async fetchData(url){try{let r=await fetch(url);return await r.json()}catch(e){return []}}
+async run(){
+document.getElementById("loader").style.display="block";
+this.data=[];
+let cutoff=new Date();cutoff.setDate(cutoff.getDate()-this.lookback);
+let raw=[];
+for(let [city,cfg] of Object.entries(this.sources)){
+let url=`${cfg.url}?$limit=2000&$order=${cfg.date} DESC`;
+let rows=await this.fetchData(url);
+rows.forEach(r=>{
+let n=this.normalize(city,r);
+if(!n)return;
+let d=new Date(n.issued_date.split('T')[0]);
+if(d>=cutoff)raw.push(n);
+});
+}
+this.process(raw);
+document.getElementById("btn-json").disabled=false;
+document.getElementById("btn-csv").disabled=false;
+document.getElementById("btn-dossier").disabled=false;
+document.getElementById("loader").style.display="none";
+this.render();
+}
+normalize(city,r){
+let o={city,permit_id:"",permit_type:"",description:"",value:0,issued_date:"",address:"",developer_name:"",contractor_name:"",owner_name:""};
+if(city==="Chicago"){
+o.permit_id=r.permit_||"";
+o.permit_type=r.permit_type||"";
+o.description=(r.work_description||"").toLowerCase();
+o.value=this.safeFloat(r.estimated_cost);
+o.issued_date=r.issue_date||"";
+o.address=[r.street_number,r.street_direction,r.street_name,r.suffix].filter(Boolean).join(" ").toUpperCase();
+o.contractor_name=r.contact_1_name||"";
+o.developer_name=r.contact_2_name||"";
+o.owner_name=r.contact_3_name||"";
+}
+else{
+o.permit_id=r.permit_number||"";
+o.permit_type=r.permit_type_definition||"";
+o.description=(r.description||"").toLowerCase();
+o.value=this.safeFloat(r.estimated_cost);
+o.issued_date=r.issued_date||"";
+o.address=[r.street_number,r.street_name,r.street_suffix].filter(Boolean).join(" ").toUpperCase();
+o.developer_name=r.owner_name||"";
+}
+if(!o.issued_date||!o.address)return null;
+return o;
+}
+process(records){
+let clusters={},devs={};
+records.forEach(r=>{
+clusters[r.address]=clusters[r.address]||{c:0,v:0};
+clusters[r.address].c++;clusters[r.address].v+=r.value;
+let d=r.developer_name||"UNKNOWN";
+devs[d]=devs[d]||{cap:0,count:0};
+devs[d].cap+=r.value;devs[d].count++;
+});
+this.data=records.map(r=>{
+let desc=r.description,val=r.value;
+let deal=0;
+if(val>=1000000)deal=8;else if(val>=250000)deal=3;
+if(desc.includes("new construction"))deal+=2;
+if(desc.includes("addition"))deal+=2;
+if(desc.includes("demolition"))deal+=2;
+if(desc.includes("electrical"))deal+=1;
+if(desc.includes("plumbing"))deal+=1;
+if(desc.includes("roof"))deal+=1;
+r.deal_score=Math.min(deal,12);
+r.opportunity_class=r.deal_score>=10?"MAJOR":r.deal_score>=5?"MID":"MINOR";
+r.cluster_size=clusters[r.address].c;
+r.cluster_total_value=clusters[r.address].v;
+let dev=devs[r.developer_name||"UNKNOWN"];
+r.developer_total_capital=dev.cap;
+r.developer_permit_count=dev.count;
+r.capital_intensity=dev.cap>=5000000?"Institutional":dev.cap>=1000000?"Active Builder":"Small Operator";
+let subs=[];
+if(desc.includes("electrical"))subs.push("Electrical");
+if(desc.includes("plumbing"))subs.push("Plumbing");
+if(desc.includes("hvac"))subs.push("HVAC");
+if(desc.includes("roof"))subs.push("Roofing");
+if(desc.includes("structural"))subs.push("Structural");
+if(desc.includes("demo"))subs.push("Demolition");
+r.subtrades=subs;
+let vertical="General";
+if(/apartment|condo|multi-family|dwelling|units/.test(desc))vertical="Multi-Family";
+else if(/retail|shop|store|restaurant/.test(desc))vertical="Retail";
+else if(/office/.test(desc))vertical="Office";
+else if(/warehouse|industrial/.test(desc))vertical="Industrial";
+else if(/mixed-use/.test(desc))vertical="Mixed-Use";
+r.primary_vertical=vertical;
+let liq=0;
+if(val>=1000000)liq+=3;
+if(r.capital_intensity==="Institutional")liq+=2;
+if(r.cluster_size>1)liq+=2;
+if(vertical!=="General")liq+=2;
+if(subs.length>0)liq+=1;
+r.liquidity_score=Math.min(liq,10);
+let fr=0;
+if(!r.developer_name)fr+=2;
+if(r.capital_intensity==="Small Operator")fr+=2;
+if(val<100000)fr+=2;
+if(subs.length===0)fr+=2;
+if(vertical==="General")fr+=2;
+r.friction_score=Math.min(fr,10);
+let targets=[];
+if(subs.includes("Electrical"))targets.push("Electrical Subcontractors");
+if(val>1000000)targets.push("Commercial Lenders");
+if(vertical==="Multi-Family")targets.push("Apartment Syndicators");
+if(r.cluster_size>1)targets.push("Redevelopment Investors");
+if(subs.length>0&&val<250000)targets.push("Trade-Level Resale");
+if(!r.contractor_name)targets.push("GC Prospect");
+r.buyer_targets=targets;
+let arb=r.deal_score+(r.liquidity_score*1.5)-r.friction_score+(targets.length*1.2);
+arb=Math.round(Math.max(0,Math.min(20,arb)));
+r.arbitrage_score=arb;
+r.fast_close=arb>=15?"High":arb>=10?"Medium":"Low";
+r.immediate_close=(r.fast_close==="High"&&r.capital_intensity!=="Small Operator"&&val>=500000);
+return r;
+}).sort((a,b)=>b.arbitrage_score-a.arbitrage_score);
+}
+render(){
+let d=this.data;
+if(this.highOnly)d=d.filter(r=>r.fast_close==="High");
+if(this.buyerFilter!=="all")d=d.filter(r=>r.buyer_targets.includes(this.buyerFilter));
+document.getElementById("stat-signals").textContent=d.length;
+document.getElementById("stat-value").textContent=this.money(d.reduce((s,r)=>s+r.value,0));
+document.getElementById("stat-major").textContent=d.filter(r=>r.opportunity_class==="MAJOR").length;
+document.getElementById("stat-close").textContent=d.filter(r=>r.immediate_close).length;
+this.populate("grid-immediate",d.filter(r=>r.immediate_close));
+this.populate("grid-top",d.slice(0,10));
+this.populate("grid-fast",d.filter(r=>r.fast_close==="High"));
+}
+populate(id,list){
+let el=document.getElementById(id);
+el.innerHTML=list.map(r=>this.card(r)).join("")||"<div>No signals</div>";
+}
+card(r){
+let dev=r.developer_name?(r.developer_name.length>18?r.developer_name.substring(0,18)+"...":r.developer_name):"N/A";
+return `
+<div class="card">
+<div class="card-header">
+<div class="title">${r.address}</div>
+<div class="badge ${r.opportunity_class.toLowerCase()}">${r.opportunity_class}</div>
+</div>
+<div class="meta">
+<div>City: ${r.city}</div>
+<div class="money">${this.money(r.value)}</div>
+<div>Dev: ${dev}</div>
+<div>${r.capital_intensity}</div>
+</div>
+<div class="score-row">
+<div>ARB ${r.arbitrage_score}</div>
+<div>Deal ${r.deal_score}</div>
+<div>Liq ${r.liquidity_score}</div>
+<div>Fric ${r.friction_score}</div>
+</div>
+<div class="tags">
+${r.fast_close==="High"?'<span class="tag fast">FAST</span>':''}
+${r.buyer_targets.map(t=>`<span class="tag target">${t}</span>`).join("")}
+</div>
+<button onclick="engine.generateOutreach('${r.permit_id}')">Generate Angle</button>
+</div>`;
+}
+generateOutreach(id){
+let r=this.data.find(x=>x.permit_id===id);
+if(!r)return;
+let msg="";
+if(r.capital_intensity==="Institutional"){
+msg=`Institutional capital deploying on ${this.money(r.value)} at ${r.address}. Interested in early positioning before trade stacking?`;
+}
+else if(r.subtrades.includes("Electrical")){
+msg=`Electrical scope flagged on ${this.money(r.value)} project at ${r.address}. Currently bidding similar work?`;
+}
+else if(r.cluster_size>1){
+msg=`Multiple permits stacking at ${r.address}. Redevelopment momentum confirmed.`;
+}
+else{
+msg=`Identified ${this.money(r.value)} opportunity at ${r.address}. Align with current targets?`;
+}
+alert(msg);
+}
+generateDossier(){
+let top=this.data.slice(0,10);
+let html=`<h1>Permit Intelligence Dossier</h1><p>${new Date().toLocaleString()}</p><hr>`;
+top.forEach(r=>{
+html+=`<h3>${r.address}</h3>
+<p>City: ${r.city}</p>
+<p>Value: ${this.money(r.value)}</p>
+<p>Arbitrage Score: ${r.arbitrage_score}</p>
+<p>Capital Intensity: ${r.capital_intensity}</p>
+<p>Targets: ${r.buyer_targets.join(", ")}</p><hr>`;
+});
+let w=window.open("","_blank");
+w.document.write(html);
+w.document.close();
+}
+downloadJSON(){
+let blob=new Blob([JSON.stringify(this.data,null,2)],{type:"application/json"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="permit_arbitrage_master.json";
+a.click();
+}
+downloadCSV(){
+if(!this.data.length)return;
+let keys=Object.keys(this.data[0]);
+let rows=[keys.join(",")];
+this.data.forEach(r=>{
+rows.push(keys.map(k=>`"${(Array.isArray(r[k])?r[k].join(";"):r[k]||"")}"`).join(","));
+});
+let blob=new Blob([rows.join("\n")],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="permit_arbitrage_master.csv";
+a.click();
+}
+}
+let engine=new Engine();
+</script>
+
+</body>
+</html>
+
