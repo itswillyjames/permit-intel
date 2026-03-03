@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Permit Arbitrage Broker Command Center v4</title>
+<title>Permit Arbitrage Broker Command Center v5</title>
 
 <style>
 :root{
@@ -23,7 +23,6 @@
 body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:20px}
 header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px}
 h1{font-family:var(--mono);color:var(--accent);font-size:18px}
-.controls{display:flex;gap:10px;flex-wrap:wrap}
 button,select{
 background:var(--panel);
 border:1px solid var(--border);
@@ -33,371 +32,193 @@ font-family:var(--mono);
 font-size:12px;
 cursor:pointer;
 }
-button.primary{background:var(--accent);border-color:var(--accent)}
-button:hover{opacity:.85}
+button.primary{background:var(--accent)}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin:20px 0}
 .stat{background:var(--panel);padding:12px;border-left:3px solid var(--accent)}
 .stat.green{border-left-color:var(--green)}
 .stat.yellow{border-left-color:var(--yellow)}
 .stat.blue{border-left-color:var(--blue)}
-.stat .val{font-size:18px;font-family:var(--mono);margin-top:5px}
-.section{margin-top:30px}
-.section h2{font-family:var(--mono);font-size:14px;margin-bottom:10px;border-bottom:1px dashed var(--border);padding-bottom:5px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:15px}
-.card{background:var(--panel);border:1px solid var(--border);padding:14px;border-radius:6px}
-.card:hover{border-color:var(--accent)}
-.card-header{display:flex;justify-content:space-between;margin-bottom:6px}
-.title{font-family:var(--mono);color:var(--neon);font-size:13px}
-.badge{font-size:10px;padding:2px 6px;border-radius:3px}
-.major{background:#7f1d1d;color:#fecaca}
-.mid{background:#78350f;color:#fde68a}
-.minor{background:#1e3a8a;color:#bfdbfe}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;margin:6px 0}
+.card{background:var(--panel);border:1px solid var(--border);padding:14px}
+.title{font-family:var(--mono);color:var(--neon)}
 .money{color:var(--green)}
-.score-row{display:flex;flex-wrap:wrap;gap:6px;background:#0f0f14;padding:6px;font-family:var(--mono);font-size:10px}
-.tag{font-size:9px;background:#23232c;padding:2px 5px;border-radius:3px;margin-right:4px}
-.tag.fast{color:var(--neon)}
-.tag.flip{color:var(--blue)}
-.tag.target{color:var(--yellow)}
-.modal{
-position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,.8);
-display:none;
-justify-content:center;
-align-items:center;
-}
-.modal-content{
-background:var(--panel);
-border:1px solid var(--accent);
-padding:20px;
-width:650px;
-max-width:95%;
-font-family:var(--mono);
-max-height:90%;
-overflow:auto;
-}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center}
+.modal-content{background:var(--panel);border:1px solid var(--accent);padding:20px;width:700px;max-width:95%;max-height:90%;overflow:auto;font-family:var(--mono)}
 .close-btn{margin-top:12px;background:var(--accent);border:none;padding:6px 10px;cursor:pointer}
 </style>
 </head>
 <body>
 
 <header>
-<h1>Permit Arbitrage Broker Command Center v4</h1>
-<div class="controls">
-<select id="buyer-filter">
-<option value="all">All Buyers</option>
-<option value="Electrical Subcontractors">Electrical</option>
-<option value="Commercial Lenders">Lenders</option>
-<option value="Redevelopment Investors">Redevelopment</option>
-<option value="Trade-Level Resale">Trade Resale</option>
-<option value="GC Prospect">GC Prospect</option>
-</select>
-<label style="font-size:11px;font-family:var(--mono)">
-<input type="checkbox" id="high-toggle"> High Probability Only
-</label>
-<button id="btn-run" class="primary">Run Engine</button>
-<button id="btn-json" disabled>JSON</button>
-<button id="btn-csv" disabled>CSV</button>
-<button id="btn-dossier" disabled>Dossier</button>
-</div>
+<h1>Permit Arbitrage Broker Command Center v5</h1>
+<button class="primary" onclick="engine.run()">Run Engine</button>
+<button onclick="engine.generateDossier()">Dossier</button>
 </header>
 
 <div class="stats">
-<div class="stat"><div>Signals</div><div class="val" id="stat-signals">0</div></div>
-<div class="stat green"><div>Total Pipeline</div><div class="val money" id="stat-value">$0</div></div>
-<div class="stat yellow"><div>Major</div><div class="val" id="stat-major">0</div></div>
-<div class="stat blue"><div>Immediate Close</div><div class="val" id="stat-close">0</div></div>
+<div class="stat">Signals <div id="stat-signals"></div></div>
+<div class="stat green">Total Pipeline <div id="stat-value"></div></div>
+<div class="stat yellow">Major <div id="stat-major"></div></div>
 </div>
 
-<div class="section">
-<h2>🔥 Top Opportunities</h2>
-<div class="grid" id="grid-top"></div>
-</div>
+<div class="grid" id="grid"></div>
 
-<div class="modal" id="intel-modal">
+<div class="modal" id="modal">
 <div class="modal-content" id="modal-content"></div>
 </div>
 
 <script>
 
 class Engine{
-
 constructor(){
 this.data=[];
-this.lookback=7;
 this.sources={
-"Chicago":{url:"https://data.cityofchicago.org/resource/ydr8-5enu.json",date:"issue_date"},
-"San Francisco":{url:"https://data.sfgov.org/resource/i98e-djp9.json",date:"issued_date"}
+"Chicago":{url:"https://data.cityofchicago.org/resource/ydr8-5enu.json",date:"issue_date"}
 };
-this.bind();
 }
 
-bind(){
-document.getElementById("btn-run").onclick=()=>this.run();
-document.getElementById("buyer-filter").onchange=()=>this.render();
-document.getElementById("high-toggle").onchange=()=>this.render();
-document.getElementById("btn-json").onclick=()=>this.downloadJSON();
-document.getElementById("btn-csv").onclick=()=>this.downloadCSV();
-document.getElementById("btn-dossier").onclick=()=>this.generateDossier();
-}
-
-safeFloat(v){let n=parseFloat(v);return isNaN(n)?0:n;}
 money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0)}
 
-async fetchData(url){try{let r=await fetch(url);return await r.json()}catch(e){return []}}
+safeFloat(v){let n=parseFloat(v);return isNaN(n)?0:n;}
 
 async run(){
-let cutoff=new Date();cutoff.setDate(cutoff.getDate()-this.lookback);
 let raw=[];
 for(let [city,cfg] of Object.entries(this.sources)){
-let url=`${cfg.url}?$limit=2000&$order=${cfg.date} DESC`;
-let rows=await this.fetchData(url);
+let url=`${cfg.url}?$limit=1500&$order=${cfg.date} DESC`;
+let rows=await fetch(url).then(r=>r.json());
 rows.forEach(r=>{
 let o=this.normalize(city,r);
-if(!o)return;
-let d=new Date(o.issued_date.split('T')[0]);
-if(d>=cutoff)raw.push(o);
+if(o)raw.push(o);
 });
 }
 this.process(raw);
-document.getElementById("btn-json").disabled=false;
-document.getElementById("btn-csv").disabled=false;
-document.getElementById("btn-dossier").disabled=false;
 this.render();
 }
 
 normalize(city,r){
-let o={city,permit_id:"",description:"",value:0,issued_date:"",address:"",developer_name:"",contractor_name:""};
-
-if(city==="Chicago"){
-o.permit_id=r.permit_||"";
+let o={};
+o.city=city;
+o.address=[r.street_number,r.street_direction,r.street_name,r.suffix].filter(Boolean).join(" ").toUpperCase();
 o.description=(r.work_description||"").toLowerCase();
 o.value=this.safeFloat(r.estimated_cost||r.total_estimated_cost||0);
 o.issued_date=r.issue_date||"";
-o.address=[r.street_number,r.street_direction,r.street_name,r.suffix].filter(Boolean).join(" ").toUpperCase();
-o.developer_name=r.contact_2_name||"";
-o.contractor_name=r.contact_1_name||"";
-}else{
-o.permit_id=r.permit_number||"";
-o.description=(r.description||"").toLowerCase();
-o.value=this.safeFloat(r.estimated_cost||0);
-o.issued_date=r.issued_date||"";
-o.address=[r.street_number,r.street_name,r.street_suffix].filter(Boolean).join(" ").toUpperCase();
-o.developer_name=r.owner_name||"";
-}
-
 if(!o.address||!o.issued_date)return null;
 
-/* TIMELINE */
-let issued = new Date(o.issued_date.split('T')[0]);
-o.days_since_issue = Math.floor((Date.now() - issued) / (1000*60*60*24));
-o.project_phase =
-o.days_since_issue <= 7 ? "Early Filing Window" :
-o.days_since_issue <= 30 ? "Active Planning Phase" :
-o.days_since_issue <= 90 ? "Mid Execution Phase" :
-"Late Stage / Stalled";
+let issued=new Date(o.issued_date.split('T')[0]);
+o.days_since_issue=Math.floor((Date.now()-issued)/(1000*60*60*24));
 
 return o;
 }
 
 inferValue(r){
-
 if(r.value>0)return r.value;
 
 let desc=r.description;
-let base=0;
+let base=150000; // minimum fallback
 
-if(desc.includes("new construction"))base=750000;
-else if(desc.includes("addition"))base=250000;
-else if(desc.includes("demolition"))base=150000;
-else if(desc.includes("electrical"))base=75000;
-else if(desc.includes("plumbing"))base=60000;
-else if(desc.includes("roof"))base=50000;
-else base=100000;
+if(desc.includes("new construction"))base=900000;
+if(desc.includes("high rise"))base=5000000;
+if(desc.includes("addition"))base=300000;
+if(desc.includes("demolition"))base=200000;
+if(desc.includes("electrical"))base=100000;
+if(desc.includes("plumbing"))base=80000;
+if(desc.includes("roof"))base=70000;
 
-if(r.cluster_size>=3)base*=1.4;
-if(r.subtrades && r.subtrades.length>=2)base*=1.3;
-
-return Math.round(base);
+return base;
 }
 
 process(records){
-
-let clusters={},devs={};
-
-records.forEach(r=>{
-clusters[r.address]=clusters[r.address]||{c:0,v:0};
-clusters[r.address].c++;
-let d=r.developer_name||"UNKNOWN";
-devs[d]=devs[d]||{cap:0,count:0};
-devs[d].count++;
-});
-
 this.data=records.map(r=>{
-
-r.cluster_size=clusters[r.address].c;
-
-r.subtrades=[];
-if(r.description.includes("electrical"))r.subtrades.push("Electrical");
-if(r.description.includes("plumbing"))r.subtrades.push("Plumbing");
-if(r.description.includes("hvac"))r.subtrades.push("HVAC");
-if(r.description.includes("roof"))r.subtrades.push("Roofing");
-if(r.description.includes("demolition"))r.subtrades.push("Demolition");
 
 r.value=this.inferValue(r);
 
-r.deal_score=r.value>=750000?8:r.value>=250000?5:r.value>=100000?3:1;
-r.scope_score=r.subtrades.length>=2?4:r.subtrades.length?2:0;
+r.flip_type=r.value>1000000?"Institutional Capital Play":
+r.value>300000?"Major Build":
+r.value>100000?"Mid Build":"Trade Flip";
 
-r.velocity_score=(devs[r.developer_name||"UNKNOWN"].count>=3?3:0)+(r.cluster_size>=3?2:0);
-r.liquidity_score=(r.value>=500000?3:0)+(r.cluster_size>1?2:0)+(r.subtrades.length?1:0);
-r.friction_score=(!r.developer_name?2:0)+(r.value<50000?2:0)+(r.subtrades.length===0?2:0);
+r.arb=Math.min(20,Math.round((r.value/100000)));
 
-let targets=[];
-if(r.subtrades.includes("Electrical"))targets.push("Electrical Subcontractors");
-if(r.value>750000)targets.push("Commercial Lenders");
-if(r.cluster_size>1)targets.push("Redevelopment Investors");
-if(r.subtrades.length&&r.value<300000)targets.push("Trade-Level Resale");
-if(!r.contractor_name)targets.push("GC Prospect");
-r.buyer_targets=targets;
-
-if(r.value>=1000000)r.flip_type="Institutional Capital Play";
-else if(r.cluster_size>=3)r.flip_type="Stacked Redevelopment";
-else if(r.subtrades.length>=2)r.flip_type="Multi-Trade Package";
-else if(r.subtrades.length===1&&r.value<300000)r.flip_type="Trade Flip";
-else r.flip_type="Emerging Builder";
-
-if(r.flip_type==="Trade Flip")r.resale_estimate=500;
-else if(r.flip_type==="Institutional Capital Play")r.resale_estimate=5000;
-else if(r.flip_type==="Stacked Redevelopment")r.resale_estimate=2500;
-else r.resale_estimate=1000;
-
-let arb=(r.deal_score*0.6)+(r.scope_score*1.2)+(r.liquidity_score*1.3)+(r.velocity_score*1.2)-(r.friction_score*0.8)+(targets.length*1.2);
-r.arbitrage_score=Math.round(Math.max(0,Math.min(20,arb)));
-r.fast_close=r.arbitrage_score>=15;
-
-let conf=100-(r.friction_score*6)+(r.liquidity_score*4);
-r.confidence=Math.max(55,Math.min(98,Math.round(conf)));
+r.confidence=Math.max(60,Math.min(98,100-(r.days_since_issue*0.3)));
 
 return r;
 
-}).sort((a,b)=>b.arbitrage_score-a.arbitrage_score);
-
+}).sort((a,b)=>b.arb-a.arb);
 }
 
 render(){
-let d=this.data;
-if(document.getElementById("high-toggle").checked)d=d.filter(r=>r.fast_close);
-let bf=document.getElementById("buyer-filter").value;
-if(bf!=="all")d=d.filter(r=>r.buyer_targets.includes(bf));
+document.getElementById("stat-signals").innerText=this.data.length;
+document.getElementById("stat-value").innerText=this.money(this.data.reduce((s,r)=>s+r.value,0));
+document.getElementById("stat-major").innerText=this.data.filter(r=>r.arb>=15).length;
 
-document.getElementById("stat-signals").textContent=d.length;
-document.getElementById("stat-value").textContent=this.money(d.reduce((s,r)=>s+r.value,0));
-document.getElementById("stat-major").textContent=d.filter(r=>r.arbitrage_score>=15).length;
-document.getElementById("stat-close").textContent=d.filter(r=>r.fast_close).length;
-
-let el=document.getElementById("grid-top");
-el.innerHTML=d.slice(0,12).map(r=>this.card(r)).join("")||"No signals";
-}
-
-card(r){
-return `
+let grid=document.getElementById("grid");
+grid.innerHTML=this.data.slice(0,12).map(r=>`
 <div class="card">
-<div class="card-header">
 <div class="title">${r.address}</div>
-<div class="badge ${r.arbitrage_score>=15?"major":r.arbitrage_score>=10?"mid":"minor"}">${r.arbitrage_score}</div>
-</div>
-<div class="meta">
 <div>${r.city}</div>
 <div class="money">${this.money(r.value)}</div>
 <div>Flip: ${r.flip_type}</div>
+<div>ARB: ${r.arb}</div>
 <div>Confidence: ${r.confidence}%</div>
-</div>
-<div class="score-row">
-Deal ${r.deal_score} | Scope ${r.scope_score} | Liq ${r.liquidity_score} | Vel ${r.velocity_score}
-</div>
-<div>
-<span class="tag flip">${r.flip_type}</span>
-${r.buyer_targets.map(t=>`<span class="tag target">${t}</span>`).join("")}
-${r.fast_close?'<span class="tag fast">FAST</span>':''}
-</div>
-<div style="margin-top:6px;font-family:var(--mono);font-size:11px">
-Projected Resale: ${this.money(r.resale_estimate)}
-</div>
-<button style="margin-top:6px" onclick="engine.showIntel('${r.permit_id}')">Generate Intelligence</button>
-</div>`;
+<button onclick="engine.showIntel('${r.address}')">Intelligence</button>
+</div>`).join("");
 }
 
-showIntel(id){
-let r=this.data.find(x=>x.permit_id===id);
+showIntel(address){
+let r=this.data.find(x=>x.address===address);
 if(!r)return;
 
-let sellPaths=r.buyer_targets.map(t=>"Sell to "+t);
+let monetization=[
+"Sell early intel to subcontractors",
+"Broker introduction to capital source",
+"Package with adjacent permits",
+"Offer ongoing tracking subscription"
+];
 
-let timelineNote=
-r.project_phase==="Early Filing Window" ?
-"Maximum leverage window." :
-r.project_phase==="Active Planning Phase" ?
-"Contractors likely being sourced now." :
-"Execution phase.";
+let why=[
+"Early awareness before mass bidding",
+"Reduced competition window",
+"Capital positioning advantage",
+"Trade stacking visibility"
+];
+
+let timeline=r.days_since_issue<7?"Immediate action recommended":
+r.days_since_issue<30?"Active sourcing phase":"Mid execution phase";
 
 let html=`
-<h3>Deal Monetization Blueprint</h3>
+<h2>Deal Monetization Blueprint</h2>
 <b>Project:</b> ${r.address}<br>
-<b>City:</b> ${r.city}<br>
 <b>Value:</b> ${this.money(r.value)}<br>
 <b>Flip Type:</b> ${r.flip_type}<br>
-<b>Arbitrage Score:</b> ${r.arbitrage_score}<br>
+<b>ARB:</b> ${r.arb}<br>
 <b>Confidence:</b> ${r.confidence}%<br>
-<b>Project Phase:</b> ${r.project_phase}<br>
 <b>Days Since Issued:</b> ${r.days_since_issue}<br>
 <hr>
-<b>Monetization Paths:</b>
-<ul>${sellPaths.map(p=>`<li>${p}</li>`).join("")}</ul>
-<hr>
-<b>Timeline Leverage:</b><br>${timelineNote}
-<hr>
-<b>Estimated Packaging Value:</b> ${this.money(sellPaths.length*r.resale_estimate)}
+<h3>Ways To Sell This</h3>
+<ul>${monetization.map(m=>`<li>${m}</li>`).join("")}</ul>
+<h3>Why Buyers Pay</h3>
+<ul>${why.map(w=>`<li>${w}</li>`).join("")}</ul>
+<h3>Timeline Leverage</h3>
+${timeline}
 <br><br>
-<button class="close-btn" onclick="document.getElementById('intel-modal').style.display='none'">Close</button>
+<b>Estimated Packaging Value:</b> ${this.money(monetization.length*1000)}
+<br><br>
+<button class="close-btn" onclick="document.getElementById('modal').style.display='none'">Close</button>
 `;
 
 document.getElementById("modal-content").innerHTML=html;
-document.getElementById("intel-modal").style.display="flex";
-}
-
-downloadJSON(){
-let blob=new Blob([JSON.stringify(this.data,null,2)],{type:"application/json"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="permit_arbitrage_master.json";
-a.click();
-}
-
-downloadCSV(){
-if(!this.data.length)return;
-let keys=Object.keys(this.data[0]);
-let rows=[keys.join(",")];
-this.data.forEach(r=>{
-rows.push(keys.map(k=>`"${Array.isArray(r[k])?r[k].join(";"):r[k]||""}"`).join(","));
-});
-let blob=new Blob([rows.join("\n")],{type:"text/csv"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="permit_arbitrage_master.csv";
-a.click();
+document.getElementById("modal").style.display="flex";
 }
 
 generateDossier(){
-let top=this.data.slice(0,10);
 let html="<h1>Permit Intelligence Dossier</h1><hr>";
-top.forEach(r=>{
-html+=`<h3>${r.address}</h3>
-<p>Flip: ${r.flip_type}</p>
+this.data.slice(0,10).forEach(r=>{
+html+=`
+<h3>${r.address}</h3>
 <p>Value: ${this.money(r.value)}</p>
-<p>ARB: ${r.arbitrage_score}</p>
-<p>Confidence: ${r.confidence}%</p><hr>`;
+<p>Flip: ${r.flip_type}</p>
+<p>ARB: ${r.arb}</p>
+<p>Confidence: ${r.confidence}%</p>
+<hr>`;
 });
 let w=window.open("","_blank");
 w.document.write(html);
