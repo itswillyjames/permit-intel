@@ -1,37 +1,842 @@
 <!DOCTYPE html>
-<!-- suppress HtmlUnknownTarget -->
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title></title>
-    <meta
-      name="description"
-      content="AI monitor that tracks changes in data, prices and texts on web pages for you."
-    />
-    <link rel="icon" href="/img/icons/icon-128.png" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permit Intelligence Engine v10 — Solo Tool</title>
+  <style>
+    :root {
+      --bg: #0a0a10;
+      --panel: #14141a;
+      --panel-2: #1b1b24;
+      --line: #2c2c39;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #ef4444;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --blue: #3b82f6;
+      --violet: #8b5cf6;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(180deg, #09090b 0%, #101019 100%);
+      color: var(--text);
+    }
+    button, select, input, textarea { font: inherit; }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 18px; }
+    .hero {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(239,68,68,.16), rgba(59,130,246,.1));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .eyebrow { color: #fca5a5; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; }
+    .sub { color: var(--muted); max-width: 950px; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.5fr .9fr .9fr .9fr .9fr auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .field, .btn, .seg button, .pill {
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      min-height: 46px;
+      padding: 0 14px;
+    }
+    .field { width: 100%; }
+    .btn {
+      cursor: pointer;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { background: var(--accent); border-color: #b91c1c; }
+    .btn.ghost { background: var(--panel); }
+    .seg {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .seg button {
+      min-height: 38px;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .seg button.active { color: var(--text); border-color: #57576b; background: var(--panel-2); }
+    .statusbar {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .pill { display: inline-flex; align-items: center; font-size: 13px; color: var(--muted); }
+    .grid4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .stat .n { font-size: 30px; font-weight: 800; margin-bottom: 6px; }
+    .stat .l { color: var(--muted); font-size: 14px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.25fr 1.05fr;
+      gap: 14px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-height: 440px;
+      overflow: hidden;
+    }
+    .panelhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.015);
+    }
+    .panelhead h2 { margin: 0; font-size: 17px; }
+    .small { color: var(--muted); font-size: 13px; }
+    .signals { display: grid; gap: 10px; padding: 14px; }
+    .card {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      transition: .16s ease;
+    }
+    .card:hover { transform: translateY(-1px); border-color: #55556a; }
+    .card.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px rgba(239,68,68,.2); }
+    .toprow, .tags, .meta, .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .toprow { justify-content: space-between; align-items: start; margin-bottom: 8px; }
+.title { font-size: 16px; font-weight: 800; }
+    .score {
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: #111827;
+      color: #dbeafe;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tag {
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: #111118;
+    }
+    .tag.good { color: #bbf7d0; border-color: rgba(34,197,94,.25); background: rgba(34,197,94,.08); }
+    .tag.warn { color: #fde68a; border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.08); }
+    .tag.blue { color: #bfdbfe; border-color: rgba(59,130,246,.25); background: rgba(59,130,246,.08); }
+    .tag.violet { color: #ddd6fe; border-color: rgba(139,92,246,.25); background: rgba(139,92,246,.08); }
+    .meta { color: var(--muted); font-size: 13px; margin: 8px 0; }
+    .desc { color: #e4e4e7; font-size: 14px; line-height: 1.5; margin-top: 8px; }
+    .detail { padding: 16px; display: grid; gap: 14px; }
+    .box {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .box h3 { margin: 0 0 10px; font-size: 15px; }
+    .box p { margin: 0; color: #e4e4e7; line-height: 1.55; }
+    .list { margin: 0; padding-left: 18px; color: #e4e4e7; }
+    .list li { margin: 6px 0; }
+    .actions { margin-top: 8px; }
+    .brief {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: #f4f4f5;
+      font-size: 14px;
+      max-height: 420px;
+      overflow: auto;
+    }
+    .footerNote {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    a { color: #93c5fd; }
+    code { color: #f5f5f5; }
+    @media (max-width: 1180px) {
+      .toolbar { grid-template-columns: 1fr 1fr 1fr; }
+      .layout { grid-template-columns: 1fr; }
+      .grid4 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .grid4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">OSINT arbitrage • solo deal console</div>
+      <h1>Permit Intelligence Engine v10</h1>
+      <div class="sub">Real-data-first, free, static, and deployable today. This version pulls public permit records, normalizes them into one schema, scores them for sellability, routes them to likely buyer types, and generates a printable client brief you can sell immediately.</div>
 
-    <!-- load DLS fonts and styles -->
-    <link async rel="preconnect" href="https://fonts.gstatic.com" />
-    <link
-      async
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@400&family=Source+Code+Pro:wght@400;600&display=fallback"
-      rel="stylesheet"
-    />
-    <link href="/pp.css" rel="stylesheet" />
-    <link href="/tw.css" rel="stylesheet" />
+      <div class="toolbar">
+        <select id="sourceSelect" class="field"></select>
+        <input id="daysInput" class="field" type="number" min="7" max="365" value="90" placeholder="Days back" />
+        <input id="limitInput" class="field" type="number" min="25" max="1000" value="250" placeholder="Row limit" />
+        <input id="minScoreInput" class="field" type="number" min="0" max="100" value="55" placeholder="Min score" />
+        <input id="searchInput" class="field" type="text" placeholder="Search address / type / contact" />
+        <button id="runBtn" class="btn primary">Run Engine</button>
+        <button id="mockBtn" class="btn ghost">Mock Fallback</button>
+      </div>
 
-    <!-- get the latest one from: https://katex.org/docs/browser -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
-    />
-  </head>
-  <body>
-    <div id="root">
-      <!-- app content is placed inside -->
+      <div class="seg" id="buyerSeg"></div>
+      <div class="statusbar">
+        <div class="pill" id="statusPill">Idle</div>
+        <div class="pill" id="pipelinePill">raw: 0 • normalized: 0 • scored: 0 • rendered: 0</div>
+        <div class="pill" id="cachePill">cache: none</div>
+      </div>
+    </section>
+
+    <section class="grid4">
+      <div class="stat"><div class="n" id="signalsCount">0</div><div class="l">Signals processed</div></div>
+      <div class="stat"><div class="n" id="totalValue">$0</div><div class="l">Total estimated value</div></div>
+      <div class="stat"><div class="n" id="sellableCount">0</div><div class="l">Sellable (>= min score)</div></div>
+      <div class="stat"><div class="n" id="majorCount">0</div><div class="l">Major (>$500k)</div></div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <div class="panelhead">
+          <h2>Ranked Signals</h2>
+          <div class="small" id="resultsMeta">No results yet</div>
+        </div>
+        <div id="signals" class="signals"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panelhead">
+          <h2>Deal Panel</h2>
+          <div class="small" id="detailMeta">Select a signal</div>
+        </div>
+        <div id="detail" class="detail">
+          <div class="box"><p>Run the engine, select a signal, and the buyer-specific brief will appear here.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footerNote">
+      Built for static hosting. Live data is attempted first, then cached last-good data, then mock fallback only if needed. Add your Socrata app token in <code>APP_TOKEN</code> later if you want higher rate headroom.
     </div>
-    <script src="/pp-libs.js" defer></script>
-    <script src="/pp.js" defer></script>
-  </body>
+  </div>
+
+  <script>
+    const APP_TOKEN = "";
+
+    const SOURCES = [
+      {
+        id: "chicago-building-permits",
+        label: "Chicago — Building Permits",
+        city: "Chicago",
+        url: "https://data.cityofchicago.org/resource/ydr8-5enu.json",
+        orderBy: ["issue_date", "application_start_date"],
+      },
+      {
+        id: "seattle-building-permits",
+        label: "Seattle — Building Permits",
+        city: "Seattle",
+        url: "https://data.seattle.gov/resource/76t5-zqzr.json",
+        orderBy: ["application_date", "permit_and_complaint_status_date"],
+      }
+    ];
+
+    const BUYERS = [
+      { id: "all", label: "All" },
+      { id: "supplier", label: "Supplier / Vendor" },
+      { id: "contractor", label: "Contractor / Trades" },
+      { id: "capital", label: "Capital / Lender / Broker" },
+      { id: "service", label: "Local Service / Agency" }
+    ];
+
+    const state = {
+      raw: [],
+      normalized: [],
+      scored: [],
+      filtered: [],
+      selectedId: null,
+      buyerFilter: "all",
+      usedCache: false,
+      usedMock: false,
+      sourceId: SOURCES[0].id,
+      pipeline: { raw: 0, normalized: 0, scored: 0, rendered: 0 }
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function init() {
+      renderSourceSelect();
+      renderBuyerSeg();
+      bind();
+      hydrateFromCache();
+      runEngine();
+    }
+
+    function bind() {
+      $("runBtn").addEventListener("click", runEngine);
+      $("mockBtn").addEventListener("click", () => runEngine({ forceMock: true }));
+      $("searchInput").addEventListener("input", applyFilters);
+      $("minScoreInput").addEventListener("input", applyFilters);
+      $("sourceSelect").addEventListener("change", (e) => {
+        state.sourceId = e.target.value;
+        runEngine();
+      });
+    }
+
+    function renderSourceSelect() {
+      const el = $("sourceSelect");
+      el.innerHTML = SOURCES.map(s => `<option value="${s.id}">${s.label}</option>`).join("");
+      el.value = state.sourceId;
+    }
+
+    function renderBuyerSeg() {
+      const wrap = $("buyerSeg");
+      wrap.innerHTML = BUYERS.map(b => `<button data-buyer="${b.id}" class="${b.id === state.buyerFilter ? 'active' : ''}">${b.label}</button>`).join("");
+      [...wrap.querySelectorAll("button")].forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.buyerFilter = btn.dataset.buyer;
+          renderBuyerSeg();
+          applyFilters();
+        });
+      });
+    }
+
+    function getSource() {
+      return SOURCES.find(s => s.id === state.sourceId) || SOURCES[0];
+    }
+
+    function setStatus(text) {
+      $("statusPill").textContent = text;
+    }
+
+    function setPipeline() {
+      const p = state.pipeline;
+      $("pipelinePill").textContent = `raw: ${p.raw} • normalized: ${p.normalized} • scored: ${p.scored} • rendered: ${p.rendered}`;
+      $("cachePill").textContent = state.usedMock ? 'mode: mock fallback' : state.usedCache ? 'mode: cached last-good' : 'mode: live';
+    }
+
+    function cacheKey() {
+      return `permit-intel-cache:${state.sourceId}`;
+    }
+
+    function hydrateFromCache() {
+      try {
+        const raw = localStorage.getItem(cacheKey());
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed?.rows) && parsed.rows.length) {
+          state.normalized = parsed.rows;
+          state.scored = parsed.rows;
+          state.usedCache = true;
+          state.usedMock = false;
+          state.pipeline = { raw: parsed.rows.length, normalized: parsed.rows.length, scored: parsed.rows.length, rendered: 0 };
+          applyFilters();
+        }
+      } catch (e) {}
+    }
+
+    async function runEngine(opts = {}) {
+      const forceMock = !!opts.forceMock;
+      state.usedCache = false;
+      state.usedMock = false;
+      state.pipeline = { raw: 0, normalized: 0, scored: 0, rendered: 0 };
+      setPipeline();
+      setStatus(forceMock ? 'Loading mock fallback…' : 'Fetching live permit data…');
+
+      if (forceMock) {
+        loadMock('Manual mock fallback');
+        return;
+      }
+
+      try {
+        const rows = await fetchSourceRows(getSource(), Number($("limitInput").value || 250));
+        state.pipeline.raw = rows.length;
+        if (!rows.length) throw new Error('No live rows returned');
+
+        state.raw = rows;
+        const normalized = rows.map(r => normalizeRecord(r, getSource())).filter(Boolean);
+        state.pipeline.normalized = normalized.length;
+        if (!normalized.length) throw new Error('Normalization produced 0 usable rows');
+
+        const scored = normalized.map(scoreRecord).sort((a, b) => b.saleability - a.saleability);
+        state.pipeline.scored = scored.length;
+        state.normalized = normalized;
+        state.scored = scored;
+
+        localStorage.setItem(cacheKey(), JSON.stringify({ savedAt: new Date().toISOString(), rows: scored }));
+        setStatus(`Live data loaded from ${getSource().city}`);
+        applyFilters();
+      } catch (err) {
+        console.error(err);
+        const cached = tryLoadCacheRows();
+        if (cached.length) {
+          state.usedCache = true;
+          state.usedMock = false;
+          state.scored = cached;
+          state.pipeline = { raw: cached.length, normalized: cached.length, scored: cached.length, rendered: 0 };
+          setStatus('Live fetch failed — using cached last-good data');
+          applyFilters();
+          return;
+        }
+        loadMock('Live fetch failed — using mock fallback');
+      }
+    }
+
+    function tryLoadCacheRows() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(cacheKey()) || 'null');
+        return Array.isArray(parsed?.rows) ? parsed.rows : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function fetchSourceRows(source, limit) {
+      const qs = new URLSearchParams();
+      qs.set('$limit', String(Math.max(25, Math.min(1000, limit || 250))));
+      if (source.orderBy && source.orderBy[0]) qs.set('$order', `${source.orderBy[0]} DESC`);
+
+      const headers = { Accept: 'application/json' };
+      if (APP_TOKEN) headers['X-App-Token'] = APP_TOKEN;
+
+      const res = await fetch(`${source.url}?${qs.toString()}`, { headers });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Unexpected payload');
+
+      const days = Math.max(7, Math.min(365, Number($("daysInput").value || 90)));
+      const cutoff = Date.now() - days * 86400000;
+      return data.filter((row) => {
+        const dt = pick(row, ['issue_date', 'application_date', 'applied_date', 'application_start_date', 'permit_and_complaint_status_date', 'issue_date_2']);
+        const t = Date.parse(dt);
+        return !Number.isFinite(t) || t >= cutoff;
+      });
+    }
+
+    function normalizeRecord(row, source) {
+      const address = normalizeAddress(row);
+      const date = pick(row, ['issue_date', 'application_date', 'applied_date', 'application_start_date', 'permit_and_complaint_status_date', 'issue_date_2']);
+      const valueRaw = pick(row, ['estimated_cost', 'reported_cost', 'value', 'valuation', 'declared_value', 'project_value', 'est_project_cost', 'cost']);
+      const permitType = cleanText(pick(row, ['permit_type', 'permittype', 'work_type', 'category', 'permit_class', 'permit_class_mapped', 'record_type']));
+      const description = cleanText(pick(row, ['work_description', 'description', 'brief_description', 'comments', 'scope_of_work', 'project_description']));
+      const owner = cleanText(pick(row, ['owner_name', 'owner', 'property_owner', 'contact_1_name']));
+      const contractor = cleanText(pick(row, ['contractor_name', 'applicant', 'applicant_name', 'company_name', 'licensed_professional_name', 'contractor']));
+      const permitId = cleanText(pick(row, ['id', 'permit_', 'permit_number', 'permit_num', 'application_number', 'recordid', 'permit_and_complaint_id'])) || cryptoRandomId();
+      const value = toMoney(valueRaw);
+      const textBlob = `${permitType} ${description} ${owner} ${contractor}`.toLowerCase();
+      const urgencyDays = daysAgo(date);
+      const buyerType = detectBuyerType(textBlob, value);
+      const channel = detectChannel(textBlob, value);
+      const vertical = detectVertical(textBlob);
+      return {
+        id: `${source.id}:${permitId}`,
+        permitId,
+        city: source.city,
+        sourceLabel: source.label,
+        sourceUrl: source.url,
+        address: address || `${source.city} permit record`,
+        date: date || '',
+        value,
+        permitType: permitType || 'Permit',
+        description: description || 'Public permit record pulled from open data source.',
+        owner,
+        contractor,
+        buyerType,
+        channel,
+        vertical,
+        raw: row,
+        urgencyDays,
+        textBlob
+      };
+    }
+
+    function detectVertical(text) {
+      if (/(restaurant|kitchen|food|bar|cafe|brew|bakery)/.test(text)) return 'Restaurant / Hospitality';
+      if (/(roof|shingle|siding|window|door|fence|garage)/.test(text)) return 'Exterior / Envelope';
+      if (/(electrical|generator|fire alarm|lighting|panel)/.test(text)) return 'Electrical';
+      if (/(hvac|mechanical|furnace|boiler|air condition|ventilation)/.test(text)) return 'HVAC / Mechanical';
+      if (/(plumb|sewer|water heater|sprinkler)/.test(text)) return 'Plumbing / Water';
+      if (/(demolition|new building|new construction|foundation|addition|core and shell)/.test(text)) return 'Ground-up / Major Construction';
+      return 'General Improvement';
+    }
+
+    function detectBuyerType(text, value) {
+      if (/(demolition|new building|new construction|addition|mixed use|foundation|developer|llc)/.test(text) || value >= 900000) return 'capital';
+      if (/(restaurant|tenant improvement|interior build|kitchen|food|retail|signage|opening)/.test(text)) return 'supplier';
+      if (/(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|service upgrade|furnace)/.test(text)) return 'contractor';
+      return value >= 250000 ? 'capital' : 'service';
+    }
+
+    function detectChannel(text, value) {
+      if (/(restaurant|retail|opening|ti|tenant improvement)/.test(text)) return 'Vendor packet';
+      if (/(roof|electrical|hvac|plumb|repair|replace)/.test(text)) return 'Lead resale';
+      if (value >= 900000 || /(new construction|demolition|addition)/.test(text)) return 'Capital intro';
+      return 'Local services';
+    }
+
+    function scoreRecord(rec) {
+      let score = 20;
+      if (rec.value >= 1000000) score += 28;
+      else if (rec.value >= 500000) score += 22;
+      else if (rec.value >= 150000) score += 14;
+      else if (rec.value >= 50000) score += 8;
+
+      if (rec.urgencyDays >= 0 && rec.urgencyDays <= 14) score += 16;
+      else if (rec.urgencyDays <= 30) score += 10;
+      else if (rec.urgencyDays <= 60) score += 6;
+
+      if (rec.contractor) score += 8;
+      if (rec.owner) score += 5;
+      if (rec.address) score += 4;
+
+      if (/(restaurant|retail|tenant improvement|office|medical|mixed use)/.test(rec.textBlob)) score += 9;
+      if (/(roof|electrical|hvac|mechanical|plumb|repair|replace)/.test(rec.textBlob)) score += 9;
+      if (/(demolition|new building|new construction|addition)/.test(rec.textBlob)) score += 12;
+
+      rec.saleability = Math.min(100, Math.round(score));
+      rec.immediate = rec.urgencyDays >= 0 && rec.urgencyDays <= 14;
+      rec.major = rec.value > 500000;
+      rec.angle = buildAngle(rec);
+      rec.outreach = buildOutreach(rec);
+      rec.brief = buildBrief(rec);
+      return rec;
+    }
+
+    function buildAngle(rec) {
+      if (rec.buyerType === 'supplier') return `This looks like a ${rec.vertical.toLowerCase()} opportunity where a vendor can get in before first quote lock-in.`;
+      if (rec.buyerType === 'contractor') return `This is a direct trade-facing signal with concrete scope language that supports lead resale or warm intro packaging.`;
+      if (rec.buyerType === 'capital') return `This record signals active capital deployment or pre-deployment. Package it for lenders, brokers, private capital, or major vendors.`;
+      return `This is a serviceable local-business trigger that can be sold to agencies, signage shops, inspectors, insurance, or adjacent vendors.`;
+    }
+
+    function buildOutreach(rec) {
+      if (rec.buyerType === 'supplier') {
+        return `I found a newly active ${rec.vertical.toLowerCase()} permit at ${rec.address}. It looks early enough that you can get in before vendor decisions are fully locked. I packaged the project context, timing, and likely scope if you want first position.`;
+      }
+      if (rec.buyerType === 'contractor') {
+        return `I found a permit at ${rec.address} with clear ${rec.vertical.toLowerCase()} scope. This is the kind of live job signal contractors buy because it lets them reach the project before the lead gets stale.`;
+      }
+      if (rec.buyerType === 'capital') {
+        return `I surfaced a permit at ${rec.address} that looks like active development or a meaningful value event. I can send a concise intelligence brief with timing, scope, and why it matters for financing or deal flow.`;
+      }
+      return `I found a live permit trigger at ${rec.address} that points to an immediate local service need. I can send the one-page brief showing what changed, why it matters, and who should move first.`;
+    }
+
+    function buildBrief(rec) {
+      const lines = [];
+      lines.push(`CLIENT BRIEF — ${rec.city.toUpperCase()} PERMIT SIGNAL`);
+      lines.push('');
+      lines.push(`Property: ${rec.address}`);
+      lines.push(`Permit ID: ${rec.permitId || 'N/A'}`);
+      lines.push(`Date: ${formatDate(rec.date)}`);
+      lines.push(`Estimated Value: ${formatMoney(rec.value)}`);
+      lines.push(`Permit Type: ${rec.permitType}`);
+      lines.push(`Vertical: ${rec.vertical}`);
+      lines.push(`Buyer Route: ${prettyBuyer(rec.buyerType)}`);
+      lines.push(`Channel: ${rec.channel}`);
+      lines.push(`Saleability Score: ${rec.saleability}/100`);
+      lines.push('');
+      lines.push('Why this matters');
+      lines.push(rec.angle);
+      lines.push('');
+      lines.push('Project description');
+      lines.push(rec.description || 'No description available.');
+      lines.push('');
+      lines.push('Named entities');
+      lines.push(`Owner / contact: ${rec.owner || 'Not surfaced'}`);
+      lines.push(`Applicant / contractor: ${rec.contractor || 'Not surfaced'}`);
+      lines.push('');
+      lines.push('Recommended buyer');
+      lines.push(recommendedBuyerNotes(rec));
+      lines.push('');
+      lines.push('Monetization path');
+      lines.push(monetizationNotes(rec));
+      lines.push('');
+      lines.push('Suggested outreach');
+      lines.push(rec.outreach);
+      lines.push('');
+      lines.push(`Source: ${rec.sourceLabel}`);
+      lines.push(`Source endpoint: ${rec.sourceUrl}`);
+      return lines.join('\n');
+    }
+
+    function recommendedBuyerNotes(rec) {
+      if (rec.buyerType === 'supplier') return 'Sell to restaurant vendors, signage, POS, pest, linen, security, insurance, marketing, or opening support providers.';
+      if (rec.buyerType === 'contractor') return 'Sell to trades, estimators, distributors, subcontractors, or local service firms that need early project awareness.';
+      if (rec.buyerType === 'capital') return 'Sell to lenders, capital brokers, equipment finance, private investors, major material suppliers, or CRE intermediaries.';
+      return 'Sell to local agencies, compliance vendors, inspectors, signage, telecom, cleaning, waste, security, or business support operators.';
+    }
+
+    function monetizationNotes(rec) {
+      if (rec.buyerType === 'capital') return 'Package as a premium intelligence brief, lender lead, or strategic introduction asset. Best for higher-ticket resale.';
+      if (rec.buyerType === 'contractor') return 'Package as a fresh lead, territory alert, or monthly micro-intelligence feed by trade and city.';
+      if (rec.buyerType === 'supplier') return 'Package as a “new opening” or “active TI” buyer-intent trigger to niche vendors who live off timing.';
+      return 'Package as a local trigger alert with a clear service angle and one-call outreach copy.';
+    }
+
+    function applyFilters() {
+      const minScore = Number($("minScoreInput").value || 55);
+      const q = $("searchInput").value.trim().toLowerCase();
+      let rows = [...state.scored];
+      rows = rows.filter(r => r.saleability >= minScore);
+      if (state.buyerFilter !== 'all') rows = rows.filter(r => r.buyerType === state.buyerFilter);
+      if (q) rows = rows.filter(r => `${r.address} ${r.permitType} ${r.description} ${r.owner} ${r.contractor}`.toLowerCase().includes(q));
+      state.filtered = rows;
+      state.pipeline.rendered = rows.length;
+      setPipeline();
+      renderStats(rows);
+      renderSignals(rows);
+      if (rows.length && !rows.find(r => r.id === state.selectedId)) state.selectedId = rows[0].id;
+      renderDetail(rows.find(r => r.id === state.selectedId) || null);
+    }
+
+    function renderStats(rows) {
+      const total = rows.reduce((sum, r) => sum + (r.value || 0), 0);
+      $("signalsCount").textContent = rows.length.toLocaleString();
+      $("totalValue").textContent = formatMoney(total);
+      $("sellableCount").textContent = rows.length.toLocaleString();
+      $("majorCount").textContent = rows.filter(r => r.major).length.toLocaleString();
+      $("resultsMeta").textContent = `${rows.length} signals • ${getSource().city} • ${state.usedMock ? 'mock fallback' : state.usedCache ? 'cached' : 'live'}`;
+    }
+
+    function renderSignals(rows) {
+      const wrap = $("signals");
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="box"><p>No matching signals. Lower the minimum score, widen the days back, or switch source.</p></div>`;
+        return;
+      }
+      wrap.innerHTML = rows.map(r => `
+        <div class="card ${r.id === state.selectedId ? 'active' : ''}" data-id="${r.id}">
+          <div class="toprow">
+            <div>
+              <div class="title">${escapeHtml(r.address)}</div>
+              <div class="small">${escapeHtml(r.permitType)} • ${escapeHtml(r.city)}</div>
+            </div>
+            <div class="score">${r.saleability}/100</div>
+          </div>
+          <div class="tags">
+            <span class="tag good">${formatMoney(r.value)}</span>
+            <span class="tag blue">${escapeHtml(prettyBuyer(r.buyerType))}</span>
+            <span class="tag violet">${escapeHtml(r.vertical)}</span>
+            ${r.immediate ? '<span class="tag warn">Immediate</span>' : ''}
+          </div>
+          <div class="meta">
+            <span>${escapeHtml(formatDate(r.date))}</span>
+            <span>•</span>
+            <span>${escapeHtml(r.channel)}</span>
+            ${r.contractor ? `<span>• ${escapeHtml(r.contractor)}</span>` : ''}
+          </div>
+          <div class="desc">${escapeHtml(truncate(r.description, 180))}</div>
+        </div>
+      `).join('');
+      [...wrap.querySelectorAll('.card')].forEach(card => {
+        card.addEventListener('click', () => {
+          state.selectedId = card.dataset.id;
+          renderSignals(rows);
+          renderDetail(rows.find(r => r.id === state.selectedId));
+        });
+      });
+    }
+
+    function renderDetail(rec) {
+      $("detailMeta").textContent = rec ? `${rec.city} • ${prettyBuyer(rec.buyerType)} • ${rec.saleability}/100` : 'Select a signal';
+      const el = $("detail");
+      if (!rec) {
+        el.innerHTML = `<div class="box"><p>No signal selected.</p></div>`;
+        return;
+      }
+      el.innerHTML = `
+        <div class="box">
+          <h3>${escapeHtml(rec.address)}</h3>
+          <p>${escapeHtml(rec.angle)}</p>
+          <div class="actions">
+            <button class="btn primary" id="copyBriefBtn">Copy Brief</button>
+            <button class="btn ghost" id="copyPitchBtn">Copy Pitch</button>
+            <button class="btn ghost" id="printBtn">Print Brief</button>
+          </div>
+        </div>
+        <div class="box">
+          <h3>Why this is sellable</h3>
+          <ul class="list">
+            <li>Score: <strong>${rec.saleability}/100</strong></li>
+            <li>Value band: <strong>${formatMoney(rec.value)}</strong></li>
+            <li>Buyer route: <strong>${escapeHtml(prettyBuyer(rec.buyerType))}</strong></li>
+            <li>Monetization channel: <strong>${escapeHtml(rec.channel)}</strong></li>
+            <li>Named entities: <strong>${escapeHtml(rec.owner || rec.contractor || 'Partial')}</strong></li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Client Brief</h3>
+          <div class="brief" id="briefText">${escapeHtml(rec.brief)}</div>
+        </div>
+      `;
+      $("copyBriefBtn").addEventListener('click', () => copyText(rec.brief, 'Brief copied'));
+      $("copyPitchBtn").addEventListener('click', () => copyText(rec.outreach, 'Pitch copied'));
+      $("printBtn").addEventListener('click', () => printBrief(rec));
+    }
+
+    function loadMock(reason) {
+      state.usedMock = true;
+      state.usedCache = false;
+      const scored = mockRows().map(r => scoreRecord(r)).sort((a, b) => b.saleability - a.saleability);
+      state.scored = scored;
+      state.pipeline = { raw: scored.length, normalized: scored.length, scored: scored.length, rendered: 0 };
+      setStatus(reason || 'Mock fallback loaded');
+      applyFilters();
+    }
+
+    function mockRows() {
+      return [
+        baseMock('Chicago', '1312 W Fulton St', 'Tenant Improvement', 'Interior buildout for restaurant kitchen and dining area with hood, grease line, signage, and lighting upgrades.', 185000, '2026-02-27', 'Fulton Hospitality LLC', 'BrightLine Interiors', 'supplier'),
+        baseMock('Chicago', '744 N Milwaukee Ave', 'Electrical Upgrade', 'Service upgrade, panel replacement, branch circuits, and emergency lighting improvements for commercial space.', 62000, '2026-02-25', '744 Milwaukee Owner LLC', 'Peak Current Electric', 'contractor'),
+        baseMock('Chicago', '2901 S Halsted St', 'New Construction', 'New mixed-use building with ground floor retail and upper residential floors.', 3400000, '2026-02-22', 'Halsted Development Group', 'N/A', 'capital'),
+        baseMock('Seattle', '1023 E Pike St', 'Mechanical', 'HVAC replacement and ventilation improvements for food-service occupancy.', 94000, '2026-02-28', 'Pike Street Ventures', 'Northwest Mechanical', 'contractor'),
+        baseMock('Seattle', '456 1st Ave S', 'Demolition', 'Full structure demolition and site preparation ahead of redevelopment.', 760000, '2026-02-20', '1st Ave Redevelopment LLC', 'N/A', 'capital'),
+        baseMock('Seattle', '2215 4th Ave', 'Restaurant TI', 'Tenant improvement for cafe opening including plumbing, counters, and finish upgrades.', 148000, '2026-02-26', 'Fourth Ave Foods', 'Urban Build Co', 'supplier')
+      ];
+    }
+
+    function baseMock(city, address, permitType, description, value, date, owner, contractor, buyerType) {
+      const textBlob = `${permitType} ${description} ${owner} ${contractor}`.toLowerCase();
+      return {
+        id: `${city}-${address}`,
+        permitId: `MOCK-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        city,
+        sourceLabel: `${city} Mock`,
+        sourceUrl: 'mock://local',
+        address,
+        date,
+        value,
+        permitType,
+        description,
+        owner,
+        contractor,
+        buyerType,
+        channel: detectChannel(textBlob, value),
+        vertical: detectVertical(textBlob),
+        raw: {},
+        urgencyDays: daysAgo(date),
+        textBlob
+      };
+    }
+
+    function normalizeAddress(row) {
+      const direct = cleanText(pick(row, ['address', 'street_address', 'site_address', 'project_address', 'address_full', 'originaladdress']));
+      if (direct) return direct;
+      const num = cleanText(pick(row, ['street_number', 'address_number', 'house_number']));
+      const dir = cleanText(pick(row, ['street_direction', 'predirection']));
+      const name = cleanText(pick(row, ['street_name', 'streetname', 'road_name']));
+      const suffix = cleanText(pick(row, ['suffix', 'street_suffix', 'street_type']));
+      const unit = cleanText(pick(row, ['unit', 'apt', 'suite']));
+      return [num, dir, name, suffix, unit].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function pick(obj, keys) {
+      for (const key of keys) {
+        if (obj && obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== '') return obj[key];
+      }
+      return '';
+    }
+
+    function cleanText(v) {
+      return String(v || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function toMoney(v) {
+      const n = Number(String(v || '').replace(/[^\d.-]/g, ''));
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function daysAgo(iso) {
+      const t = Date.parse(iso);
+      if (!Number.isFinite(t)) return 9999;
+      return Math.max(0, Math.floor((Date.now() - t) / 86400000));
+    }
+
+    function formatMoney(n) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(n || 0));
+    }
+
+    function formatDate(iso) {
+      const t = Date.parse(iso);
+      if (!Number.isFinite(t)) return 'Unknown date';
+      return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(t));
+    }
+
+    function prettyBuyer(v) {
+      return {
+        all: 'All',
+        supplier: 'Supplier / Vendor',
+        contractor: 'Contractor / Trades',
+        capital: 'Capital / Lender / Broker',
+        service: 'Local Service / Agency'
+      }[v] || v;
+    }
+
+    function truncate(s, n) { return (s || '').length > n ? s.slice(0, n - 1) + '…' : (s || ''); }
+    function cryptoRandomId() { return Math.random().toString(36).slice(2, 10).toUpperCase(); }
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    async function copyText(text, msg) {
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus(msg);
+      } catch {
+        setStatus('Copy failed in this browser');
+      }
+    }
+
+    function printBrief(rec) {
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.write(`<!doctype html><html><head><title>Client Brief</title><style>body{font-family:Arial,sans-serif;padding:24px;line-height:1.55;color:#111}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><h1>${escapeHtml(rec.address)}</h1><pre>${escapeHtml(rec.brief)}</pre></body></html>`);
+      w.document.close();
+      w.focus();
+      w.print();
+    }
+
+    init();
+  </script>
+</body>
 </html>
