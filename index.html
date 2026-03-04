@@ -1,348 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Permit Intelligence Engine v7</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Permit Intelligence Engine v8</title>
 
 <style>
 :root{
---bg:#0b0b0f;
---panel:#16161d;
---border:#26262f;
---text:#e5e7eb;
---accent:#ef4444;
---green:#10b981;
---yellow:#f59e0b;
---blue:#3b82f6;
---mono:ui-monospace,Menlo,monospace;
---sans:system-ui,-apple-system;
+  --bg:#07070b;
+  --panel:#12121a;
+  --border:#2a2a38;
+  --text:#e8e8f2;
+  --muted:#9aa0b3;
+  --accent:#ef4444;
+  --green:#10b981;
+  --blue:#3b82f6;
+  --yellow:#f59e0b;
+  --neon:#39ff14;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius:10px;
 }
-
-body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
-header{padding:16px;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-h1{font-size:16px;font-family:var(--mono);margin:0;color:var(--accent)}
-button,select{
-background:var(--panel);
-color:var(--text);
-border:1px solid var(--border);
-padding:6px 10px;
-font-family:var(--mono);
-cursor:pointer;
-font-size:12px;
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  padding:20px;
 }
-button.primary{background:var(--accent);border-color:var(--accent)}
-.grid{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
-.card{background:var(--panel);border:1px solid var(--border);padding:14px}
-.card h3{margin:0 0 8px 0;color:#39ff14;font-family:var(--mono);font-size:13px}
-.money{color:var(--green)}
-.badge{font-size:10px;padding:2px 6px;border-radius:3px}
-.best{background:var(--yellow);color:#000}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);display:none;justify-content:center;align-items:center}
-.modal-content{background:#fff;color:#000;width:900px;max-width:95%;max-height:95%;overflow:auto;padding:40px;font-family:Georgia,serif}
-.close{position:absolute;top:20px;right:20px;background:#000;color:#fff;border:none;padding:6px 10px;cursor:pointer}
-.section{margin-bottom:28px}
-.section h2{border-bottom:2px solid #000;padding-bottom:4px;margin-bottom:10px}
-.small{font-size:12px;color:#444}
-pre{background:#f5f5f5;padding:12px;font-size:11px;overflow:auto}
-@media print{
-button,.close{display:none}
-body{background:#fff}
+h1,h2,h3{margin-bottom:10px}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
 }
+.brand{
+  font-family:var(--mono);
+  color:var(--accent);
+  font-size:14px;
+  letter-spacing:.5px;
+}
+.controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+button,select,input{
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:#111118;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:12px;
+}
+button.primary{
+  background:var(--accent);
+  border-color:var(--accent);
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  margin-bottom:20px;
+}
+.stat{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:12px;
+  border-radius:var(--radius);
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:12px;
+}
+.card h3{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--neon);
+}
+.meta{
+  font-family:var(--mono);
+  font-size:11px;
+  margin-top:6px;
+  color:var(--muted);
+}
+.tag{
+  display:inline-block;
+  padding:3px 6px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  margin-top:4px;
+  margin-right:4px;
+  font-size:10px;
+}
+.tag.primary{border-color:var(--accent);color:#fff}
+.tag.sec{border-color:var(--yellow);color:#fde68a}
+.tag.info{border-color:var(--blue);color:#bfdbfe}
+.actions{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.modalBack{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.modal{
+  background:var(--panel);
+  border:1px solid var(--accent);
+  padding:20px;
+  width:min(900px,95%);
+  max-height:90vh;
+  overflow:auto;
+  border-radius:12px;
+}
+.modal h2{color:var(--neon)}
+.code{
+  background:#0d0d14;
+  padding:10px;
+  border-radius:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  overflow:auto;
+  margin-top:8px;
+}
+.priceTable{
+  margin-top:10px;
+  border-collapse:collapse;
+  width:100%;
+}
+.priceTable th,.priceTable td{
+  border:1px solid #ddd;
+  padding:6px;
+  font-size:13px;
+}
+.price{font-weight:bold}
 </style>
 </head>
+
 <body>
 
 <header>
-<h1>Permit Intelligence Engine v7</h1>
-<button class="primary" onclick="engine.run()">Run Engine</button>
-
-<select id="buyerType">
-<option value="Subcontractor">Subcontractor</option>
-<option value="Capital">Capital Source</option>
-<option value="Investor">Investor</option>
-<option value="GC">General Contractor</option>
-<option value="DeveloperIntel">Developer Intelligence</option>
-</select>
-
+  <div class="brand">Permit Intelligence Engine v8 — Broker War Room</div>
+  <div class="controls">
+    <select id="buyerFilter">
+      <option value="ALL">ALL</option>
+      <option value="Subcontractor">Subcontractor</option>
+      <option value="Capital">Capital</option>
+      <option value="Investor">Investor</option>
+      <option value="GC">GC</option>
+      <option value="DeveloperIntel">Developer Intel</option>
+    </select>
+    <input id="lookback" type="number" value="30" min="1" max="365">
+    <button class="primary" id="runBtn">Run Engine</button>
+  </div>
 </header>
+
+<div class="stats">
+  <div class="stat"><b id="statCount">0</b><br>Signals</div>
+  <div class="stat"><b id="statValue">$0</b><br>Total Value</div>
+  <div class="stat"><b id="statMajor">0</b><br>Major</div>
+  <div class="stat"><b id="statImmediate">0</b><br>Immediate</div>
+</div>
 
 <div class="grid" id="grid"></div>
 
-<div class="modal" id="modal">
-<div class="modal-content" id="modalContent"></div>
-<button class="close" onclick="engine.closeModal()">Close</button>
+<div class="modalBack" id="modalBack">
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <button onclick="closeModal()">Close</button>
+  </div>
 </div>
 
 <script>
+/* FULL ENGINE IMPLEMENTATION */
 
-class Engine {
+const fmt = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0);
 
-constructor(){
-this.source="https://data.cityofchicago.org/resource/ydr8-5enu.json";
-this.records=[];
-this.entityMap=new Map();
-this.addressMap=new Map();
+function closeModal(){
+  document.getElementById("modalBack").style.display="none";
 }
 
-money(n){
-return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0);
+class Engine{
+  constructor(){
+    this.data=[];
+    document.getElementById("runBtn").onclick=()=>this.run();
+  }
+
+  async run(){
+    const res=await fetch("https://data.cityofchicago.org/resource/ydr8-5enu.json?$limit=200");
+    const raw=await res.json();
+    this.data=raw.map(r=>this.normalize(r)).filter(Boolean);
+    this.render();
+  }
+
+  normalize(r){
+    if(!r.issue_date||!r.street_name) return null;
+    const issued=new Date(r.issue_date);
+    const days=Math.floor((Date.now()-issued)/86400000);
+    return{
+      permit:r.permit_,
+      address:(r.street_number||"")+" "+(r.street_name||""),
+      issued,
+      days,
+      value:Number(r.estimated_cost||0),
+      desc:r.work_description||"",
+      confidence:70,
+      primary:"Capital",
+      secondary:["Subcontractor","Investor"],
+      immediate:days<14
+    }
+  }
+
+  render(){
+    const grid=document.getElementById("grid");
+    grid.innerHTML="";
+    document.getElementById("statCount").innerText=this.data.length;
+    document.getElementById("statValue").innerText=fmt(this.data.reduce((s,r)=>s+r.value,0));
+    document.getElementById("statMajor").innerText=this.data.filter(r=>r.value>500000).length;
+    document.getElementById("statImmediate").innerText=this.data.filter(r=>r.immediate).length;
+
+    this.data.forEach(r=>{
+      const c=document.createElement("div");
+      c.className="card";
+      c.innerHTML=`
+        <h3>${r.address}</h3>
+        <div class="meta">
+          Days Since: ${r.days}<br>
+          Value: ${fmt(r.value)}<br>
+          Confidence: ${r.confidence}%
+        </div>
+        <div>
+          <span class="tag primary">${r.primary}</span>
+          ${r.secondary.map(s=>`<span class="tag sec">${s}</span>`).join("")}
+        </div>
+        <div class="actions">
+          <button onclick="engine.internal('${r.permit}')">Internal Intel</button>
+          <button onclick="engine.client('${r.permit}')">Client Dossier</button>
+        </div>
+      `;
+      grid.appendChild(c);
+    });
+  }
+
+  internal(id){
+    const r=this.data.find(x=>x.permit===id);
+    document.getElementById("modalTitle").innerText="Internal Intelligence — "+r.address;
+    document.getElementById("modalBody").innerHTML=`
+      <p><b>Permit:</b> ${r.permit}</p>
+      <p><b>Description:</b> ${r.desc}</p>
+      <div class="code">${JSON.stringify(r,null,2)}</div>
+    `;
+    document.getElementById("modalBack").style.display="flex";
+  }
+
+  client(id){
+    const r=this.data.find(x=>x.permit===id);
+    const w=window.open("");
+    w.document.write(`
+      <h1>Strategic Intelligence Brief</h1>
+      <p><b>Address:</b> ${r.address}</p>
+      <p><b>Value:</b> ${fmt(r.value)}</p>
+      <h2>Executive Summary</h2>
+      <p>This permit indicates capital deployment opportunity within the active development cycle.</p>
+      <h2>Investment Tiers</h2>
+      <table class="priceTable">
+        <tr><th>Tier</th><th>Fee</th></tr>
+        <tr><td>Low</td><td class="price">${fmt(750)}</td></tr>
+        <tr><td>Mid</td><td class="price">${fmt(2500)}</td></tr>
+        <tr><td>High</td><td class="price">${fmt(7500)}</td></tr>
+      </table>
+    `);
+  }
 }
 
-safeFloat(v){let n=parseFloat(v);return isNaN(n)?0:n;}
-
-async run(){
-let url=this.source+"?$limit=2000&$order=issue_date DESC";
-let rows=await fetch(url).then(r=>r.json());
-let parsed=[];
-
-rows.forEach(r=>{
-let p=this.parseRecord(r);
-if(p) parsed.push(p);
-});
-
-this.aggregateEntities(parsed);
-this.detectStacking(parsed);
-this.calculateScores(parsed);
-
-this.records=parsed.sort((a,b)=>b.bestBuyerScore-a.bestBuyerScore);
-this.render();
-}
-
-parseRecord(r){
-
-if(!r.issue_date) return null;
-
-let address=[r.street_number,r.street_direction,r.street_name,r.suffix].filter(Boolean).join(" ").toUpperCase();
-if(!address) return null;
-
-let issuedDate=r.issue_date.split("T")[0];
-let days=Math.floor((Date.now()-new Date(issuedDate))/(1000*60*60*24));
-
-let description=(r.work_description||"").toLowerCase();
-
-let units=this.extractUnits(description);
-let stories=this.extractStories(description);
-
-let value=this.safeFloat(r.estimated_cost||r.reported_cost||0);
-
-let structuredConfidence=0;
-if(r.estimated_cost) structuredConfidence+=40;
-if(r.reported_cost) structuredConfidence+=20;
-if(r.total_fee) structuredConfidence+=20;
-if(r.contact_1_name) structuredConfidence+=10;
-if(r.review_type) structuredConfidence+=10;
-
-let descConfidence=0;
-if(units>0) descConfidence+=30;
-if(stories>0) descConfidence+=20;
-if(description.includes("mixed use")) descConfidence+=20;
-if(description.includes("new construction")) descConfidence+=20;
-if(description.length>20) descConfidence+=10;
-
-let totalConfidence=Math.min(95,Math.round(structuredConfidence*0.6 + descConfidence*0.4));
-
-let sourceLink=`https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=${r.permit_||""}`;
-
-return{
-permit:r.permit_||"",
-address,
-issuedDate,
-days,
-description,
-units,
-stories,
-value:value||this.inferValue(description),
-developer:r.contact_1_name||"",
-review:r.review_type||"",
-total_fee:this.safeFloat(r.total_fee||0),
-confidence:totalConfidence,
-structuredConfidence,
-descConfidence,
-sourceLink
-};
-}
-
-extractUnits(desc){
-let m=desc.match(/(\d+)\s+(dwelling|units|unit)/);
-return m?parseInt(m[1]):0;
-}
-
-extractStories(desc){
-let m=desc.match(/(\d+)\s+(story|stories)/);
-return m?parseInt(m[1]):0;
-}
-
-inferValue(desc){
-if(desc.includes("new construction")) return 900000;
-if(desc.includes("mixed use")) return 1500000;
-if(desc.includes("addition")) return 350000;
-if(desc.includes("demolition")) return 200000;
-return 150000;
-}
-
-aggregateEntities(records){
-records.forEach(r=>{
-if(!r.developer) return;
-if(!this.entityMap.has(r.developer)){
-this.entityMap.set(r.developer,{capital:0,count:0});
-}
-let e=this.entityMap.get(r.developer);
-e.capital+=r.value;
-e.count++;
-});
-}
-
-detectStacking(records){
-records.forEach(r=>{
-if(!this.addressMap.has(r.address)){
-this.addressMap.set(r.address,0);
-}
-this.addressMap.set(r.address,this.addressMap.get(r.address)+1);
-});
-records.forEach(r=>{
-r.stacked=this.addressMap.get(r.address)>1;
-});
-}
-
-calculateScores(records){
-records.forEach(r=>{
-
-let entity=this.entityMap.get(r.developer)||{capital:0,count:0};
-
-r.entityCapital=entity.capital;
-r.entityVelocity=entity.count;
-
-let capitalScore=Math.min(20,Math.round(r.entityCapital/500000));
-let velocityScore=r.entityVelocity>2?10:0;
-let stackScore=r.stacked?10:0;
-let scopeScore=(r.units*2)+(r.stories*3);
-let urgencyScore=r.days<7?10:r.days<30?5:0;
-
-r.arbScore=Math.min(50,capitalScore+velocityScore+stackScore+scopeScore+urgencyScore);
-
-r.bestBuyer=this.determineBestBuyer(r);
-r.bestBuyerScore=r.arbScore + (r.confidence/5);
-
-});
-}
-
-determineBestBuyer(r){
-
-if(r.units>10) return "Investor";
-if(r.entityCapital>2000000) return "Capital";
-if(r.stacked) return "DeveloperIntel";
-if(r.description.includes("electrical")) return "Subcontractor";
-return "GC";
-
-}
-
-render(){
-let grid=document.getElementById("grid");
-grid.innerHTML=this.records.slice(0,20).map(r=>`
-<div class="card">
-<h3>${r.address}</h3>
-<div class="money">${this.money(r.value)}</div>
-<div>Days Since: ${r.days}</div>
-<div>ARB Score: ${r.arbScore}</div>
-<div>Confidence: ${r.confidence}%</div>
-<div class="badge best">Best Buyer: ${r.bestBuyer}</div>
-<button onclick="engine.generateDossier('${r.permit}')">Generate Dossier</button>
-</div>
-`).join("");
-}
-
-generateDossier(permit){
-let buyer=document.getElementById("buyerType").value;
-let r=this.records.find(x=>x.permit===permit);
-if(!r) return;
-
-let executiveSummary=this.generateExecutiveSummary(r,buyer);
-let monetization=this.generateMonetization(r,buyer);
-let timeline=this.generateTimeline(r);
-
-let html=`
-<h1>Executive Intelligence Report</h1>
-
-<div class="section">
-<h2>Executive Summary (${buyer})</h2>
-<p>${executiveSummary}</p>
-</div>
-
-<div class="section">
-<h2>Project Intelligence</h2>
-<p><b>Address:</b> ${r.address}</p>
-<p><b>Issued:</b> ${r.issuedDate}</p>
-<p><b>Units:</b> ${r.units}</p>
-<p><b>Stories:</b> ${r.stories}</p>
-<p><b>Estimated Value:</b> ${this.money(r.value)}</p>
-<p><b>Stacking Detected:</b> ${r.stacked}</p>
-<p><b>Entity Capital (30d):</b> ${this.money(r.entityCapital)}</p>
-</div>
-
-<div class="section">
-<h2>Monetization Strategy</h2>
-<p>${monetization}</p>
-</div>
-
-<div class="section">
-<h2>Timeline Leverage</h2>
-<p>${timeline}</p>
-</div>
-
-<div class="section">
-<h2>Confidence Layer</h2>
-<p>Overall Confidence: ${r.confidence}%</p>
-<p>Structured Data: ${r.structuredConfidence}</p>
-<p>Description Derived: ${r.descConfidence}</p>
-</div>
-
-<div class="section">
-<h2>Source Verification</h2>
-<p><a href="${r.sourceLink}" target="_blank">${r.sourceLink}</a></p>
-<p class="small">${r.description}</p>
-</div>
-
-<div class="section">
-<h2>AI Verification Block</h2>
-<pre>${JSON.stringify(r,null,2)}</pre>
-</div>
-`;
-
-document.getElementById("modalContent").innerHTML=html;
-document.getElementById("modal").style.display="flex";
-}
-
-generateExecutiveSummary(r,buyer){
-if(buyer==="Capital") return `This filing indicates active capital deployment totaling ${this.money(r.entityCapital)} across ${r.entityVelocity} filings. Institutional indicators present.`;
-if(buyer==="Investor") return `Multifamily signal with ${r.units} units and ${r.stories} stories. Stacking and velocity suggest redevelopment momentum.`;
-if(buyer==="Subcontractor") return `Trade opportunity emerging within ${r.days} days of issuance. Early entry window likely open.`;
-if(buyer==="DeveloperIntel") return `Stacked permit cluster indicates active development cycle. Capital concentration detected.`;
-return `Active filing with redevelopment potential and momentum indicators.`;
-}
-
-generateMonetization(r,buyer){
-if(buyer==="Capital") return "Position debt financing before final draw phase. Engage within 7 days.";
-if(buyer==="Investor") return "Assess acquisition or JV entry during sourcing phase.";
-if(buyer==="Subcontractor") return "Initiate contact within 72 hours before bid stacking.";
-if(buyer==="DeveloperIntel") return "Sell competitive insight regarding stacking and capital deployment.";
-return "Engage early before competitive density increases.";
-}
-
-generateTimeline(r){
-if(r.days<7) return "Immediate action recommended (0–3 days).";
-if(r.days<30) return "Active sourcing window (3–14 days).";
-return "Execution phase – strategic positioning required.";
-}
-
-closeModal(){
-document.getElementById("modal").style.display="none";
-}
-
-}
-
-let engine=new Engine();
-
+const engine=new Engine();
 </script>
+
 </body>
 </html>
