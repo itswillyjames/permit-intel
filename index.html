@@ -17,900 +17,757 @@
       --warn:#f59e0b;
       --bad:#ef4444;
       --radius:12px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
     }
 
-    * { box-sizing: border-box; }
-    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--sans); }
-    body { min-height:100vh; }
-
-    .wrap {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 16px;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:var(--sans);
     }
 
-    header {
+    header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:linear-gradient(180deg,var(--panel),rgba(18,18,26,.95));
+      border-bottom:1px solid var(--border);
+      padding:14px 16px;
+    }
+
+    .topbar{
       display:flex;
-      gap:12px;
       align-items:center;
       justify-content:space-between;
+      gap:12px;
       flex-wrap:wrap;
-      border:1px solid var(--border);
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      border-radius:var(--radius);
-      padding:14px 16px;
-      margin-bottom:16px;
     }
 
-    .title h1 {
-      margin:0 0 4px 0;
-      font-size:20px;
-      line-height:1.1;
+    .title{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:.2px;
     }
 
-    .title p {
-      margin:0;
+    .sub{
+      font-size:12px;
       color:var(--muted);
-      font-size:13px;
+      margin-top:4px;
     }
 
-    .controls {
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    select, input, button {
-      background:#11131a;
-      color:var(--text);
+    .status{
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
       border:1px solid var(--border);
-      border-radius:10px;
-      padding:10px 12px;
+      background:var(--panel2);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .ok{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+
+    .controls{
+      display:grid;
+      grid-template-columns:1.2fr .7fr .7fr 1.2fr auto auto;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    select,input,button,textarea{
       font:inherit;
     }
 
-    input[type="number"] { width:90px; }
-    input[type="text"] { min-width:220px; }
-
-    button {
-      cursor:pointer;
-      font-weight:700;
+    select,input{
+      width:100%;
+      background:var(--panel2);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:11px 12px;
+      outline:none;
     }
 
-    button.primary {
+    button{
+      background:var(--panel2);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:11px 14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:hover{border-color:var(--accent)}
+    .primary{
       background:var(--accent);
       border-color:var(--accent);
-      color:white;
     }
 
-    button:hover { filter:brightness(1.06); }
-
-    .statusbar {
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin:0 0 16px 0;
-    }
-
-    .pill {
-      border:1px solid var(--border);
-      background:var(--panel);
-      border-radius:999px;
-      padding:7px 10px;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .pill.ok { color:var(--good); }
-    .pill.warn { color:var(--warn); }
-    .pill.bad { color:var(--bad); }
-
-    .grid {
+    main{
       display:grid;
-      grid-template-columns: 1.2fr 0.85fr;
+      grid-template-columns:1.2fr .9fr;
       gap:16px;
+      padding:16px;
     }
 
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-
-    .panel {
-      border:1px solid var(--border);
+    .card{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--border);
       border-radius:var(--radius);
       overflow:hidden;
     }
 
-    .panel-head {
-      padding:12px 14px;
+    .card h2{
+      margin:0;
+      padding:14px 16px;
       border-bottom:1px solid var(--border);
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+    }
+
+    .stat{
+      background:rgba(255,255,255,.02);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:12px;
+    }
+
+    .stat .k{
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+
+    .stat .v{
+      font-size:22px;
+      font-weight:800;
+    }
+
+    #signals{
+      min-height:300px;
+    }
+
+    .signal{
+      padding:14px 16px;
+      border-top:1px solid var(--border);
+      cursor:pointer;
+    }
+    .signal:hover{background:rgba(255,255,255,.03)}
+    .signal.active{outline:1px solid var(--accent); background:rgba(59,130,246,.08)}
+
+    .row1{
       display:flex;
       justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
+      gap:10px;
+      align-items:flex-start;
     }
 
-    .panel-head h2 {
-      margin:0;
+    .addr{
+      font-weight:800;
+      font-size:15px;
+      line-height:1.25;
+    }
+
+    .score{
+      font-weight:800;
+      color:var(--good);
+      white-space:nowrap;
+    }
+
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:6px;
+      line-height:1.5;
+    }
+
+    .desc{
+      font-size:12px;
+      margin-top:8px;
+      color:#d6d6e6;
+      line-height:1.45;
+    }
+
+    .detail{
+      padding:16px;
+    }
+
+    .hint{
+      color:var(--muted);
+      line-height:1.5;
       font-size:14px;
-      letter-spacing:.02em;
     }
 
-    .panel-body {
-      padding:12px 14px;
-    }
-
-    .stats {
+    .detail-grid{
       display:grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns:1fr 1fr;
       gap:10px;
       margin-bottom:14px;
     }
 
-    @media (max-width: 900px) {
-      .stats { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    .stat {
+    .mini{
+      background:rgba(255,255,255,.02);
       border:1px solid var(--border);
-      border-radius:12px;
-      padding:12px;
-      background:#0e1016;
+      border-radius:10px;
+      padding:10px;
     }
 
-    .stat .k {
-      color:var(--muted);
+    .mini .k{
       font-size:11px;
-      margin-bottom:6px;
+      color:var(--muted);
       text-transform:uppercase;
-      letter-spacing:.04em;
+      margin-bottom:5px;
     }
 
-    .stat .v {
-      font-size:22px;
-      font-weight:800;
-    }
-
-    .list {
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      max-height:70vh;
-      overflow:auto;
-      padding-right:2px;
-    }
-
-    .item {
-      border:1px solid var(--border);
-      background:#0f1118;
-      border-radius:12px;
-      padding:12px;
-      cursor:pointer;
-    }
-
-    .item:hover {
-      border-color:#3a4d7a;
-      background:#111520;
-    }
-
-    .item.active {
-      border-color:var(--accent);
-      box-shadow:0 0 0 1px rgba(59,130,246,.2) inset;
-    }
-
-    .row1 {
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      margin-bottom:6px;
-    }
-
-    .addr {
-      font-size:15px;
-      font-weight:800;
-      line-height:1.2;
-    }
-
-    .score {
-      min-width:58px;
-      text-align:center;
-      border-radius:999px;
-      padding:5px 8px;
-      font-size:12px;
-      font-weight:800;
-      border:1px solid var(--border);
-      background:#151826;
-    }
-
-    .meta, .desc {
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.45;
-    }
-
-    .meta {
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px 14px;
-      margin:6px 0;
-    }
-
-    .route {
-      display:inline-block;
-      margin-top:8px;
-      font-size:11px;
-      font-weight:800;
-      color:#dbeafe;
-      background:rgba(59,130,246,.15);
-      border:1px solid rgba(59,130,246,.35);
-      padding:4px 8px;
-      border-radius:999px;
-    }
-
-    .detail-top {
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:flex-start;
-      margin-bottom:12px;
-      flex-wrap:wrap;
-    }
-
-    .detail-title {
-      font-size:22px;
-      font-weight:900;
-      line-height:1.15;
-      margin:0 0 6px 0;
-    }
-
-    .detail-sub {
-      color:var(--muted);
+    .mini .v{
       font-size:13px;
+      font-weight:700;
+      line-height:1.35;
+      word-break:break-word;
     }
 
-    .actions {
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
       margin-bottom:12px;
     }
 
-    .actions button {
-      flex:1 1 160px;
-    }
-
-    .brief {
+    textarea{
       width:100%;
-      min-height:360px;
+      min-height:260px;
       resize:vertical;
-      border-radius:12px;
+      background:#09090f;
+      color:#ecfdf5;
       border:1px solid var(--border);
-      background:#090b10;
-      color:var(--text);
+      border-radius:10px;
       padding:12px;
-      font-family:var(--mono);
-      font-size:12px;
-      line-height:1.55;
-    }
-
-    details.debug {
-      margin-top:12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      background:#0d1016;
-      overflow:hidden;
-    }
-
-    details.debug summary {
-      cursor:pointer;
-      padding:12px 14px;
-      font-weight:700;
-      color:var(--muted);
-    }
-
-    .debug-body {
-      padding:0 14px 14px 14px;
-    }
-
-    pre {
-      margin:0;
-      white-space:pre-wrap;
-      word-break:break-word;
       font-family:var(--mono);
       font-size:12px;
       line-height:1.5;
-      color:#cbd5e1;
     }
 
-    .empty {
+    .debug{
+      margin-top:12px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#09090f;
+      color:#cfd3e6;
+      font-family:var(--mono);
+      font-size:12px;
+      white-space:pre-wrap;
+      line-height:1.45;
+    }
+
+    .foot{
+      padding:0 16px 16px;
       color:var(--muted);
-      font-size:14px;
-      padding:14px 2px;
+      font-size:12px;
+    }
+
+    @media (max-width:1000px){
+      .controls{grid-template-columns:1fr 1fr}
+      main{grid-template-columns:1fr}
+      .stats{grid-template-columns:1fr 1fr}
+      .detail-grid{grid-template-columns:1fr}
+      .actions{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="title">
-        <h1>Permit Intelligence Engine — Worker Routed</h1>
-        <p>Real-data-first. Routed through your Cloudflare Worker proxy. Generate sellable briefs fast.</p>
+  <header>
+    <div class="topbar">
+      <div>
+        <div class="title">Permit Intelligence Engine — Worker Routed</div>
+        <div class="sub">Real-data-first. Routed through your Cloudflare Worker proxy. Generate sellable briefs fast.</div>
       </div>
-
-      <div class="controls">
-        <select id="source">
-          <option value="chicago">Chicago — Building Permits</option>
-          <option value="seattle">Seattle — Permits</option>
-        </select>
-
-        <input id="limit" type="number" min="25" max="500" value="100" />
-        <input id="minScore" type="number" min="0" max="100" value="70" />
-        <input id="q" type="text" placeholder="Search address / type / contact" />
-
-        <button id="runBtn" class="primary">RUN ENGINE</button>
-        <button id="clearCacheBtn">CLEAR CACHE</button>
-      </div>
-    </header>
-
-    <div class="statusbar">
-      <div id="statusPill" class="pill">Ready</div>
-      <div id="modePill" class="pill">—</div>
-      <div id="workerPill" class="pill">Worker: checking…</div>
+      <div id="status" class="status">Ready</div>
     </div>
 
-    <div class="grid">
-      <section class="panel">
-        <div class="panel-head">
-          <h2>RANKED SIGNALS</h2>
-        </div>
-        <div class="panel-body">
-          <div class="stats">
-            <div class="stat">
-              <div class="k">Signals Processed</div>
-              <div class="v" id="statSignals">0</div>
-            </div>
-            <div class="stat">
-              <div class="k">Total Estimated Value</div>
-              <div class="v" id="statValue">$0</div>
-            </div>
-            <div class="stat">
-              <div class="k">Sellable (&gt;= Min Score)</div>
-              <div class="v" id="statSellable">0</div>
-            </div>
-            <div class="stat">
-              <div class="k">Major (&gt;$500k)</div>
-              <div class="v" id="statMajor">0</div>
-            </div>
-          </div>
+    <div class="controls">
+      <select id="source">
+        <option value="chicago">Chicago — Building Permits</option>
+        <option value="seattle">Seattle — Permits</option>
+      </select>
 
-          <div id="list" class="list"></div>
-        </div>
-      </section>
+      <input id="limit" type="number" min="25" max="500" value="100" />
 
-      <section class="panel">
-        <div class="panel-head">
-          <h2>DEAL PANEL</h2>
-        </div>
-        <div class="panel-body">
-          <div id="detail">
-            <div class="empty">Pick a row on the left. You’ll get a client-ready brief + pitch you can copy.</div>
-          </div>
+      <input id="minScore" type="number" min="0" max="100" value="70" />
 
-          <div class="actions">
-            <button id="copyBriefBtn">COPY BRIEF</button>
-            <button id="copyPitchBtn">COPY PITCH</button>
-          </div>
+      <input id="q" type="text" placeholder="Search address / type / contact" />
 
-          <textarea id="brief" class="brief" readonly>Client brief will appear here…</textarea>
-
-          <details class="debug">
-            <summary>DEBUG (LAST FETCH + ERROR)</summary>
-            <div class="debug-body">
-              <pre id="debugText">No debug yet.</pre>
-            </div>
-          </details>
-        </div>
-      </section>
+      <button id="runBtn" class="primary">RUN ENGINE</button>
+      <button id="clearCacheBtn">CLEAR CACHE</button>
     </div>
-  </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Ranked Signals</h2>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="k">Signals processed</div>
+          <div class="v" id="statCount">0</div>
+        </div>
+        <div class="stat">
+          <div class="k">Total estimated value</div>
+          <div class="v" id="statValue">$0</div>
+        </div>
+        <div class="stat">
+          <div class="k">Sellable (&gt;= min score)</div>
+          <div class="v" id="statSellable">0</div>
+        </div>
+        <div class="stat">
+          <div class="k">Major (&gt;$500k)</div>
+          <div class="v" id="statMajor">0</div>
+        </div>
+      </div>
+
+      <div id="signals"></div>
+      <div class="foot" id="modeText">No data loaded yet.</div>
+    </section>
+
+    <section class="card">
+      <h2>Deal Panel</h2>
+      <div class="detail" id="detail">
+        <div class="hint">Pick a row on the left. You’ll get a client-ready brief + pitch you can copy.</div>
+      </div>
+    </section>
+  </main>
 
   <script>
-    const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
+    (function () {
+      "use strict";
 
-    const SOURCES = {
-      chicago: { label: "Chicago — Building Permits" },
-      seattle: { label: "Seattle — Permits" }
-    };
+      const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
 
-    const state = {
-      raw: [],
-      signals: [],
-      selected: null,
-      lastError: null,
-      debug: "No debug yet."
-    };
+      const SOURCES = {
+        chicago: { label: "Chicago — Building Permits", endpoint: "chicago" },
+        seattle: { label: "Seattle — Permits", endpoint: "seattle" }
+      };
 
-    function $(id) {
-      return document.getElementById(id);
-    }
+      const state = {
+        raw: [],
+        signals: [],
+        selected: null
+      };
 
-    function setStatus(text, tone) {
-      const el = $("statusPill");
-      el.textContent = text;
-      el.className = "pill";
-      if (tone === "ok") el.classList.add("ok");
-      if (tone === "warn") el.classList.add("warn");
-      if (tone === "bad") el.classList.add("bad");
-    }
-
-    function setWorkerStatus(text, tone) {
-      const el = $("workerPill");
-      el.textContent = text;
-      el.className = "pill";
-      if (tone === "ok") el.classList.add("ok");
-      if (tone === "warn") el.classList.add("warn");
-      if (tone === "bad") el.classList.add("bad");
-    }
-
-    function updateMode(text) {
-      $("modePill").textContent = text;
-    }
-
-    function updateDebug(text) {
-      state.debug = text || "No debug yet.";
-      $("debugText").textContent = state.debug;
-    }
-
-    function fmtMoney(n) {
-      const x = Number(n || 0);
-      if (!Number.isFinite(x)) return "$0";
-      return x.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-    }
-
-    function safeNum(v) {
-      const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
-    }
-
-    function esc(s) {
-      return String(s == null ? "" : s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    function cacheKey(sourceKey) {
-      return "permitintel:lastgood:" + sourceKey;
-    }
-
-    function saveLastGood(sourceKey, raw) {
-      try {
-        localStorage.setItem(cacheKey(sourceKey), JSON.stringify({ t: Date.now(), raw: raw }));
-      } catch (_) {}
-    }
-
-    function loadLastGood(sourceKey) {
-      try {
-        const v = localStorage.getItem(cacheKey(sourceKey));
-        return v ? JSON.parse(v) : null;
-      } catch (_) {
-        return null;
-      }
-    }
-
-    function clearCacheAll() {
-      try {
-        Object.keys(localStorage).forEach(function(k) {
-          if (k.indexOf("permitintel:lastgood:") === 0) localStorage.removeItem(k);
-        });
-      } catch (_) {}
-    }
-
-    async function workerHealth() {
-      try {
-        const r = await fetch(WORKER_BASE + "/api/health");
-        if (!r.ok) throw new Error("Health check failed: " + r.status);
-        const j = await r.json();
-        setWorkerStatus("Worker: OK", "ok");
-        return j;
-      } catch (e) {
-        setWorkerStatus("Worker: failed", "bad");
-        updateDebug("Worker health failed:\n" + (e && e.message ? e.message : String(e)));
-        throw e;
-      }
-    }
-
-    async function fetchPermits(sourceKey, limit) {
-      const url = WORKER_BASE + "/api/permits?source=" + encodeURIComponent(sourceKey) + "&limit=" + encodeURIComponent(limit);
-      const res = await fetch(url, { method: "GET" });
-      const text = await res.text();
-
-      if (!res.ok) {
-        throw new Error("HTTP " + res.status + "\n" + text);
+      function $(id) {
+        return document.getElementById(id);
       }
 
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (_) {
-        throw new Error("Worker did not return valid JSON");
-      }
-
-      if (!Array.isArray(data)) {
-        throw new Error("Worker JSON was not an array");
-      }
-
-      updateDebug(
-        "Source: " + SOURCES[sourceKey].label + "\n" +
-        "URL: " + url + "\n" +
-        "HTTP: " + res.status + "\n" +
-        "Rows: " + data.length
-      );
-
-      return data;
-    }
-
-    function normalizeRows(sourceKey, rows) {
-      if (sourceKey === "chicago") {
-        return rows.map(function(r) {
-          const address = [
-            r.street_number,
-            r.street_direction,
-            r.street_name
-          ].filter(Boolean).join(" ").trim();
-
-          const contactNames = [];
-          for (let i = 1; i <= 10; i++) {
-            if (r["contact_" + i + "_name"]) contactNames.push(r["contact_" + i + "_name"]);
-          }
-
-          const description = r.work_description || "";
-          const permitType = r.permit_type || "";
-          const value = safeNum(r.reported_cost || r.total_fee || 0);
-
-          return {
-            source: "chicago",
-            id: r.permit_ || r.id || "",
-            address: address || "Unknown address",
-            permitType: permitType,
-            description: description,
-            issuedDate: r.issue_date || r.application_start_date || "",
-            value: value,
-            contacts: contactNames,
-            raw: r
-          };
+      function fmtMoney(n) {
+        const num = Number(n) || 0;
+        return num.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0
         });
       }
 
-      return rows.map(function(r) {
-        const address = r.originaladdress1 || "Unknown address";
-        const permitType = (r.permittypemapped || "") + ((r.permittypedesc ? " • " + r.permittypedesc : ""));
-        const description = r.description || "";
-        const value = safeNum(r.estprojectcost || 0);
+      function esc(v) {
+        return String(v == null ? "" : v)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function setStatus(text, tone) {
+        const el = $("status");
+        el.textContent = text;
+        el.className = "status";
+        if (tone) el.classList.add(tone);
+      }
+
+      function updateDebug(text) {
+        const box = $("debugBox");
+        if (box) box.textContent = text;
+      }
+
+      function cacheKey(sourceKey) {
+        return "permitintel:lastgood:" + sourceKey;
+      }
+
+      function saveLastGood(sourceKey, raw) {
+        try {
+          localStorage.setItem(cacheKey(sourceKey), JSON.stringify({ t: Date.now(), raw: raw }));
+        } catch (e) {}
+      }
+
+      function loadLastGood(sourceKey) {
+        try {
+          const v = localStorage.getItem(cacheKey(sourceKey));
+          return v ? JSON.parse(v) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function clearCacheAll() {
+        try {
+          Object.keys(localStorage).forEach(function (k) {
+            if (k.indexOf("permitintel:lastgood:") === 0) localStorage.removeItem(k);
+          });
+        } catch (e) {}
+      }
+
+      async function workerHealth() {
+        try {
+          const res = await fetch(WORKER_BASE + "/api/health", { method: "GET" });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      async function fetchPermits(sourceKey, limit) {
+        const url = WORKER_BASE + "/api/permits?source=" + encodeURIComponent(SOURCES[sourceKey].endpoint) + "&limit=" + encodeURIComponent(limit);
+        const res = await fetch(url, { method: "GET" });
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+        return await res.json();
+      }
+
+      function chicagoAddress(r) {
+        return [r.street_number, r.street_direction, r.street_name].filter(Boolean).join(" ").trim();
+      }
+
+      function pickChicagoContact(r) {
+        const names = [];
+        for (let i = 1; i <= 10; i++) {
+          const name = r["contact_" + i + "_name"];
+          if (name) names.push(String(name).trim());
+        }
+        return names[0] || "";
+      }
+
+      function normalizeChicago(r) {
+        const estimatedValue = Number(r.reported_cost || r.total_fee || 0) || 0;
+        const addr = chicagoAddress(r);
+        const permitType = r.permit_type || "";
+        const desc = r.work_description || "";
+        const contact = pickChicagoContact(r);
 
         return {
-          source: "seattle",
-          id: r.permitnum || "",
-          address: address,
-          permitType: permitType || "Permit",
-          description: description,
-          issuedDate: r.applieddate || "",
-          value: value,
-          contacts: [],
+          source: "Chicago",
+          id: r.permit_ || r.id || "",
+          address: addr,
+          permitType: permitType,
+          description: desc,
+          issuedDate: r.issue_date || r.application_start_date || "",
+          estimatedValue: estimatedValue,
+          contact: contact,
+          route: routeBuyer(permitType, desc, estimatedValue),
+          vertical: classifyVertical(permitType, desc),
+          score: scoreSignal(permitType, desc, estimatedValue),
           raw: r
         };
-      });
-    }
+      }
 
-    function inferVertical(text) {
-      const t = String(text || "").toLowerCase();
-
-      if (/(roof|roofing|tuckpoint|masonry|facade|façade|chimney|window|fence|deck|porch|exterior)/.test(t)) return "Exterior / Envelope";
-      if (/(electrical|low voltage|circuits|lighting|data\/video|communication)/.test(t)) return "Electrical";
-      if (/(hvac|mechanical|ventilation|refrigeration|heat pump|chiller|rtu)/.test(t)) return "HVAC / Mechanical";
-      if (/(plumbing|pedicure|sink|water|boiler)/.test(t)) return "Plumbing / Water";
-      if (/(restaurant|cafe|salon|laundromat|fitness|grocery|showroom|tenant build|tenant improvement)/.test(t)) return "Commercial Interior";
-      if (/(demolition|wreck|new construction|ground up|foundation|caisson)/.test(t)) return "Ground-up / Major Construction";
-
-      return "General Improvement";
-    }
-
-    function inferRoute(value, text) {
-      const t = String(text || "").toLowerCase();
-
-      if (value >= 500000) return "Capital / Lender / Broker";
-      if (/(electrical|roof|hvac|mechanical|plumbing|masonry|contractor|solar)/.test(t)) return "Contractor / Trades";
-      if (/(salon|restaurant|showroom|grocery|fitness|laundromat)/.test(t)) return "Supplier / Vendor";
-
-      return "Local Service / Agency";
-    }
-
-    function scoreSignal(row) {
-      let score = 35;
-
-      if (row.value >= 1000000) score += 35;
-      else if (row.value >= 500000) score += 28;
-      else if (row.value >= 250000) score += 20;
-      else if (row.value >= 100000) score += 12;
-      else if (row.value >= 25000) score += 6;
-
-      const t = (row.permitType + " " + row.description).toLowerCase();
-
-      if (/(new construction|demolition|wreck)/.test(t)) score += 18;
-      if (/(roof|electrical|mechanical|hvac|plumbing|masonry|tenant build|tenant improvement)/.test(t)) score += 10;
-      if (/(school|hospital|museum|grocery|fitness|showroom|commercial)/.test(t)) score += 8;
-
-      if (score > 100) score = 100;
-      return score;
-    }
-
-    function buildSignals(rows) {
-      return rows.map(function(r) {
-        const textBlob = [r.permitType, r.description].join(" ");
-        const score = scoreSignal(r);
-        const vertical = inferVertical(textBlob);
-        const route = inferRoute(r.value, textBlob);
+      function normalizeSeattle(r) {
+        const estimatedValue = Number(r.estprojectcost || 0) || 0;
+        const addr = r.originaladdress1 || "";
+        const permitType = (r.permittypemapped || "") + (r.permittypedesc ? " — " + r.permittypedesc : "");
+        const desc = r.description || "";
+        const contact = r.permitnum || "";
 
         return {
-          id: r.id,
-          address: r.address,
-          permitType: r.permitType,
-          description: r.description,
-          issuedDate: r.issuedDate,
-          value: r.value,
-          route: route,
-          vertical: vertical,
-          score: score,
-          contacts: r.contacts,
-          raw: r.raw
+          source: "Seattle",
+          id: r.permitnum || "",
+          address: addr,
+          permitType: permitType,
+          description: desc,
+          issuedDate: r.applieddate || "",
+          estimatedValue: estimatedValue,
+          contact: contact,
+          route: routeBuyer(permitType, desc, estimatedValue),
+          vertical: classifyVertical(permitType, desc),
+          score: scoreSignal(permitType, desc, estimatedValue),
+          raw: r
         };
-      }).sort(function(a, b) {
-        return b.score - a.score || b.value - a.value;
-      });
-    }
-
-    function getFilteredSignals() {
-      const q = $("q").value.trim().toLowerCase();
-      const minScore = safeNum($("minScore").value);
-
-      return state.signals.filter(function(s) {
-        if (s.score < minScore) return false;
-        if (!q) return true;
-
-        const hay = [
-          s.address,
-          s.permitType,
-          s.description,
-          s.route,
-          s.vertical,
-          (s.contacts || []).join(" ")
-        ].join(" ").toLowerCase();
-
-        return hay.indexOf(q) !== -1;
-      });
-    }
-
-    function makeBrief(sig) {
-      const contacts = (sig.contacts && sig.contacts.length) ? sig.contacts.join(", ") : "Not surfaced";
-
-      return [
-        "CLIENT BRIEF — PERMIT SIGNAL",
-        "",
-        "Property: " + sig.address,
-        "Permit ID: " + (sig.id || "N/A"),
-        "Date: " + (sig.issuedDate || "N/A"),
-        "Estimated Value: " + fmtMoney(sig.value),
-        "Permit Type: " + (sig.permitType || "N/A"),
-        "Vertical: " + sig.vertical,
-        "Buyer Route: " + sig.route,
-        "Saleability Score: " + sig.score + "/100",
-        "",
-        "Why this matters",
-        "This record signals active project movement that can be packaged into a sellable intelligence asset for the right buyer.",
-        "",
-        "Project description",
-        sig.description || "No description available.",
-        "",
-        "Named entities",
-        "Contacts: " + contacts,
-        "",
-        "Recommended buyer",
-        sig.route,
-        "",
-        "Monetization path",
-        "Sell as a premium lead brief, vendor packet, lender intelligence item, or targeted introduction asset.",
-        "",
-        "Suggested outreach",
-        "I surfaced a permit at " + sig.address + " that looks commercially relevant based on timing, scope, and value. I can send a concise intelligence brief showing why this project matters for your pipeline.",
-        "",
-        "Source",
-        sig.raw && sig.raw.source_url ? sig.raw.source_url : ("Worker-routed source: " + sig.raw.source)
-      ].join("\n");
-    }
-
-    function makePitch(sig) {
-      return "I found a live permit at " + sig.address + " tied to " + (sig.permitType || "active work") + ". It looks relevant for " + sig.route + " based on scope, timing, and estimated value of " + fmtMoney(sig.value) + ". I can send a clean one-page brief if useful.";
-    }
-
-    function copyText(text) {
-      navigator.clipboard.writeText(text).then(function() {
-        setStatus("Copied", "ok");
-      }).catch(function() {
-        alert("Copy failed. Copy manually.");
-      });
-    }
-
-    function renderStats(list) {
-      const totalValue = list.reduce(function(sum, s) { return sum + safeNum(s.value); }, 0);
-      const sellable = list.filter(function(s) { return s.score >= safeNum($("minScore").value); }).length;
-      const major = list.filter(function(s) { return safeNum(s.value) > 500000; }).length;
-
-      $("statSignals").textContent = String(list.length);
-      $("statValue").textContent = fmtMoney(totalValue);
-      $("statSellable").textContent = String(sellable);
-      $("statMajor").textContent = String(major);
-    }
-
-    function renderList() {
-      const list = $("list");
-      const filtered = getFilteredSignals();
-
-      renderStats(filtered);
-      list.innerHTML = "";
-
-      if (!filtered.length) {
-        const d = document.createElement("div");
-        d.className = "empty";
-        d.textContent = state.raw.length ? "No signals match your filters." : "No data loaded yet.";
-        list.appendChild(d);
-        return;
       }
 
-      filtered.forEach(function(sig) {
-        const div = document.createElement("div");
-        div.className = "item" + (state.selected && state.selected.id === sig.id ? " active" : "");
-        div.addEventListener("click", function() {
-          state.selected = sig;
-          renderDetail(sig);
-          renderList();
+      function normalizeRows(sourceKey, rows) {
+        return rows.map(function (r) {
+          return sourceKey === "chicago" ? normalizeChicago(r) : normalizeSeattle(r);
+        });
+      }
+
+      function classifyVertical(permitType, description) {
+        const t = (permitType + " " + description).toLowerCase();
+        if (/(roof|roofing|masonry|facade|tuckpoint|chimney|envelope|siding|fence)/.test(t)) return "Exterior / Envelope";
+        if (/(electrical|low voltage|communication|circuits|lighting|solar)/.test(t)) return "Electrical";
+        if (/(hvac|mechanical|ventilation|refrigeration|heat pump|chiller)/.test(t)) return "HVAC / Mechanical";
+        if (/(plumbing|water|pedicure|sink|restroom|boiler)/.test(t)) return "Plumbing / Water";
+        if (/(restaurant|salon|retail|showroom|tenant|fitness|grocery|laundromat|day care)/.test(t)) return "Commercial Interior";
+        if (/(new construction|demolition|wreck|foundation|ground up)/.test(t)) return "Ground-up / Major Construction";
+        return "General Improvement";
+      }
+
+      function routeBuyer(permitType, description, value) {
+        const t = (permitType + " " + description).toLowerCase();
+        if (value >= 500000 || /(new construction|demolition|ground up|multi|museum|school|apartment|tenant buildout)/.test(t)) {
+          return "Capital / Lender / Broker";
+        }
+        if (/(electrical|hvac|mechanical|roof|masonry|solar|plumbing|fence|tuckpoint)/.test(t)) {
+          return "Contractor / Trades";
+        }
+        return "Supplier / Vendor";
+      }
+
+      function scoreSignal(permitType, description, value) {
+        let score = 35;
+        const t = (permitType + " " + description).toLowerCase();
+
+        if (value >= 1000000) score += 30;
+        else if (value >= 500000) score += 22;
+        else if (value >= 150000) score += 14;
+        else if (value >= 50000) score += 8;
+
+        if (/(new construction|demolition|ground up|addition|tenant buildout|alteration)/.test(t)) score += 14;
+        if (/(roof|electrical|hvac|mechanical|plumbing|masonry|solar|refrigeration)/.test(t)) score += 10;
+        if (/(school|museum|grocery|fitness|commercial|showroom|hospital)/.test(t)) score += 8;
+
+        if (score > 100) score = 100;
+        return score;
+      }
+
+      function buildSignals(rows) {
+        return rows.slice().sort(function (a, b) {
+          if (b.score !== a.score) return b.score - a.score;
+          return b.estimatedValue - a.estimatedValue;
+        });
+      }
+
+      function makeBrief(sig) {
+        const lines = [];
+        lines.push("CLIENT BRIEF — " + sig.source.toUpperCase() + " PERMIT SIGNAL");
+        lines.push("");
+        lines.push("Property: " + (sig.address || "N/A"));
+        lines.push("Permit ID: " + (sig.id || "N/A"));
+        lines.push("Date: " + (sig.issuedDate || "N/A"));
+        lines.push("Estimated Value: " + fmtMoney(sig.estimatedValue));
+        lines.push("Permit Type: " + (sig.permitType || "N/A"));
+        lines.push("Vertical: " + (sig.vertical || "N/A"));
+        lines.push("Buyer Route: " + (sig.route || "N/A"));
+        lines.push("Saleability Score: " + sig.score + "/100");
+        lines.push("");
+        lines.push("Why this matters");
+        lines.push("This record signals active work with likely vendor, trade, or capital demand.");
+        lines.push("");
+        lines.push("Project description");
+        lines.push(sig.description || "No description available.");
+        lines.push("");
+        lines.push("Named contact");
+        lines.push(sig.contact || "Not surfaced");
+        lines.push("");
+        lines.push("Recommended buyer");
+        lines.push(sig.route);
+        lines.push("");
+        lines.push("Suggested outreach");
+        lines.push(makePitch(sig));
+        return lines.join("\n");
+      }
+
+      function makePitch(sig) {
+        return "I surfaced a permit at " + (sig.address || "this property") + " that looks like active project movement. I can send a concise intelligence brief with timing, scope, and why it matters for " + sig.route.toLowerCase() + ".";
+      }
+
+      function render() {
+        const q = ($("q").value || "").toLowerCase().trim();
+        const minScore = Number($("minScore").value || 0);
+
+        const filtered = state.signals.filter(function (s) {
+          if (s.score < minScore) return false;
+          if (!q) return true;
+          const hay = [
+            s.address,
+            s.permitType,
+            s.description,
+            s.contact,
+            s.route,
+            s.vertical,
+            s.id
+          ].join(" ").toLowerCase();
+          return hay.indexOf(q) !== -1;
         });
 
-        div.innerHTML =
-          '<div class="row1">' +
-            '<div class="addr">' + esc(sig.address) + '</div>' +
-            '<div class="score">' + esc(String(sig.score)) + '/100</div>' +
-          '</div>' +
-          '<div class="meta">' +
-            '<span>' + esc(sig.permitType || "Permit") + '</span>' +
-            '<span>' + esc(sig.issuedDate || "N/A") + '</span>' +
-            '<span>' + esc(fmtMoney(sig.value)) + '</span>' +
-          '</div>' +
-          '<div class="desc">' + esc((sig.description || "").slice(0, 220) + ((sig.description || "").length > 220 ? "…" : "")) + '</div>' +
-          '<div class="route">' + esc(sig.route) + " • " + esc(sig.vertical) + '</div>';
+        $("statCount").textContent = String(filtered.length);
+        $("statValue").textContent = fmtMoney(filtered.reduce(function (n, s) { return n + (s.estimatedValue || 0); }, 0));
+        $("statSellable").textContent = String(filtered.filter(function (s) { return s.score >= minScore; }).length);
+        $("statMajor").textContent = String(filtered.filter(function (s) { return s.estimatedValue >= 500000; }).length);
 
-        list.appendChild(div);
-      });
-    }
+        const box = $("signals");
+        box.innerHTML = "";
 
-    function renderDetail(sig) {
-      if (!sig) {
-        $("detail").innerHTML = '<div class="empty">Pick a row on the left. You’ll get a client-ready brief + pitch you can copy.</div>';
-        $("brief").value = "Client brief will appear here…";
-        return;
-      }
-
-      $("detail").innerHTML =
-        '<div class="detail-top">' +
-          '<div>' +
-            '<div class="detail-title">' + esc(sig.address) + '</div>' +
-            '<div class="detail-sub">' + esc(sig.permitType || "Permit") + ' • ' + esc(sig.issuedDate || "N/A") + '</div>' +
-          '</div>' +
-          '<div class="score">' + esc(String(sig.score)) + '/100</div>' +
-        '</div>' +
-        '<div class="meta">' +
-          '<span>' + esc(fmtMoney(sig.value)) + '</span>' +
-          '<span>' + esc(sig.route) + '</span>' +
-          '<span>' + esc(sig.vertical) + '</span>' +
-        '</div>' +
-        '<div class="desc" style="margin-top:10px;">' + esc(sig.description || "No description available.") + '</div>';
-
-      $("brief").value = makeBrief(sig);
-    }
-
-    async function run() {
-      const sourceKey = $("source").value;
-      const limit = Math.max(25, Math.min(500, safeNum($("limit").value || 100)));
-
-      updateMode(SOURCES[sourceKey].label + " • limit " + limit);
-      setStatus("Fetching live data…", "warn");
-
-      try {
-        const raw = await fetchPermits(sourceKey, limit);
-        state.raw = raw;
-        saveLastGood(sourceKey, raw);
-
-        const normalized = normalizeRows(sourceKey, raw);
-        state.signals = buildSignals(normalized);
-
-        setStatus("Live data loaded", "ok");
-
-        if (state.selected) {
-          const match = state.signals.find(function(x) { return x.id === state.selected.id; });
-          state.selected = match || null;
-        }
-
-        renderList();
-        renderDetail(state.selected);
-      } catch (e) {
-        const msg = e && e.message ? e.message : String(e);
-        state.lastError = msg;
-        setStatus("Live fetch failed — using cached last-good", "warn");
-
-        const cached = loadLastGood(sourceKey);
-        if (cached && Array.isArray(cached.raw)) {
-          state.raw = cached.raw;
-          state.signals = buildSignals(normalizeRows(sourceKey, cached.raw));
-          updateDebug("Live fetch failed.\n\nError:\n" + msg + "\n\nLoaded cached last-good rows: " + cached.raw.length);
+        if (!filtered.length) {
+          const empty = document.createElement("div");
+          empty.className = "signal";
+          empty.innerHTML = '<div class="meta">No data loaded yet.</div>';
+          box.appendChild(empty);
         } else {
-          state.raw = [];
-          state.signals = [];
-          state.selected = null;
-          updateDebug("Live fetch failed.\n\nError:\n" + msg + "\n\nNo cached last-good data found.");
+          filtered.forEach(function (sig) {
+            const div = document.createElement("div");
+            div.className = "signal" + (state.selected && state.selected.id === sig.id ? " active" : "");
+            div.innerHTML =
+              '<div class="row1">' +
+                '<div class="addr">' + esc(sig.address || "Unknown address") + '</div>' +
+                '<div class="score">' + esc(String(sig.score)) + '/100</div>' +
+              '</div>' +
+              '<div class="meta">' + esc(sig.permitType || "") + " • " + esc(sig.source) + '</div>' +
+              '<div class="meta">' + esc(sig.route) + " • " + esc(sig.vertical) + " • " + esc(sig.issuedDate || "N/A") + '</div>' +
+              '<div class="meta">' + esc(fmtMoney(sig.estimatedValue)) + (sig.contact ? " • " + esc(sig.contact) : "") + '</div>' +
+              '<div class="desc">' + esc((sig.description || "").slice(0, 220)) + (((sig.description || "").length > 220) ? "…" : "") + '</div>';
+
+            div.addEventListener("click", function () {
+              state.selected = sig;
+              render();
+              renderDetail(sig);
+            });
+
+            box.appendChild(div);
+          });
+        }
+      }
+
+      function renderDetail(sig) {
+        const panel = $("detail");
+
+        if (!sig) {
+          panel.innerHTML =
+            '<div class="hint">Pick a row on the left. You’ll get a client-ready brief + pitch you can copy.</div>';
+          return;
         }
 
-        renderList();
-        renderDetail(state.selected);
+        const brief = makeBrief(sig);
+
+        panel.innerHTML =
+          '<div class="detail-grid">' +
+            '<div class="mini"><div class="k">Address</div><div class="v">' + esc(sig.address) + '</div></div>' +
+            '<div class="mini"><div class="k">Score</div><div class="v">' + esc(String(sig.score)) + '/100</div></div>' +
+            '<div class="mini"><div class="k">Value</div><div class="v">' + esc(fmtMoney(sig.estimatedValue)) + '</div></div>' +
+            '<div class="mini"><div class="k">Buyer Route</div><div class="v">' + esc(sig.route) + '</div></div>' +
+            '<div class="mini"><div class="k">Vertical</div><div class="v">' + esc(sig.vertical) + '</div></div>' +
+            '<div class="mini"><div class="k">Contact</div><div class="v">' + esc(sig.contact || "Not surfaced") + '</div></div>' +
+          '</div>' +
+
+          '<div class="actions">' +
+            '<button id="copyBriefBtn">COPY BRIEF</button>' +
+            '<button id="copyPitchBtn">COPY PITCH</button>' +
+          '</div>' +
+
+          '<textarea id="briefBox" readonly></textarea>' +
+
+          '<div class="debug" id="debugBox">No debug yet.</div>';
+
+        $("briefBox").value = brief;
+        $("debugBox").textContent =
+          "Source: " + sig.source + "\n" +
+          "Permit ID: " + (sig.id || "N/A") + "\n" +
+          "Issued: " + (sig.issuedDate || "N/A") + "\n" +
+          "Estimated Value: " + fmtMoney(sig.estimatedValue) + "\n" +
+          "Route: " + sig.route + "\n" +
+          "Vertical: " + sig.vertical;
+
+        $("copyBriefBtn").addEventListener("click", function () {
+          navigator.clipboard.writeText(brief);
+          setStatus("Brief copied", "ok");
+        });
+
+        $("copyPitchBtn").addEventListener("click", function () {
+          navigator.clipboard.writeText(makePitch(sig));
+          setStatus("Pitch copied", "ok");
+        });
       }
-    }
 
-    $("runBtn").addEventListener("click", run);
+      async function run() {
+        const sourceKey = $("source").value;
+        const limit = Math.max(25, Math.min(500, Number($("limit").value || 100)));
+        $("modeText").textContent = SOURCES[sourceKey].label + " • limit " + limit;
 
-    $("clearCacheBtn").addEventListener("click", function() {
-      clearCacheAll();
-      state.raw = [];
-      state.signals = [];
-      state.selected = null;
-      updateDebug("Cache cleared manually.");
-      setStatus("Cache cleared", "ok");
-      renderList();
-      renderDetail(null);
-    });
+        const workerOk = await workerHealth();
+        if (!workerOk) {
+          setStatus("Worker: failed", "bad");
+        } else {
+          setStatus("Fetching live data…", "warn");
+        }
 
-    $("source").addEventListener("change", function() {
-      state.selected = null;
-      renderDetail(null);
-      run();
-    });
+        try {
+          const raw = await fetchPermits(sourceKey, limit);
+          state.raw = raw;
+          saveLastGood(sourceKey, raw);
 
-    $("q").addEventListener("input", renderList);
-    $("minScore").addEventListener("input", renderList);
+          const normalized = normalizeRows(sourceKey, raw);
+          state.signals = buildSignals(normalized);
+          state.selected = null;
 
-    $("copyBriefBtn").addEventListener("click", function() {
-      if (!state.selected) return alert("Select a signal first.");
-      copyText($("brief").value);
-    });
+          setStatus("Live data loaded", "ok");
+          render();
+          renderDetail(null);
+        } catch (e) {
+          const cached = loadLastGood(sourceKey);
 
-    $("copyPitchBtn").addEventListener("click", function() {
-      if (!state.selected) return alert("Select a signal first.");
-      copyText(makePitch(state.selected));
-    });
+          if (cached && Array.isArray(cached.raw)) {
+            state.raw = cached.raw;
+            state.signals = buildSignals(normalizeRows(sourceKey, cached.raw));
+            state.selected = null;
+            setStatus("Live fetch failed — using cached last-good", "warn");
+            $("modeText").textContent = SOURCES[sourceKey].label + " • cached last-good";
+            render();
+            renderDetail(null);
+          } else {
+            state.raw = [];
+            state.signals = [];
+            state.selected = null;
+            setStatus("Live fetch failed — no cache", "bad");
+            $("modeText").textContent = "Live fetch failed. Error: " + e.message + " No cached last-good data found.";
+            render();
+            renderDetail(null);
+          }
+        }
+      }
 
-    (async function boot() {
-      setStatus("Checking Worker…", "warn");
-      updateMode("Booting…");
+      $("runBtn").addEventListener("click", run);
 
-      try {
-        await workerHealth();
-      } catch (_) {}
+      $("clearCacheBtn").addEventListener("click", function () {
+        clearCacheAll();
+        state.raw = [];
+        state.signals = [];
+        state.selected = null;
+        setStatus("Cache cleared", "ok");
+        $("modeText").textContent = "No data loaded yet.";
+        render();
+        renderDetail(null);
+      });
 
-      updateDebug("Boot complete.");
+      $("source").addEventListener("change", function () {
+        state.selected = null;
+        renderDetail(null);
+        run();
+      });
+
+      $("q").addEventListener("input", render);
+      $("minScore").addEventListener("input", render);
+
       run();
     })();
   </script>
