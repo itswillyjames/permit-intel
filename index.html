@@ -3,807 +3,916 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Permit Intelligence Engine — Worker Routed + Local AI</title>
-  <meta name="description" content="Real-data-first permit intelligence console. Worker-routed fetch. Score + route + generate sellable briefs. Optional local AI (no keys)." />
+  <title>Permit Intelligence Engine — Worker Routed</title>
   <style>
     :root{
-      --bg:#07070b; --panel:#11111a; --panel2:#0c0c13;
-      --border:#2a2a38; --text:#e8e8f2; --muted:#9aa0b3;
-      --accent:#3b82f6; --good:#10b981; --warn:#f59e0b; --bad:#ef4444;
-      --chip:#1b1b28; --radius:12px;
+      --bg:#07070b;
+      --panel:#12121a;
+      --panel2:#0d0d14;
+      --border:#2a2a38;
+      --text:#e8e8f2;
+      --muted:#a1a1b3;
+      --accent:#3b82f6;
+      --good:#10b981;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --radius:12px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
-    header{
-      position:sticky;top:0;z-index:50;
-      background:linear-gradient(180deg,var(--panel),rgba(17,17,26,.86));
-      border-bottom:1px solid var(--border);
+
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--sans); }
+    body { min-height:100vh; }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    header {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-radius:var(--radius);
       padding:14px 16px;
-      display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:16px;
     }
-    header .title{display:flex;flex-direction:column;gap:2px}
-    header h1{margin:0;font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-    header .sub{font-size:12px;color:var(--muted)}
-    .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .field{
-      background:var(--panel2); border:1px solid var(--border); color:var(--text);
-      padding:8px 10px;border-radius:10px;font-size:13px; outline:none;
-    }
-    select.field{cursor:pointer}
-    input.field{width:140px}
-    .btn{
-      background:var(--panel2); border:1px solid var(--border); color:var(--text);
-      padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;
-      letter-spacing:.06em;text-transform:uppercase; cursor:pointer;
-    }
-    .btn:hover{border-color:var(--accent)}
-    .btn.primary{background:var(--accent);border-color:var(--accent);color:#071018}
-    .btn.primary:hover{filter:brightness(1.05)}
-    .btn.good{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.35)}
-    .btn.warn{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.35)}
-    .status{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;border-radius:10px;border:1px solid var(--border);
-      background:var(--panel2); color:var(--muted); font-size:12px;
-    }
-    .dot{width:8px;height:8px;border-radius:50%}
-    .dot.ok{background:var(--good)}
-    .dot.warn{background:var(--warn)}
-    .dot.bad{background:var(--bad)}
 
-    main{display:grid;grid-template-columns:420px 1fr 420px;gap:0;height:calc(100vh - 78px)}
-    .col{border-right:1px solid var(--border); overflow:auto}
-    .col:last-child{border-right:none}
-    .panelHead{
-      position:sticky;top:0;z-index:10;
-      background:var(--panel);
-      border-bottom:1px solid var(--border);
-      padding:12px 14px;
-      display:flex;justify-content:space-between;align-items:center;gap:10px;
+    .title h1 {
+      margin:0 0 4px 0;
+      font-size:20px;
+      line-height:1.1;
     }
-    .panelHead h2{margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
-    .kpi{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px}
-    .kpi .label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-    .kpi .val{margin-top:6px;font-size:18px;font-weight:800}
-    .kpi .sub{margin-top:2px;font-size:12px;color:var(--muted)}
 
-    .list{padding:10px 10px 16px}
-    .row{
+    .title p {
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .controls {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    select, input, button {
+      background:#11131a;
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 12px;
+      font:inherit;
+    }
+
+    input[type="number"] { width:90px; }
+    input[type="text"] { min-width:220px; }
+
+    button {
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    button.primary {
+      background:var(--accent);
+      border-color:var(--accent);
+      color:white;
+    }
+
+    button:hover { filter:brightness(1.06); }
+
+    .statusbar {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin:0 0 16px 0;
+    }
+
+    .pill {
       border:1px solid var(--border);
       background:var(--panel);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .pill.ok { color:var(--good); }
+    .pill.warn { color:var(--warn); }
+    .pill.bad { color:var(--bad); }
+
+    .grid {
+      display:grid;
+      grid-template-columns: 1.2fr 0.85fr;
+      gap:16px;
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      border:1px solid var(--border);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+
+    .panel-head {
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .panel-head h2 {
+      margin:0;
+      font-size:14px;
+      letter-spacing:.02em;
+    }
+
+    .panel-body {
+      padding:12px 14px;
+    }
+
+    .stats {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat {
+      border:1px solid var(--border);
       border-radius:12px;
-      padding:10px 10px;
-      margin:10px 4px;
+      padding:12px;
+      background:#0e1016;
+    }
+
+    .stat .k {
+      color:var(--muted);
+      font-size:11px;
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .stat .v {
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .list {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:70vh;
+      overflow:auto;
+      padding-right:2px;
+    }
+
+    .item {
+      border:1px solid var(--border);
+      background:#0f1118;
+      border-radius:12px;
+      padding:12px;
       cursor:pointer;
     }
-    .row:hover{border-color:rgba(59,130,246,.6)}
-    .row.selected{outline:2px solid rgba(59,130,246,.55)}
-    .rowTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .addr{font-weight:800;font-size:13px}
-    .meta{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
-    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-    .chip{
-      background:var(--chip);
-      border:1px solid var(--border);
+
+    .item:hover {
+      border-color:#3a4d7a;
+      background:#111520;
+    }
+
+    .item.active {
+      border-color:var(--accent);
+      box-shadow:0 0 0 1px rgba(59,130,246,.2) inset;
+    }
+
+    .row1 {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:6px;
+    }
+
+    .addr {
+      font-size:15px;
+      font-weight:800;
+      line-height:1.2;
+    }
+
+    .score {
+      min-width:58px;
+      text-align:center;
       border-radius:999px;
-      padding:4px 8px;
-      font-size:11px;
+      padding:5px 8px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--border);
+      background:#151826;
+    }
+
+    .meta, .desc {
       color:var(--muted);
-      white-space:nowrap;
+      font-size:12px;
+      line-height:1.45;
     }
-    .chip.score{color:#cfe3ff;border-color:rgba(59,130,246,.35)}
-    .chip.route{color:#d7ffe9;border-color:rgba(16,185,129,.30)}
-    .chip.value{color:#fff2d7;border-color:rgba(245,158,11,.30)}
 
-    .detail{padding:14px}
-    .detail h3{margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-    .box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px}
-    .box p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
-    textarea{
-      width:100%; min-height:210px; resize:vertical;
-      background:#050509; color:#d8ffe7;
-      border:1px solid var(--border); border-radius:12px;
-      padding:12px; font-family:var(--mono); font-size:11px; line-height:1.45;
+    .meta {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 14px;
+      margin:6px 0;
     }
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .actions .btn{width:100%}
 
-    .debug{font-family:var(--mono);font-size:11px;color:#c6c6d8;white-space:pre-wrap;word-break:break-word}
-    .small{font-size:12px;color:var(--muted)}
-    .hr{height:1px;background:var(--border);margin:10px 0}
-
-    @media (max-width:1200px){
-      main{grid-template-columns:360px 1fr 360px}
+    .route {
+      display:inline-block;
+      margin-top:8px;
+      font-size:11px;
+      font-weight:800;
+      color:#dbeafe;
+      background:rgba(59,130,246,.15);
+      border:1px solid rgba(59,130,246,.35);
+      padding:4px 8px;
+      border-radius:999px;
     }
-    @media (max-width:980px){
-      main{grid-template-columns:1fr; height:auto}
-      .col{border-right:none;border-bottom:1px solid var(--border)}
-      .col:last-child{border-bottom:none}
+
+    .detail-top {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .detail-title {
+      font-size:22px;
+      font-weight:900;
+      line-height:1.15;
+      margin:0 0 6px 0;
+    }
+
+    .detail-sub {
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .actions {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .actions button {
+      flex:1 1 160px;
+    }
+
+    .brief {
+      width:100%;
+      min-height:360px;
+      resize:vertical;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#090b10;
+      color:var(--text);
+      padding:12px;
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    details.debug {
+      margin-top:12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#0d1016;
+      overflow:hidden;
+    }
+
+    details.debug summary {
+      cursor:pointer;
+      padding:12px 14px;
+      font-weight:700;
+      color:var(--muted);
+    }
+
+    .debug-body {
+      padding:0 14px 14px 14px;
+    }
+
+    pre {
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.5;
+      color:#cbd5e1;
+    }
+
+    .empty {
+      color:var(--muted);
+      font-size:14px;
+      padding:14px 2px;
     }
   </style>
 </head>
-
 <body>
-<header>
-  <div class="title">
-    <h1>Permit Intelligence Engine</h1>
-    <div class="sub">Real-data-first. Routed through your Cloudflare Worker proxy. Optional free local AI.</div>
-  </div>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>Permit Intelligence Engine — Worker Routed</h1>
+        <p>Real-data-first. Routed through your Cloudflare Worker proxy. Generate sellable briefs fast.</p>
+      </div>
 
-  <div class="bar">
-    <select id="source" class="field" title="Data source">
-      <option value="chicago">Chicago — Building Permits</option>
-      <option value="seattle">Seattle — Permits</option>
-    </select>
+      <div class="controls">
+        <select id="source">
+          <option value="chicago">Chicago — Building Permits</option>
+          <option value="seattle">Seattle — Permits</option>
+        </select>
 
-    <input id="limit" class="field" type="number" min="25" max="500" value="100" title="Fetch limit" />
-    <input id="minScore" class="field" type="number" min="0" max="100" value="70" title="Min score" />
-    <input id="q" class="field" type="text" placeholder="Search address / type / contact" />
+        <input id="limit" type="number" min="25" max="500" value="100" />
+        <input id="minScore" type="number" min="0" max="100" value="70" />
+        <input id="q" type="text" placeholder="Search address / type / contact" />
 
-    <button id="runBtn" class="btn primary">Run Engine</button>
-    <button id="clearCacheBtn" class="btn">Clear Cache</button>
-    <button id="aiBtn" class="btn good" title="No API keys. Runs locally if your browser supports WebGPU.">Local AI Assist</button>
+        <button id="runBtn" class="primary">RUN ENGINE</button>
+        <button id="clearCacheBtn">CLEAR CACHE</button>
+      </div>
+    </header>
 
-    <span class="status" id="status">
-      <span class="dot warn" id="dot"></span>
-      <span id="statusText">Ready</span>
-    </span>
-  </div>
-</header>
-
-<main>
-  <!-- LEFT -->
-  <section class="col">
-    <div class="panelHead">
-      <h2>Ranked Signals</h2>
-      <div class="small" id="modeText">—</div>
+    <div class="statusbar">
+      <div id="statusPill" class="pill">Ready</div>
+      <div id="modePill" class="pill">—</div>
+      <div id="workerPill" class="pill">Worker: checking…</div>
     </div>
 
-    <div class="kpis">
-      <div class="kpi">
-        <div class="label">Signals processed</div>
-        <div class="val" id="kSignals">0</div>
-        <div class="sub" id="kRaw">raw: 0</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Total estimated value</div>
-        <div class="val" id="kValue">$0</div>
-        <div class="sub" id="kSellable">sellable: 0</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Sellable (>= min score)</div>
-        <div class="val" id="kSellable2">0</div>
-        <div class="sub" id="kMajor">major: 0</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Debug status</div>
-        <div class="val" id="kDbg">OK</div>
-        <div class="sub">open Debug panel →</div>
-      </div>
-    </div>
-
-    <div class="list" id="list">
-      <div class="small">No data loaded yet.</div>
-    </div>
-  </section>
-
-  <!-- MIDDLE -->
-  <section class="col">
-    <div class="panelHead">
-      <h2>Deal Panel</h2>
-      <div class="small" id="dealHint">Select a signal</div>
-    </div>
-    <div class="detail" id="detail">
-      <div class="box">
-        <p>Pick a row on the left. You’ll get a client-ready brief + pitch you can copy or print.</p>
-      </div>
-
-      <div class="actions">
-        <button id="copyBriefBtn" class="btn">Copy Brief</button>
-        <button id="copyPitchBtn" class="btn">Copy Pitch</button>
-        <button id="printBtn" class="btn warn">Print Brief</button>
-        <button id="aiRewriteBtn" class="btn good">AI Rewrite Brief</button>
-      </div>
-
-      <div class="hr"></div>
-
-      <h3>Client Brief</h3>
-      <textarea id="brief" readonly placeholder="Client brief will appear here…"></textarea>
-
-      <div class="hr"></div>
-      <h3>Debug (last fetch + error)</h3>
-      <div class="box"><div class="debug" id="debug">No debug yet.</div></div>
-    </div>
-  </section>
-
-  <!-- RIGHT -->
-  <section class="col">
-    <div class="panelHead">
-      <h2>Intel Controls</h2>
-      <div class="small">Fast sellable assets</div>
-    </div>
-    <div class="detail">
-      <div class="box">
-        <p><b>Workflow:</b> Run → click a signal → copy brief + pitch → DM/email vendors, subs, lenders, or local agencies.</p>
-      </div>
-
-      <div class="box">
-        <h3 style="margin-bottom:8px">AI Notes</h3>
-        <p>
-          “Local AI Assist” uses <b>WebLLM</b> to run a small LLM <b>inside your browser</b> (no API key, no server).
-          It requires WebGPU support. citeturn10view1
-        </p>
-        <div class="hr"></div>
-        <div class="small" id="aiStatus">AI: not loaded</div>
-      </div>
-
-      <div class="box">
-        <h3 style="margin-bottom:8px">Worker</h3>
-        <div class="small" style="font-family:var(--mono);line-height:1.5">
-          <div>Base: <span id="workerBase"></span></div>
-          <div>Health: <span id="workerHealth">checking…</span></div>
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>RANKED SIGNALS</h2>
         </div>
-      </div>
+        <div class="panel-body">
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Signals Processed</div>
+              <div class="v" id="statSignals">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Total Estimated Value</div>
+              <div class="v" id="statValue">$0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Sellable (&gt;= Min Score)</div>
+              <div class="v" id="statSellable">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Major (&gt;$500k)</div>
+              <div class="v" id="statMajor">0</div>
+            </div>
+          </div>
+
+          <div id="list" class="list"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>DEAL PANEL</h2>
+        </div>
+        <div class="panel-body">
+          <div id="detail">
+            <div class="empty">Pick a row on the left. You’ll get a client-ready brief + pitch you can copy.</div>
+          </div>
+
+          <div class="actions">
+            <button id="copyBriefBtn">COPY BRIEF</button>
+            <button id="copyPitchBtn">COPY PITCH</button>
+          </div>
+
+          <textarea id="brief" class="brief" readonly>Client brief will appear here…</textarea>
+
+          <details class="debug">
+            <summary>DEBUG (LAST FETCH + ERROR)</summary>
+            <div class="debug-body">
+              <pre id="debugText">No debug yet.</pre>
+            </div>
+          </details>
+        </div>
+      </section>
     </div>
-  </section>
-</main>
+  </div>
 
-<script>
-/** =========================
- *  CONFIG
- *  ========================= */
-const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
-document.getElementById("workerBase").textContent = WORKER_BASE;
+  <script>
+    const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
 
-const SOURCES = {
-  chicago: { key:"chicago", label:"Chicago — Building Permits" },
-  seattle: { key:"seattle", label:"Seattle — Permits" },
-};
+    const SOURCES = {
+      chicago: { label: "Chicago — Building Permits" },
+      seattle: { label: "Seattle — Permits" }
+    };
 
-const state = {
-  raw: [],
-  signals: [],
-  selected: null,
-  lastFetch: null,
-  lastError: null,
-  aiReady: false,
-};
+    const state = {
+      raw: [],
+      signals: [],
+      selected: null,
+      lastError: null,
+      debug: "No debug yet."
+    };
 
-const $ = (id) => document.getElementById(id);
-
-function setStatus(text, level="warn"){
-  $("statusText").textContent = text;
-  $("dot").className = "dot " + (level==="ok" ? "ok" : level==="bad" ? "bad" : "warn");
-  $("kDbg").textContent = level==="bad" ? "ERR" : "OK";
-}
-function fmtMoney(n){
-  const v = Number(n||0);
-  if(!Number.isFinite(v)) return "$0";
-  return v.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:0});
-}
-function nowISO(){ return new Date().toISOString(); }
-
-function updateDebug(msg, extra){
-  const payload = {
-    t: nowISO(),
-    msg,
-    lastFetch: state.lastFetch,
-    lastError: state.lastError,
-    extra: extra || null
-  };
-  $("debug").textContent = JSON.stringify(payload, null, 2);
-}
-
-/** =========================
- *  FETCH (Worker routed)
- *  ========================= */
-async function workerHealth(){
-  try{
-    const r = await fetch(`${WORKER_BASE}/api/health`, { cache:"no-store" });
-    if(!r.ok) throw new Error("health not ok");
-    $("workerHealth").textContent = "OK";
-    setStatus("Worker OK • Ready", "ok");
-    return true;
-  }catch(e){
-    $("workerHealth").textContent = "FAILED";
-    setStatus("Worker health failed", "bad");
-    state.lastError = String(e?.message || e);
-    updateDebug("Worker health failed", { error: state.lastError });
-    return false;
-  }
-}
-
-async function fetchPermits(sourceKey, limit){
-  const url = `${WORKER_BASE}/api/permits?source=${encodeURIComponent(sourceKey)}&limit=${encodeURIComponent(limit)}`;
-  const ctrl = new AbortController();
-  const t = setTimeout(()=>ctrl.abort(), 20000);
-
-  const started = Date.now();
-  try{
-    const res = await fetch(url, {
-      method:"GET",
-      cache:"no-store",
-      signal: ctrl.signal,
-      headers: { "Accept":"application/json" },
-    });
-    const ms = Date.now() - started;
-
-    state.lastFetch = { url, http: res.status, ms };
-    if(!res.ok){
-      const text = await res.text().catch(()=>"(no body)");
-      throw new Error(`HTTP ${res.status}: ${text.slice(0,300)}`);
+    function $(id) {
+      return document.getElementById(id);
     }
-    const data = await res.json();
-    if(!Array.isArray(data)) throw new Error("Response not an array");
-    updateDebug("Fetch OK", { count: data.length });
-    return data;
-  }catch(e){
-    const ms = Date.now() - started;
-    state.lastFetch = { url, http: "(none)", ms };
-    state.lastError = String(e?.message || e);
-    updateDebug("Fetch FAILED", { error: state.lastError });
-    throw e;
-  }finally{
-    clearTimeout(t);
-  }
-}
 
-/** =========================
- *  NORMALIZE
- *  ========================= */
-function normalizeChicago(r){
-  // Chicago rows often include:
-  // street_number/street_direction/street_name + work_description + reported_cost + contact_* fields
-  const address = [r.street_number, r.street_direction, r.street_name].filter(Boolean).join(" ");
-  const cost = Number(r.reported_cost || 0);
-  const permitType = r.permit_type || r.permit_type_ || r.permit_type_desc || r.permit_type_description || "";
-  const issued = r.issue_date || r.issued_date || r.issue_date_ || r.application_start_date || "";
-  const contacts = [];
-  for(let i=1;i<=10;i++){
-    const t = r[`contact_${i}_type`];
-    const n = r[`contact_${i}_name`];
-    if(t && n) contacts.push(`${t}: ${n}`);
-  }
-  return {
-    source:"chicago",
-    id: r.id || r.permit_ || r.permitnum || r.permit_number || r.permit || "",
-    address: address || r.address || "",
-    issued_date: issued ? String(issued).slice(0,10) : "",
-    permit_type: permitType,
-    description: r.work_description || r.description || "",
-    est_value: Number.isFinite(cost) ? cost : 0,
-    contacts,
-    raw: r
-  };
-}
+    function setStatus(text, tone) {
+      const el = $("statusPill");
+      el.textContent = text;
+      el.className = "pill";
+      if (tone === "ok") el.classList.add("ok");
+      if (tone === "warn") el.classList.add("warn");
+      if (tone === "bad") el.classList.add("bad");
+    }
 
-function normalizeSeattle(r){
-  // Seattle sample includes: originaladdress1, permittypedesc, estprojectcost, applieddate/statuscurrent/link.url
-  const address = r.originaladdress1 || r.address || "";
-  const cost = Number(r.estprojectcost || 0);
-  const permitType = r.permittypedesc || r.permit_type || "";
-  const issued = r.applieddate || r.issue_date || r.issued_date || "";
-  const link = (r.link && r.link.url) ? r.link.url : "";
-  return {
-    source:"seattle",
-    id: r.permitnum || r.id || "",
-    address,
-    issued_date: issued ? String(issued).slice(0,10) : "",
-    permit_type: permitType,
-    description: r.description || "",
-    est_value: Number.isFinite(cost) ? cost : 0,
-    contacts: link ? [`Record: ${link}`] : [],
-    raw: r
-  };
-}
+    function setWorkerStatus(text, tone) {
+      const el = $("workerPill");
+      el.textContent = text;
+      el.className = "pill";
+      if (tone === "ok") el.classList.add("ok");
+      if (tone === "warn") el.classList.add("warn");
+      if (tone === "bad") el.classList.add("bad");
+    }
 
-function normalizeRows(sourceKey, rows){
-  if(sourceKey === "chicago") return rows.map(normalizeChicago).filter(x=>x.address || x.id);
-  if(sourceKey === "seattle") return rows.map(normalizeSeattle).filter(x=>x.address || x.id);
-  return rows;
-}
+    function updateMode(text) {
+      $("modePill").textContent = text;
+    }
 
-/** =========================
- *  SCORE + ROUTE
- *  ========================= */
-function bucketRoute(n){
-  // Simple selling routes you can improve later
-  if(n.est_value >= 500000) return "Capital / Lender / Broker";
-  if(/roof|masonry|tuckpoint|hvac|electrical|plumb|solar|chiller/i.test(n.description)) return "Contractor / Trades";
-  if(/tenant|buildout|remodel|alteration|addition/i.test(n.permit_type)) return "Supplier / Vendor";
-  return "Local Service / Agency";
-}
-function verticalTag(n){
-  const t = (n.permit_type||"") + " " + (n.description||"");
-  if(/roof|tuckpoint|masonry/i.test(t)) return "Exterior / Envelope";
-  if(/hvac|chiller|mechanical/i.test(t)) return "HVAC / Mechanical";
-  if(/electrical|low voltage|communication/i.test(t)) return "Electrical";
-  if(/plumb|water|sewer/i.test(t)) return "Plumbing / Water";
-  if(/demolition|wreck/i.test(t)) return "Demo / Site Prep";
-  if(/tenant|buildout|ti/i.test(t)) return "Tenant Improvement";
-  if(/new construction|ground up|foundation|framing/i.test(t)) return "Ground-up / Major Construction";
-  return "General Improvement";
-}
-function scoreSignal(n){
-  // Deterministic score: value + urgency keywords + permit type
-  let s = 35;
-  const v = n.est_value || 0;
-  if(v >= 5000000) s += 45;
-  else if(v >= 1000000) s += 35;
-  else if(v >= 500000) s += 28;
-  else if(v >= 250000) s += 20;
-  else if(v >= 100000) s += 12;
-  else if(v >= 25000) s += 6;
+    function updateDebug(text) {
+      state.debug = text || "No debug yet.";
+      $("debugText").textContent = state.debug;
+    }
 
-  const text = ((n.permit_type||"") + " " + (n.description||"")).toLowerCase();
-  if(text.includes("new construction")) s += 10;
-  if(text.includes("self-cert") || text.includes("self cert")) s += 6;
-  if(text.includes("express permit")) s += 4;
-  if(text.includes("additional info requested")) s += 4;
+    function fmtMoney(n) {
+      const x = Number(n || 0);
+      if (!Number.isFinite(x)) return "$0";
+      return x.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+    }
 
-  // Contact richness
-  if((n.contacts||[]).length >= 3) s += 8;
-  else if((n.contacts||[]).length >= 1) s += 4;
+    function safeNum(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
 
-  // Clamp
-  if(s > 100) s = 100;
-  if(s < 0) s = 0;
-  return Math.round(s);
-}
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
 
-function buildSignals(norm){
-  const out = norm.map(n=>{
-    const score = scoreSignal(n);
-    const route = bucketRoute(n);
-    const vertical = verticalTag(n);
-    return { ...n, score, route, vertical };
-  });
+    function cacheKey(sourceKey) {
+      return "permitintel:lastgood:" + sourceKey;
+    }
 
-  out.sort((a,b)=> (b.score - a.score) || ((b.est_value||0)-(a.est_value||0)));
-  return out;
-}
+    function saveLastGood(sourceKey, raw) {
+      try {
+        localStorage.setItem(cacheKey(sourceKey), JSON.stringify({ t: Date.now(), raw: raw }));
+      } catch (_) {}
+    }
 
-/** =========================
- *  UI RENDER
- *  ========================= */
-function render(){
-  const list = $("list");
-  const q = ($("q").value||"").trim().toLowerCase();
-  const minScore = Number($("minScore").value||0);
+    function loadLastGood(sourceKey) {
+      try {
+        const v = localStorage.getItem(cacheKey(sourceKey));
+        return v ? JSON.parse(v) : null;
+      } catch (_) {
+        return null;
+      }
+    }
 
-  let filtered = state.signals.slice();
-  if(q){
-    filtered = filtered.filter(s=>{
-      const blob = `${s.address} ${s.permit_type} ${s.description} ${(s.contacts||[]).join(" ")}`.toLowerCase();
-      return blob.includes(q);
-    });
-  }
-  filtered = filtered.filter(s=> (s.score||0) >= minScore);
+    function clearCacheAll() {
+      try {
+        Object.keys(localStorage).forEach(function(k) {
+          if (k.indexOf("permitintel:lastgood:") === 0) localStorage.removeItem(k);
+        });
+      } catch (_) {}
+    }
 
-  // KPIs
-  $("kSignals").textContent = String(state.signals.length);
-  $("kRaw").textContent = `raw: ${state.raw.length}`;
-  const total = filtered.reduce((sum,s)=>sum+(Number(s.est_value)||0),0);
-  $("kValue").textContent = fmtMoney(total);
-  $("kSellable").textContent = `sellable: ${filtered.length}`;
-  $("kSellable2").textContent = String(filtered.length);
-  const major = filtered.filter(s=> (s.est_value||0) >= 500000).length;
-  $("kMajor").textContent = `major: ${major}`;
+    async function workerHealth() {
+      try {
+        const r = await fetch(WORKER_BASE + "/api/health");
+        if (!r.ok) throw new Error("Health check failed: " + r.status);
+        const j = await r.json();
+        setWorkerStatus("Worker: OK", "ok");
+        return j;
+      } catch (e) {
+        setWorkerStatus("Worker: failed", "bad");
+        updateDebug("Worker health failed:\n" + (e && e.message ? e.message : String(e)));
+        throw e;
+      }
+    }
 
-  // List
-  list.innerHTML = "";
-  if(!filtered.length){
-    list.innerHTML = `<div class="small">No signals match your filters. Try lowering min score or increasing limit.</div>`;
-    return;
-  }
+    async function fetchPermits(sourceKey, limit) {
+      const url = WORKER_BASE + "/api/permits?source=" + encodeURIComponent(sourceKey) + "&limit=" + encodeURIComponent(limit);
+      const res = await fetch(url, { method: "GET" });
+      const text = await res.text();
 
-  filtered.forEach(sig=>{
-    const div = document.createElement("div");
-    div.className = "row" + (state.selected && state.selected.id===sig.id ? " selected" : "");
-    div.addEventListener("click", ()=>{
-      state.selected = sig;
-      renderDetail(sig);
-      render();
-    });
+      if (!res.ok) {
+        throw new Error("HTTP " + res.status + "\n" + text);
+      }
 
-    div.innerHTML = `
-      <div class="rowTop">
-        <div class="addr">${escapeHtml(sig.address || sig.id || "Unknown")}</div>
-        <div class="chip score">${sig.score}/100</div>
-      </div>
-      <div class="meta">${escapeHtml(sig.permit_type || "Permit")}${sig.issued_date ? ` • ${escapeHtml(sig.issued_date)}` : ""}</div>
-      <div class="meta">${escapeHtml(sig.description || "").slice(0,180)}${(sig.description||"").length>180 ? "…" : ""}</div>
-      <div class="chips">
-        <span class="chip value">${fmtMoney(sig.est_value||0)}</span>
-        <span class="chip route">${escapeHtml(sig.route)}</span>
-        <span class="chip">${escapeHtml(sig.vertical)}</span>
-        <span class="chip">${escapeHtml(sig.source.toUpperCase())}</span>
-      </div>
-    `;
-    list.appendChild(div);
-  });
-}
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        throw new Error("Worker did not return valid JSON");
+      }
 
-function escapeHtml(s){
-  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-}
+      if (!Array.isArray(data)) {
+        throw new Error("Worker JSON was not an array");
+      }
 
-function renderDetail(sig){
-  if(!sig){
-    $("dealHint").textContent = "Select a signal";
-    $("brief").value = "";
-    return;
-  }
-  $("dealHint").textContent = `${sig.source} • ${sig.route} • ${sig.score}/100`;
-  $("brief").value = makeBrief(sig);
-}
+      updateDebug(
+        "Source: " + SOURCES[sourceKey].label + "\n" +
+        "URL: " + url + "\n" +
+        "HTTP: " + res.status + "\n" +
+        "Rows: " + data.length
+      );
 
-function makeBrief(sig){
-  const date = new Date().toISOString().slice(0,10);
-  const contacts = (sig.contacts||[]).slice(0,6).join("\n- ");
-  const contactsBlock = contacts ? `\n\nCONTACTS / LINKS:\n- ${contacts}` : "";
+      return data;
+    }
 
-  return `CLIENT BRIEF — PERMIT SIGNAL
-Date: ${date}
-Source: ${sig.source.toUpperCase()}
-Permit ID: ${sig.id || "N/A"}
+    function normalizeRows(sourceKey, rows) {
+      if (sourceKey === "chicago") {
+        return rows.map(function(r) {
+          const address = [
+            r.street_number,
+            r.street_direction,
+            r.street_name
+          ].filter(Boolean).join(" ").trim();
 
-PROPERTY:
-${sig.address || "N/A"}
+          const contactNames = [];
+          for (let i = 1; i <= 10; i++) {
+            if (r["contact_" + i + "_name"]) contactNames.push(r["contact_" + i + "_name"]);
+          }
 
-PERMIT:
-Type: ${sig.permit_type || "N/A"}
-Issued/Applied: ${sig.issued_date || "N/A"}
-Estimated Value: ${fmtMoney(sig.est_value||0)}
+          const description = r.work_description || "";
+          const permitType = r.permit_type || "";
+          const value = safeNum(r.reported_cost || r.total_fee || 0);
 
-ROUTING:
-Buyer Route: ${sig.route}
-Vertical: ${sig.vertical}
-Saleability Score: ${sig.score}/100
+          return {
+            source: "chicago",
+            id: r.permit_ || r.id || "",
+            address: address || "Unknown address",
+            permitType: permitType,
+            description: description,
+            issuedDate: r.issue_date || r.application_start_date || "",
+            value: value,
+            contacts: contactNames,
+            raw: r
+          };
+        });
+      }
 
-WHY THIS IS SELLABLE:
-This permit indicates active spend and a near-term vendor/sub/finance need. The buyer route and vertical tag tell you who can monetize fastest (vendors, trades, lenders, agencies).
+      return rows.map(function(r) {
+        const address = r.originaladdress1 || "Unknown address";
+        const permitType = (r.permittypemapped || "") + ((r.permittypedesc ? " • " + r.permittypedesc : ""));
+        const description = r.description || "";
+        const value = safeNum(r.estprojectcost || 0);
 
-PROJECT DESCRIPTION:
-${sig.description || "N/A"}${contactsBlock}
+        return {
+          source: "seattle",
+          id: r.permitnum || "",
+          address: address,
+          permitType: permitType || "Permit",
+          description: description,
+          issuedDate: r.applieddate || "",
+          value: value,
+          contacts: [],
+          raw: r
+        };
+      });
+    }
 
-SUGGESTED OUTREACH (1–2 lines):
-${makePitch(sig)}
-`;
-}
+    function inferVertical(text) {
+      const t = String(text || "").toLowerCase();
 
-function makePitch(sig){
-  const who =
-    sig.route.includes("Capital") ? "lenders / capital brokers / equipment finance" :
-    sig.route.includes("Contractor") ? "subs / GCs" :
-    sig.route.includes("Supplier") ? "suppliers / vendors" :
-    "local service providers";
+      if (/(roof|roofing|tuckpoint|masonry|facade|façade|chimney|window|fence|deck|porch|exterior)/.test(t)) return "Exterior / Envelope";
+      if (/(electrical|low voltage|circuits|lighting|data\/video|communication)/.test(t)) return "Electrical";
+      if (/(hvac|mechanical|ventilation|refrigeration|heat pump|chiller|rtu)/.test(t)) return "HVAC / Mechanical";
+      if (/(plumbing|pedicure|sink|water|boiler)/.test(t)) return "Plumbing / Water";
+      if (/(restaurant|cafe|salon|laundromat|fitness|grocery|showroom|tenant build|tenant improvement)/.test(t)) return "Commercial Interior";
+      if (/(demolition|wreck|new construction|ground up|foundation|caisson)/.test(t)) return "Ground-up / Major Construction";
 
-  return `I pulled a fresh permit signal at ${sig.address} (${sig.permit_type}). Estimated scope ${fmtMoney(sig.est_value||0)}. If you’re the right ${who} for this phase, I can send a tight intel brief + contact trail so you can move first.`;
-}
+      return "General Improvement";
+    }
 
-async function copyText(t){
-  try{
-    await navigator.clipboard.writeText(t);
-    setStatus("Copied to clipboard", "ok");
-  }catch{
-    alert("Copy failed. Select the text and copy manually.");
-  }
-}
+    function inferRoute(value, text) {
+      const t = String(text || "").toLowerCase();
 
-function printBrief(){
-  const sig = state.selected;
-  if(!sig) return alert("Select a signal first.");
-  const w = window.open("", "_blank");
-  const safe = $("brief").value
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-  w.document.open();
-  // IMPORTANT: no </script> anywhere inside this HTML, to avoid breaking parsing.
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8">
-  <title>Client Brief</title>
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:28px;line-height:1.35}
-    pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-    .h{font-weight:800;font-size:14px;margin-bottom:10px}
-  </style></head><body>
-  <div class="h">Permit Intelligence Engine — Client Brief</div>
-  <pre>${safe}</pre>
-  <script>window.print();</script>
-  </body></html>`);
-  w.document.close();
-}
+      if (value >= 500000) return "Capital / Lender / Broker";
+      if (/(electrical|roof|hvac|mechanical|plumbing|masonry|contractor|solar)/.test(t)) return "Contractor / Trades";
+      if (/(salon|restaurant|showroom|grocery|fitness|laundromat)/.test(t)) return "Supplier / Vendor";
 
-/** =========================
- *  CACHE (local last-good)
- *  ========================= */
-function cacheKey(sourceKey){ return `permitintel:lastgood:${sourceKey}`; }
-function saveLastGood(sourceKey, raw){
-  try{ localStorage.setItem(cacheKey(sourceKey), JSON.stringify({t:Date.now(), raw})); }catch{}
-}
-function loadLastGood(sourceKey){
-  try{
-    const v = localStorage.getItem(cacheKey(sourceKey));
-    if(!v) return null;
-    return JSON.parse(v);
-  }catch{return null}
-}
-function clearCacheAll(){
-  try{
-    Object.keys(localStorage).forEach(k=>{
-      if(k.startsWith("permitintel:lastgood:")) localStorage.removeItem(k);
-    });
-  }catch{}
-}
+      return "Local Service / Agency";
+    }
 
-/** =========================
- *  MAIN RUN
- *  ========================= */
-async function run(){
-  const sourceKey = $("source").value;
-  const limit = Math.max(25, Math.min(500, Number($("limit").value||100)));
+    function scoreSignal(row) {
+      let score = 35;
 
-  $("modeText").textContent = `${SOURCES[sourceKey].label} • limit ${limit}`;
-  setStatus("Fetching live data…", "warn");
+      if (row.value >= 1000000) score += 35;
+      else if (row.value >= 500000) score += 28;
+      else if (row.value >= 250000) score += 20;
+      else if (row.value >= 100000) score += 12;
+      else if (row.value >= 25000) score += 6;
 
-  try{
-    const raw = await fetchPermits(sourceKey, limit);
-    state.raw = raw;
-    saveLastGood(sourceKey, raw);
+      const t = (row.permitType + " " + row.description).toLowerCase();
 
-    const norm = normalizeRows(sourceKey, raw);
-    state.signals = buildSignals(norm);
+      if (/(new construction|demolition|wreck)/.test(t)) score += 18;
+      if (/(roof|electrical|mechanical|hvac|plumbing|masonry|tenant build|tenant improvement)/.test(t)) score += 10;
+      if (/(school|hospital|museum|grocery|fitness|showroom|commercial)/.test(t)) score += 8;
 
-    state.lastError = null;
-    setStatus("Live data loaded", "ok");
-    renderDetail(state.selected);
-    render();
-  }catch(e){
-    setStatus("Live fetch failed — using cached last-good (if any)", "warn");
-    const cached = loadLastGood(sourceKey);
-    if(cached && Array.isArray(cached.raw)){
-      state.raw = cached.raw;
-      const norm = normalizeRows(sourceKey, cached.raw);
-      state.signals = buildSignals(norm);
-      render();
-    }else{
+      if (score > 100) score = 100;
+      return score;
+    }
+
+    function buildSignals(rows) {
+      return rows.map(function(r) {
+        const textBlob = [r.permitType, r.description].join(" ");
+        const score = scoreSignal(r);
+        const vertical = inferVertical(textBlob);
+        const route = inferRoute(r.value, textBlob);
+
+        return {
+          id: r.id,
+          address: r.address,
+          permitType: r.permitType,
+          description: r.description,
+          issuedDate: r.issuedDate,
+          value: r.value,
+          route: route,
+          vertical: vertical,
+          score: score,
+          contacts: r.contacts,
+          raw: r.raw
+        };
+      }).sort(function(a, b) {
+        return b.score - a.score || b.value - a.value;
+      });
+    }
+
+    function getFilteredSignals() {
+      const q = $("q").value.trim().toLowerCase();
+      const minScore = safeNum($("minScore").value);
+
+      return state.signals.filter(function(s) {
+        if (s.score < minScore) return false;
+        if (!q) return true;
+
+        const hay = [
+          s.address,
+          s.permitType,
+          s.description,
+          s.route,
+          s.vertical,
+          (s.contacts || []).join(" ")
+        ].join(" ").toLowerCase();
+
+        return hay.indexOf(q) !== -1;
+      });
+    }
+
+    function makeBrief(sig) {
+      const contacts = (sig.contacts && sig.contacts.length) ? sig.contacts.join(", ") : "Not surfaced";
+
+      return [
+        "CLIENT BRIEF — PERMIT SIGNAL",
+        "",
+        "Property: " + sig.address,
+        "Permit ID: " + (sig.id || "N/A"),
+        "Date: " + (sig.issuedDate || "N/A"),
+        "Estimated Value: " + fmtMoney(sig.value),
+        "Permit Type: " + (sig.permitType || "N/A"),
+        "Vertical: " + sig.vertical,
+        "Buyer Route: " + sig.route,
+        "Saleability Score: " + sig.score + "/100",
+        "",
+        "Why this matters",
+        "This record signals active project movement that can be packaged into a sellable intelligence asset for the right buyer.",
+        "",
+        "Project description",
+        sig.description || "No description available.",
+        "",
+        "Named entities",
+        "Contacts: " + contacts,
+        "",
+        "Recommended buyer",
+        sig.route,
+        "",
+        "Monetization path",
+        "Sell as a premium lead brief, vendor packet, lender intelligence item, or targeted introduction asset.",
+        "",
+        "Suggested outreach",
+        "I surfaced a permit at " + sig.address + " that looks commercially relevant based on timing, scope, and value. I can send a concise intelligence brief showing why this project matters for your pipeline.",
+        "",
+        "Source",
+        sig.raw && sig.raw.source_url ? sig.raw.source_url : ("Worker-routed source: " + sig.raw.source)
+      ].join("\n");
+    }
+
+    function makePitch(sig) {
+      return "I found a live permit at " + sig.address + " tied to " + (sig.permitType || "active work") + ". It looks relevant for " + sig.route + " based on scope, timing, and estimated value of " + fmtMoney(sig.value) + ". I can send a clean one-page brief if useful.";
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(function() {
+        setStatus("Copied", "ok");
+      }).catch(function() {
+        alert("Copy failed. Copy manually.");
+      });
+    }
+
+    function renderStats(list) {
+      const totalValue = list.reduce(function(sum, s) { return sum + safeNum(s.value); }, 0);
+      const sellable = list.filter(function(s) { return s.score >= safeNum($("minScore").value); }).length;
+      const major = list.filter(function(s) { return safeNum(s.value) > 500000; }).length;
+
+      $("statSignals").textContent = String(list.length);
+      $("statValue").textContent = fmtMoney(totalValue);
+      $("statSellable").textContent = String(sellable);
+      $("statMajor").textContent = String(major);
+    }
+
+    function renderList() {
+      const list = $("list");
+      const filtered = getFilteredSignals();
+
+      renderStats(filtered);
+      list.innerHTML = "";
+
+      if (!filtered.length) {
+        const d = document.createElement("div");
+        d.className = "empty";
+        d.textContent = state.raw.length ? "No signals match your filters." : "No data loaded yet.";
+        list.appendChild(d);
+        return;
+      }
+
+      filtered.forEach(function(sig) {
+        const div = document.createElement("div");
+        div.className = "item" + (state.selected && state.selected.id === sig.id ? " active" : "");
+        div.addEventListener("click", function() {
+          state.selected = sig;
+          renderDetail(sig);
+          renderList();
+        });
+
+        div.innerHTML =
+          '<div class="row1">' +
+            '<div class="addr">' + esc(sig.address) + '</div>' +
+            '<div class="score">' + esc(String(sig.score)) + '/100</div>' +
+          '</div>' +
+          '<div class="meta">' +
+            '<span>' + esc(sig.permitType || "Permit") + '</span>' +
+            '<span>' + esc(sig.issuedDate || "N/A") + '</span>' +
+            '<span>' + esc(fmtMoney(sig.value)) + '</span>' +
+          '</div>' +
+          '<div class="desc">' + esc((sig.description || "").slice(0, 220) + ((sig.description || "").length > 220 ? "…" : "")) + '</div>' +
+          '<div class="route">' + esc(sig.route) + " • " + esc(sig.vertical) + '</div>';
+
+        list.appendChild(div);
+      });
+    }
+
+    function renderDetail(sig) {
+      if (!sig) {
+        $("detail").innerHTML = '<div class="empty">Pick a row on the left. You’ll get a client-ready brief + pitch you can copy.</div>';
+        $("brief").value = "Client brief will appear here…";
+        return;
+      }
+
+      $("detail").innerHTML =
+        '<div class="detail-top">' +
+          '<div>' +
+            '<div class="detail-title">' + esc(sig.address) + '</div>' +
+            '<div class="detail-sub">' + esc(sig.permitType || "Permit") + ' • ' + esc(sig.issuedDate || "N/A") + '</div>' +
+          '</div>' +
+          '<div class="score">' + esc(String(sig.score)) + '/100</div>' +
+        '</div>' +
+        '<div class="meta">' +
+          '<span>' + esc(fmtMoney(sig.value)) + '</span>' +
+          '<span>' + esc(sig.route) + '</span>' +
+          '<span>' + esc(sig.vertical) + '</span>' +
+        '</div>' +
+        '<div class="desc" style="margin-top:10px;">' + esc(sig.description || "No description available.") + '</div>';
+
+      $("brief").value = makeBrief(sig);
+    }
+
+    async function run() {
+      const sourceKey = $("source").value;
+      const limit = Math.max(25, Math.min(500, safeNum($("limit").value || 100)));
+
+      updateMode(SOURCES[sourceKey].label + " • limit " + limit);
+      setStatus("Fetching live data…", "warn");
+
+      try {
+        const raw = await fetchPermits(sourceKey, limit);
+        state.raw = raw;
+        saveLastGood(sourceKey, raw);
+
+        const normalized = normalizeRows(sourceKey, raw);
+        state.signals = buildSignals(normalized);
+
+        setStatus("Live data loaded", "ok");
+
+        if (state.selected) {
+          const match = state.signals.find(function(x) { return x.id === state.selected.id; });
+          state.selected = match || null;
+        }
+
+        renderList();
+        renderDetail(state.selected);
+      } catch (e) {
+        const msg = e && e.message ? e.message : String(e);
+        state.lastError = msg;
+        setStatus("Live fetch failed — using cached last-good", "warn");
+
+        const cached = loadLastGood(sourceKey);
+        if (cached && Array.isArray(cached.raw)) {
+          state.raw = cached.raw;
+          state.signals = buildSignals(normalizeRows(sourceKey, cached.raw));
+          updateDebug("Live fetch failed.\n\nError:\n" + msg + "\n\nLoaded cached last-good rows: " + cached.raw.length);
+        } else {
+          state.raw = [];
+          state.signals = [];
+          state.selected = null;
+          updateDebug("Live fetch failed.\n\nError:\n" + msg + "\n\nNo cached last-good data found.");
+        }
+
+        renderList();
+        renderDetail(state.selected);
+      }
+    }
+
+    $("runBtn").addEventListener("click", run);
+
+    $("clearCacheBtn").addEventListener("click", function() {
+      clearCacheAll();
       state.raw = [];
       state.signals = [];
-      render();
-    }
-  }
-}
+      state.selected = null;
+      updateDebug("Cache cleared manually.");
+      setStatus("Cache cleared", "ok");
+      renderList();
+      renderDetail(null);
+    });
 
-/** =========================
- *  BUTTON WIRING
- *  ========================= */
-$("runBtn").addEventListener("click", run);
-$("clearCacheBtn").addEventListener("click", ()=>{
-  clearCacheAll();
-  state.raw = [];
-  state.signals = [];
-  state.selected = null;
-  $("brief").value = "";
-  setStatus("Cache cleared", "ok");
-  updateDebug("Cache cleared manually.");
-  render();
-});
+    $("source").addEventListener("change", function() {
+      state.selected = null;
+      renderDetail(null);
+      run();
+    });
 
-$("source").addEventListener("change", ()=>{
-  state.selected = null;
-  $("brief").value = "";
-  $("dealHint").textContent = "Select a signal";
-  run();
-});
+    $("q").addEventListener("input", renderList);
+    $("minScore").addEventListener("input", renderList);
 
-$("q").addEventListener("input", render);
-$("minScore").addEventListener("input", render);
+    $("copyBriefBtn").addEventListener("click", function() {
+      if (!state.selected) return alert("Select a signal first.");
+      copyText($("brief").value);
+    });
 
-$("copyBriefBtn").addEventListener("click", ()=>{
-  if(!state.selected) return alert("Select a signal first.");
-  copyText($("brief").value);
-});
-$("copyPitchBtn").addEventListener("click", ()=>{
-  if(!state.selected) return alert("Select a signal first.");
-  copyText(makePitch(state.selected));
-});
-$("printBtn").addEventListener("click", printBrief);
+    $("copyPitchBtn").addEventListener("click", function() {
+      if (!state.selected) return alert("Select a signal first.");
+      copyText(makePitch(state.selected));
+    });
 
-/** Boot */
-(async function boot(){
-  setStatus("Checking Worker…", "warn");
-  await workerHealth();
-  updateDebug("Boot complete.");
-  run();
-})();
-</script>
+    (async function boot() {
+      setStatus("Checking Worker…", "warn");
+      updateMode("Booting…");
 
-<!-- =========================
-  FREE LOCAL AI (WebLLM)
-  - Optional: loads only on click
-  - No API key, runs in browser if WebGPU is available
-========================= -->
-<script type="module">
-  const aiStatus = document.getElementById("aiStatus");
-  const aiBtn = document.getElementById("aiBtn");
-  const aiRewriteBtn = document.getElementById("aiRewriteBtn");
-  const briefEl = document.getElementById("brief");
+      try {
+        await workerHealth();
+      } catch (_) {}
 
-  let engine = null;
-  let aiLoaded = false;
-
-  async function loadWebLLM(){
-    if(aiLoaded) return true;
-    aiStatus.textContent = "AI: loading WebLLM… (first time can take a bit)";
-    try{
-      // WebLLM: in-browser LLM engine (no server). citeturn10view1
-      const webllm = await import("https://esm.sh/@mlc-ai/web-llm@0.2.79");
-      const { CreateMLCEngine } = webllm;
-
-      // Small-ish model. If this model name changes upstream, WebLLM will throw; we catch + show it.
-      const model = "Llama-3.2-1B-Instruct-q4f16_1";
-
-      engine = await CreateMLCEngine(model, {
-        initProgressCallback: (p) => {
-          const pct = Math.round((p.progress || 0) * 100);
-          aiStatus.textContent = `AI: loading model ${model}… ${pct}%`;
-        }
-      });
-
-      aiLoaded = true;
-      aiStatus.textContent = "AI: ready (local)";
-      return true;
-    }catch(e){
-      aiStatus.textContent = "AI: failed to load (WebGPU may be unavailable).";
-      console.warn(e);
-      alert("Local AI failed to load. This usually means WebGPU isn't available in this browser/device.");
-      return false;
-    }
-  }
-
-  async function aiRewrite(){
-    // Uses selected brief text and rewrites into a tighter sellable brief + pitch
-    if(!window.state || !window.state.selected){
-      alert("Select a signal first.");
-      return;
-    }
-    const ok = await loadWebLLM();
-    if(!ok) return;
-
-    const sig = window.state.selected;
-    const prompt = `You are an OSINT permit intelligence broker. Rewrite this into a tight, high-converting client brief (<=220 words) plus a 2-sentence pitch.
-Include: what happened, why it matters, who to sell to, and the next action. Keep it direct, non-hype.
-DATA:
-Address: ${sig.address}
-Permit type: ${sig.permit_type}
-Value: ${sig.est_value}
-Description: ${sig.description}
-Contacts: ${(sig.contacts||[]).join(" | ")}`;
-
-    aiStatus.textContent = "AI: generating…";
-    try{
-      const out = await engine.chat.completions.create({
-        messages: [
-          { role: "system", content: "You produce concise, actionable sales intel. No fluff." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.4,
-        max_tokens: 350
-      });
-      const text = out.choices?.[0]?.message?.content || "";
-      briefEl.value = `AI-REFINED BRIEF\n\n${text}\n\n---\nOriginal brief below:\n\n${briefEl.value}`;
-      aiStatus.textContent = "AI: done";
-    }catch(e){
-      aiStatus.textContent = "AI: error";
-      console.warn(e);
-      alert("AI generation failed. Check console.");
-    }
-  }
-
-  aiBtn.addEventListener("click", loadWebLLM);
-  aiRewriteBtn.addEventListener("click", aiRewrite);
-</script>
+      updateDebug("Boot complete.");
+      run();
+    })();
+  </script>
 </body>
 </html>
