@@ -1,435 +1,575 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Permit Intelligence Engine v9</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Permit Intelligence Engine v9 — Launch Console</title>
+  <style>
+    :root{
+      --bg:#07070b;
+      --panel:#12121a;
+      --border:#2a2a38;
+      --text:#e8e8f2;
+      --muted:#9aa0b3;
+      --accent:#ef4444;
+      --green:#10b981;
+      --blue:#3b82f6;
+      --yellow:#f59e0b;
+      --neon:#39ff14;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      --radius:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto;
+      padding:18px;
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      font-family:var(--mono);
+      color:var(--accent);
+      font-size:13px;
+      letter-spacing:.4px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:6px;
+      max-width:980px;
+      line-height:1.35;
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    button,select,input{
+      padding:9px 10px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:#111118;
+      color:var(--text);
+      font-family:var(--mono);
+      font-size:12px;
+    }
+    button.primary{
+      background:var(--accent);
+      border-color:var(--accent);
+    }
+    button.good{
+      background:var(--green);
+      border-color:var(--green);
+      color:#062014;
+    }
+    button.ghost{ background:transparent; }
 
-<style>
-:root{
---bg:#07070b;
---panel:#12121a;
---border:#2a2a38;
---text:#e8e8f2;
---muted:#9aa0b3;
---accent:#ef4444;
---green:#10b981;
---yellow:#f59e0b;
---blue:#3b82f6;
---neon:#39ff14;
---mono:ui-monospace,Menlo,monospace;
-}
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      gap:12px;
+      margin:14px 0 18px;
+    }
+    .stat{
+      background:var(--panel);
+      border:1px solid var(--border);
+      padding:12px;
+      border-radius:var(--radius);
+    }
+    .stat b{
+      font-family:var(--mono);
+      color:var(--neon);
+      font-size:18px;
+    }
+    .stat small{
+      color:var(--muted);
+      display:block;
+      margin-top:4px;
+    }
 
-*{box-sizing:border-box}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+      gap:12px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:12px;
+    }
+    .card h3{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--neon);
+      margin-bottom:6px;
+    }
+    .meta{
+      font-family:var(--mono);
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .tags{ margin-top:8px; }
+    .tag{
+      display:inline-block;
+      padding:3px 7px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      margin-top:4px;
+      margin-right:4px;
+      font-size:10px;
+      font-family:var(--mono);
+    }
+    .tag.primary{border-color:var(--accent);color:#fff}
+    .tag.contractor{border-color:var(--green);color:#a7f3d0}
+    .tag.supplier{border-color:var(--blue);color:#bfdbfe}
+    .tag.capital{border-color:var(--accent);color:#fecaca}
+    .tag.investor{border-color:var(--yellow);color:#fde68a}
+    .tag.major{border-color:#a78bfa;color:#ddd6fe}
 
-body{
-background:var(--bg);
-color:var(--text);
-font-family:system-ui;
-padding:20px;
-}
+    .actions{
+      margin-top:10px;
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .actions button{ padding:7px 8px; font-size:11px; }
 
-header{
-display:flex;
-justify-content:space-between;
-margin-bottom:20px;
-}
+    .hr{ height:1px;background:var(--border);margin:10px 0; }
 
-.brand{
-font-family:var(--mono);
-color:var(--accent);
-}
+    .modalBack{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.72);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      padding:16px;
+    }
+    .modal{
+      background:var(--panel);
+      border:1px solid var(--accent);
+      padding:16px;
+      width:min(980px,96%);
+      max-height:92vh;
+      overflow:auto;
+      border-radius:14px;
+    }
+    .modal h2{
+      color:var(--neon);
+      font-family:var(--mono);
+      font-size:14px;
+      margin-bottom:10px;
+    }
+    .code{
+      background:#0d0d14;
+      padding:10px;
+      border-radius:10px;
+      font-family:var(--mono);
+      font-size:11px;
+      overflow:auto;
+      margin-top:8px;
+      border:1px solid var(--border);
+      white-space:pre-wrap;
+    }
+    .note{ color:var(--muted); font-size:12px; line-height:1.35; }
 
-button,select,input{
-padding:8px;
-background:#111118;
-border:1px solid var(--border);
-color:white;
-border-radius:6px;
-font-family:var(--mono);
-}
-
-button.primary{
-background:var(--accent);
-border-color:var(--accent);
-}
-
-.stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:12px;
-margin-bottom:20px;
-}
-
-.stat{
-background:var(--panel);
-padding:12px;
-border-radius:10px;
-border:1px solid var(--border);
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-gap:12px;
-}
-
-.card{
-background:var(--panel);
-padding:12px;
-border-radius:10px;
-border:1px solid var(--border);
-}
-
-.card h3{
-font-family:var(--mono);
-color:var(--neon);
-}
-
-.meta{
-font-family:var(--mono);
-font-size:11px;
-color:var(--muted);
-}
-
-.tag{
-display:inline-block;
-padding:3px 6px;
-border-radius:6px;
-border:1px solid var(--border);
-margin-right:4px;
-font-size:10px;
-}
-
-.capital{border-color:#ef4444}
-.contractor{border-color:#10b981}
-.supplier{border-color:#3b82f6}
-.investor{border-color:#f59e0b}
-
-.actions{
-margin-top:10px;
-display:flex;
-gap:6px;
-}
-
-.modalBack{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.7);
-display:none;
-align-items:center;
-justify-content:center;
-}
-
-.modal{
-background:var(--panel);
-padding:20px;
-border-radius:10px;
-width:900px;
-max-height:90vh;
-overflow:auto;
-}
-
-.code{
-background:#0d0d14;
-padding:10px;
-border-radius:8px;
-font-family:var(--mono);
-font-size:11px;
-overflow:auto;
-}
-
-</style>
+    /* Printable client brief */
+    .printSheet{
+      padding:18px;
+      color:#111;
+      background:#fff;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto;
+    }
+    .printSheet h1{ margin-bottom:6px; font-size:20px; }
+    .printSheet h2{ margin-top:14px; margin-bottom:6px; font-size:14px; }
+    .printSheet table{ width:100%; border-collapse:collapse; margin-top:8px; }
+    .printSheet th,.printSheet td{ border:1px solid #ddd; padding:8px; font-size:12px; text-align:left; vertical-align:top; }
+    .printSheet .muted{ color:#555; font-size:12px; }
+    .printSheet ul{ margin-left:18px; }
+  </style>
 </head>
-
 <body>
 
 <header>
+  <div>
+    <div class="brand">Permit Intelligence Engine v9 — Launch Console (Chicago)</div>
+    <div class="sub">
+      This is built to get your first deal fast: it ranks permits by <b>Saleability</b>, routes to a <b>buyer type</b>,
+      and generates a clean <b>Client Brief</b> you can print to PDF and sell.
+    </div>
+  </div>
 
-<div class="brand">
-Permit Intelligence Engine v9 — Broker Console
-</div>
+  <div class="controls">
+    <select id="vertical">
+      <option value="supplier">Supplier (Restaurant/Openings)</option>
+      <option value="contractor">Contractor (MEP/Roof/Repair)</option>
+      <option value="capital">Capital (Demolition/New Build)</option>
+      <option value="all">All</option>
+    </select>
 
-<div>
-<button class="primary" id="runBtn">Run Engine</button>
-</div>
+    <input id="limit" type="number" value="200" min="50" max="2000" title="Records to fetch">
+    <input id="lookback" type="number" value="30" min="1" max="365" title="Lookback days (filter after fetch)">
+    <input id="minScore" type="number" value="70" min="0" max="100" title="Minimum saleability">
 
+    <button class="primary" id="runBtn">Run Engine</button>
+    <button class="ghost" id="mockBtn">Mock Data</button>
+  </div>
 </header>
 
 <div class="stats">
-
-<div class="stat">
-<b id="statCount">0</b><br>Signals
-</div>
-
-<div class="stat">
-<b id="statValue">$0</b><br>Total Value
-</div>
-
-<div class="stat">
-<b id="statMajor">0</b><br>Major Projects
-</div>
-
-<div class="stat">
-<b id="statImmediate">0</b><br>Immediate
-</div>
-
+  <div class="stat"><b id="statCount">0</b><small>Signals processed</small></div>
+  <div class="stat"><b id="statValue">$0</b><small>Total estimated value</small></div>
+  <div class="stat"><b id="statSellable">0</b><small>Sellable (>= min score)</small></div>
+  <div class="stat"><b id="statMajor">0</b><small>Major (>$500k)</small></div>
+  <div class="stat"><b id="statImmediate">0</b><small>Immediate (<=14 days)</small></div>
 </div>
 
 <div class="grid" id="grid"></div>
 
 <div class="modalBack" id="modalBack">
-<div class="modal">
-
-<h2 id="modalTitle"></h2>
-<div id="modalBody"></div>
-
-<button onclick="closeModal()">Close</button>
-
-</div>
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div class="hr"></div>
+    <button onclick="closeModal()">Close</button>
+  </div>
 </div>
 
 <script>
-
-const fmt=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0)
-
-function closeModal(){
-document.getElementById("modalBack").style.display="none"
-}
-
-class Engine{
-
-constructor(){
-this.data=[]
-document.getElementById("runBtn").onclick=()=>this.run()
-}
-
-async run(){
-
-const res=await fetch("https://data.cityofchicago.org/resource/ydr8-5enu.json?$limit=200")
-
-const raw=await res.json()
-
-this.data=raw.map(r=>this.normalize(r)).filter(Boolean)
-
-this.data.sort((a,b)=>b.saleability-a.saleability)
-
-this.render()
-
-}
-
-normalize(r){
-
-if(!r.issue_date||!r.street_name)return null
-
-const issued=new Date(r.issue_date)
-
-const days=Math.floor((Date.now()-issued)/86400000)
-
-const value=Number(r.estimated_cost||0)
-
-const desc=(r.work_description||"").toLowerCase()
-
-let primary="Contractor"
-
-let secondary=["Investor"]
-
-if(desc.includes("restaurant")||desc.includes("kitchen")){
-
-primary="Supplier"
-
-secondary=["Contractor"]
-
-}
-
-if(desc.includes("demolition")||desc.includes("new construction")){
-
-primary="Capital"
-
-secondary=["Investor","GC"]
-
-}
-
-if(desc.includes("roof")||desc.includes("hvac")){
-
-primary="Contractor"
-
-secondary=["GC"]
-
-}
-
-let urgency=Math.max(0,100-(days*2))
-
-let deal=value>1000000?95:value>250000?85:value>75000?70:50
-
-let demand=desc.includes("restaurant")?95:80
-
-let ease=primary==="Supplier"?90:primary==="Contractor"?85:70
-
-let saleability=Math.round((urgency+deal+demand+ease)/4)
-
-return{
-
-permit:r.permit_,
-
-address:(r.street_number||"")+" "+(r.street_name||""),
-
-issued,
-
-days,
-
-value,
-
-desc,
-
-primary,
-
-secondary,
-
-saleability,
-
-immediate:days<14
-
-}
-
-}
-
-render(){
-
-const grid=document.getElementById("grid")
-
-grid.innerHTML=""
-
-document.getElementById("statCount").innerText=this.data.length
-
-document.getElementById("statValue").innerText=fmt(this.data.reduce((s,r)=>s+r.value,0))
-
-document.getElementById("statMajor").innerText=this.data.filter(r=>r.value>500000).length
-
-document.getElementById("statImmediate").innerText=this.data.filter(r=>r.immediate).length
-
-this.data.forEach(r=>{
-
-const card=document.createElement("div")
-
-card.className="card"
-
-card.innerHTML=`
-
-<h3>${r.address}</h3>
-
-<div class="meta">
-
-Saleability: ${r.saleability}/100<br>
-
-Value: ${fmt(r.value)}<br>
-
-Days Since: ${r.days}
-
-</div>
-
-<div>
-
-<span class="tag ${r.primary.toLowerCase()}">${r.primary}</span>
-
-${r.secondary.map(s=>`<span class="tag investor">${s}</span>`).join("")}
-
-</div>
-
-<div class="actions">
-
-<button onclick="engine.internal('${r.permit}')">Internal Intel</button>
-
-<button onclick="engine.client('${r.permit}')">Client Brief</button>
-
-</div>
-
-`
-
-grid.appendChild(card)
-
-})
-
-}
-
-internal(id){
-
-const r=this.data.find(x=>x.permit===id)
-
-document.getElementById("modalTitle").innerText="Internal Intelligence — "+r.address
-
-document.getElementById("modalBody").innerHTML=`
-
-<p><b>Opportunity Score:</b> ${r.saleability}</p>
-
-<p><b>Estimated Value:</b> ${fmt(r.value)}</p>
-
-<p><b>Days Since Permit:</b> ${r.days}</p>
-
-<div class="code">${JSON.stringify(r,null,2)}</div>
-
-`
-
-document.getElementById("modalBack").style.display="flex"
-
-}
-
-client(id){
-
-const r=this.data.find(x=>x.permit===id)
-
-const w=window.open("")
-
-w.document.write(`
-
-<h1>Construction Intelligence Brief</h1>
-
-<p><b>Address:</b> ${r.address}</p>
-
-<p><b>Estimated Project Value:</b> ${fmt(r.value)}</p>
-
-<p><b>Opportunity Score:</b> ${r.saleability}/100</p>
-
-<h2>Executive Summary</h2>
-
-<p>
-
-Municipal permit records indicate construction activity that may require contractor services or supplier engagement within the next 30–90 days.
-
-</p>
-
-<h2>Opportunity Details</h2>
-
-<ul>
-
-<li>Permit issued ${r.days} days ago</li>
-
-<li>Estimated construction value ${fmt(r.value)}</li>
-
-<li>Recommended buyer category: ${r.primary}</li>
-
-</ul>
-
-<h2>Recommended Action</h2>
-
-<p>
-
-Reach out to the project developer or general contractor to introduce services relevant to this project.
-
-</p>
-
-<h2>Source</h2>
-
-<p>Municipal permit records</p>
-
-`)
-
-}
-
-}
-
-const engine=new Engine()
-
+  const fmtMoney = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(n||0));
+  const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+  const daysAgo = iso => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+
+  function closeModal(){ document.getElementById("modalBack").style.display="none"; }
+  function openModal(title, html){
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalBody").innerHTML = html;
+    document.getElementById("modalBack").style.display="flex";
+  }
+  function escapeHtml(s){
+    return (s ?? "").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  const PRESETS = {
+    supplier: {
+      label: "Supplier",
+      keywords: ["restaurant","bar","cafe","kitchen","food","brewery","tenant improvement","tenant finish","commercial kitchen","hood"],
+      baseBuyer: "Supplier"
+    },
+    contractor: {
+      label: "Contractor",
+      keywords: ["roof","reroof","re-roof","hvac","mechanical","electrical","plumbing","fire alarm","sprinkler","rtu","duct"],
+      baseBuyer: "Contractor"
+    },
+    capital: {
+      label: "Capital",
+      keywords: ["demolition","demo","new construction","foundation","mixed-use","multi-family","rezoning","variance"],
+      baseBuyer: "Capital"
+    },
+    all: { label: "All", keywords: [], baseBuyer: "Contractor" }
+  };
+
+  class Engine {
+    constructor(){
+      this.data = [];
+      document.getElementById("runBtn").onclick = ()=>this.run(false);
+      document.getElementById("mockBtn").onclick = ()=>this.run(true);
+    }
+
+    get presetKey(){ return document.getElementById("vertical").value; }
+    get preset(){ return PRESETS[this.presetKey]; }
+    get limit(){ return Number(document.getElementById("limit").value || 200); }
+    get lookback(){ return Number(document.getElementById("lookback").value || 30); }
+    get minScore(){ return Number(document.getElementById("minScore").value || 70); }
+
+    async run(useMock){
+      this.clear();
+      const raw = useMock ? this.mockSignals() : await this.fetchChicago(this.limit);
+      const normalized = raw.map(r=>this.normalize(r)).filter(Boolean);
+      const filteredByAge = normalized.filter(x => x.ageDays <= this.lookback);
+
+      const scored = filteredByAge.map(x=>this.scoreAndRoute(x));
+      scored.sort((a,b)=>b.saleability - a.saleability);
+
+      // Apply vertical filter after scoring (keeps “All” useful)
+      const verticalFiltered = scored.filter(x=>{
+        if(this.presetKey === "all") return true;
+        return x.tags.includes(this.preset.label);
+      });
+
+      this.data = verticalFiltered;
+      this.render();
+    }
+
+    clear(){
+      document.getElementById("grid").innerHTML = "";
+      ["statCount","statValue","statSellable","statMajor","statImmediate"].forEach(id=>document.getElementById(id).innerText="0");
+    }
+
+    async fetchChicago(limit){
+      // Same endpoint you already used in v8, just with configurable $limit.
+      const url = `https://data.cityofchicago.org/resource/ydr8-5enu.json?$limit=${encodeURIComponent(limit)}`;
+      const res = await fetch(url, { headers: { "Accept":"application/json" } });
+      if(!res.ok) throw new Error(`Chicago API error ${res.status}: ${await res.text()}`);
+      return await res.json();
+    }
+
+    normalize(r){
+      // Based on your v8 assumptions:
+      if(!r.issue_date || !r.street_name) return null;
+
+      const issued = new Date(r.issue_date);
+      const ageDays = Math.floor((Date.now() - issued.getTime()) / 86400000);
+
+      const address = `${r.street_number || ""} ${r.street_name || ""}`.trim() || "(address unknown)";
+      const desc = (r.work_description || "").toString().trim();
+      const value = Number(r.estimated_cost || 0);
+
+      return {
+        id: (r.permit_ || "").toString(),
+        permit: (r.permit_ || "").toString(),
+        issuedISO: issued.toISOString(),
+        ageDays,
+        address,
+        desc,
+        value,
+        raw: r
+      };
+    }
+
+    scoreAndRoute(x){
+      const hay = (x.desc || "").toLowerCase();
+
+      // Buyer routing (fast path to first sale)
+      let buyer = "Contractor";
+      if(this.hasAny(hay, ["restaurant","bar","cafe","kitchen","brewery","hood"])) buyer = "Supplier";
+      if(this.hasAny(hay, ["roof","reroof","re-roof","hvac","mechanical","electrical","plumbing","fire alarm","sprinkler","rtu","duct"])) buyer = "Contractor";
+      if(this.hasAny(hay, ["demolition","demo","new construction","foundation","mixed-use","multi-family"])) buyer = "Capital";
+
+      // Dimensions (0..100)
+      const urgency = clamp(100 - x.ageDays*2.2, 10, 100);
+      const dealSize = x.value > 0
+        ? (x.value >= 1000000 ? 92 : x.value >= 250000 ? 80 : x.value >= 75000 ? 68 : 52)
+        : (buyer === "Capital" ? 70 : 55);
+
+      const buyerDemand =
+        this.hasAny(hay, ["restaurant","kitchen","bar","brewery"]) ? 92 :
+        this.hasAny(hay, ["roof","hvac","mechanical","electrical","plumbing"]) ? 85 :
+        this.hasAny(hay, ["demolition","new construction"]) ? 72 :
+        60;
+
+      const easeOfSale =
+        buyer === "Supplier" ? 92 :
+        buyer === "Contractor" ? 88 :
+        65;
+
+      // Saleability score (simple + stable)
+      const saleability = Math.round((urgency + dealSize + buyerDemand + easeOfSale) / 4);
+
+      // Tags (for selling + filtering)
+      const tags = [];
+      if(buyer === "Supplier") tags.push("Supplier");
+      if(buyer === "Contractor") tags.push("Contractor");
+      if(buyer === "Capital") tags.push("Capital");
+      tags.push(x.value > 500000 ? "Major" : "Standard");
+      tags.push(x.ageDays <= 14 ? "Immediate" : "Aged");
+
+      return { ...x, buyer, saleability, tags };
+    }
+
+    hasAny(hay, words){ return words.some(w => hay.includes(w)); }
+
+    render(){
+      const sellable = this.data.filter(x => x.saleability >= this.minScore);
+      const totalValue = this.data.reduce((s,x)=>s+(x.value||0),0);
+      const major = this.data.filter(x => x.value > 500000).length;
+      const immediate = this.data.filter(x => x.ageDays <= 14).length;
+
+      document.getElementById("statCount").innerText = this.data.length;
+      document.getElementById("statValue").innerText = fmtMoney(totalValue);
+      document.getElementById("statSellable").innerText = sellable.length;
+      document.getElementById("statMajor").innerText = major;
+      document.getElementById("statImmediate").innerText = immediate;
+
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+
+      // Show highest saleability first; emphasize sellable
+      this.data.forEach(x=>{
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const tagHtml = x.tags.map(t=>{
+          if(t==="Supplier") return `<span class="tag supplier">Supplier</span>`;
+          if(t==="Contractor") return `<span class="tag contractor">Contractor</span>`;
+          if(t==="Capital") return `<span class="tag capital">Capital</span>`;
+          if(t==="Major") return `<span class="tag major">Major</span>`;
+          if(t==="Immediate") return `<span class="tag primary">Immediate</span>`;
+          return `<span class="tag">${escapeHtml(t)}</span>`;
+        }).join("");
+
+        card.innerHTML = `
+          <h3>${escapeHtml(x.address)}</h3>
+          <div class="meta">
+            <b>Saleability:</b> ${x.saleability}/100 ${x.saleability >= this.minScore ? "• <span style='color:var(--neon)'>SELLABLE</span>" : ""}<br>
+            <b>Buyer:</b> ${escapeHtml(x.buyer)}<br>
+            <b>Value:</b> ${fmtMoney(x.value)}<br>
+            <b>Age:</b> ${x.ageDays} days<br>
+            <b>Desc:</b> ${escapeHtml((x.desc||"").slice(0,110))}${(x.desc||"").length>110?"…":""}
+          </div>
+          <div class="tags">${tagHtml}</div>
+          <div class="actions">
+            <button onclick="engine.openInternal('${escapeHtml(x.permit)}')">Internal Intel</button>
+            <button class="good" onclick="engine.openClient('${escapeHtml(x.permit)}')">Client Brief</button>
+            <button onclick="engine.printClient('${escapeHtml(x.permit)}')">Print PDF</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    openInternal(permit){
+      const x = this.data.find(r => r.permit === permit);
+      if(!x) return;
+      openModal(`Internal Intel — ${x.address}`, `
+        <div class="note">
+          <b>Use this to decide if you can sell this today.</b>
+          If Saleability is high, print the client brief and send it to 20 buyers in the mapped category.
+        </div>
+        <div class="hr"></div>
+        <div class="code">${escapeHtml(JSON.stringify({
+          permit: x.permit,
+          address: x.address,
+          buyer: x.buyer,
+          saleability: x.saleability,
+          ageDays: x.ageDays,
+          value: x.value,
+          description: x.desc
+        }, null, 2))}</div>
+      `);
+    }
+
+    buildClientHtml(x){
+      const why = this.clientWhyNow(x);
+      const action = this.clientAction(x);
+      const issued = x.issuedISO ? new Date(x.issuedISO).toLocaleDateString() : "";
+
+      return `
+        <div class="printSheet">
+          <h1>Chicago Intelligence Brief — ${escapeHtml(x.address)}</h1>
+          <div class="muted">Generated ${new Date().toLocaleString()} • Source: City permit record</div>
+
+          <h2>Executive Summary</h2>
+          <ul>
+            <li>New municipal permit activity suggests near-term demand aligned to <b>${escapeHtml(x.buyer)}</b>.</li>
+            <li>Saleability score: <b>${x.saleability}/100</b> (ranked by freshness, demand, and ease to sell).</li>
+            <li>Estimated project value: <b>${fmtMoney(x.value)}</b>.</li>
+          </ul>
+
+          <h2>Lead Details</h2>
+          <table>
+            <tr><th>Address</th><td>${escapeHtml(x.address)}</td></tr>
+            <tr><th>Permit ID</th><td>${escapeHtml(x.permit)}</td></tr>
+            <tr><th>Issued Date</th><td>${escapeHtml(issued)}</td></tr>
+            <tr><th>Days Since</th><td>${x.ageDays}</td></tr>
+            <tr><th>Estimated Value</th><td>${fmtMoney(x.value)}</td></tr>
+            <tr><th>Work Description</th><td>${escapeHtml(x.desc)}</td></tr>
+            <tr><th>Recommended Buyer</th><td>${escapeHtml(x.buyer)}</td></tr>
+          </table>
+
+          <h2>Why This Matters</h2>
+          <ul>${why.map(b=>`<li>${escapeHtml(b)}</li>`).join("")}</ul>
+
+          <h2>Recommended Action</h2>
+          <p>${escapeHtml(action)}</p>
+
+          <hr>
+          <p class="muted">
+            Note: This brief is compiled from public records and may contain errors or omissions. Verify details before acting.
+          </p>
+        </div>
+      `;
+    }
+
+    clientWhyNow(x){
+      const hay = (x.desc||"").toLowerCase();
+      const bullets = [];
+      if(x.ageDays <= 14) bullets.push("Fresh permit activity (last 14 days) — highest conversion window for first contact.");
+      if(x.value >= 250000) bullets.push("Project value indicates meaningful scope and higher ROI for the buyer.");
+      if(this.hasAny(hay, ["restaurant","kitchen","bar","brewery"])) bullets.push("Restaurants typically buy equipment/services during early buildout phases (often within 30–60 days).");
+      if(this.hasAny(hay, ["roof","hvac","mechanical","electrical","plumbing"])) bullets.push("MEP/repair permits often convert quickly because work is time-sensitive and vendor selection happens early.");
+      if(this.hasAny(hay, ["demolition","new construction"])) bullets.push("Demolition/new build signals longer tail opportunities; useful for capital and GC relationships.");
+      if(bullets.length === 0) bullets.push("Public records show actionable activity; speed matters for first-contact advantage.");
+      return bullets.slice(0,5);
+    }
+
+    clientAction(x){
+      if(x.buyer === "Supplier"){
+        return "Contact restaurant equipment, hood/fire suppression, refrigeration, and install vendors. Lead with: timeline + quote readiness + who is the GC/designer.";
+      }
+      if(x.buyer === "Contractor"){
+        return "Contact local contractors/subs in the relevant trade. Lead with: availability window + fast site visit + insurance/certifications ready.";
+      }
+      if(x.buyer === "Capital"){
+        return "Package as early project intel. Offer a short memo angle: what it likely becomes + who should act now + what filings to monitor next.";
+      }
+      return "Reach out referencing the public record and offer a quick call to confirm scope and decision timeline.";
+    }
+
+    openClient(permit){
+      const x = this.data.find(r => r.permit === permit);
+      if(!x) return;
+      const html = this.buildClientHtml(x);
+      openModal("Client Brief (Preview)", `
+        <div class="note">Use <b>Print PDF</b> to export this as a PDF you can deliver after payment.</div>
+        <div class="hr"></div>
+        <div class="code">${escapeHtml(html.replace(/\s+/g," ").slice(0,2200))} ...</div>
+      `);
+    }
+
+    printClient(permit){
+      const x = this.data.find(r => r.permit === permit);
+      if(!x) return;
+      const html = this.buildClientHtml(x);
+      const w = window.open("", "_blank");
+      w.document.write(`<html><head><title>Client Brief — ${escapeHtml(x.address)}</title></head><body>${html}</body></html>`);
+      w.document.close();
+      w.focus();
+      setTimeout(()=>w.print(), 250);
+    }
+
+    mockSignals(){
+      const now = Date.now();
+      const d = (days) => new Date(now - days*86400000).toISOString();
+      // Matches your normalize() needs: issue_date, street_name, street_number, work_description, estimated_cost, permit_
+      return [
+        { permit_:"M1", issue_date:d(4), street_number:"512", street_name:"HIGH ST", work_description:"Restaurant tenant improvement, commercial kitchen buildout", estimated_cost:"220000" },
+        { permit_:"M2", issue_date:d(9), street_number:"79", street_name:"E GAY ST", work_description:"Interior restaurant renovation, new hood installation", estimated_cost:"145000" },
+        { permit_:"M3", issue_date:d(6), street_number:"330", street_name:"W BROAD ST", work_description:"Reroof commercial building", estimated_cost:"78000" },
+        { permit_:"M4", issue_date:d(12), street_number:"335", street_name:"W BROAD ST", work_description:"HVAC replacement RTU and duct work", estimated_cost:"56000" },
+        { permit_:"M5", issue_date:d(7), street_number:"118", street_name:"OAK ST", work_description:"Demolition permit for existing structure", estimated_cost:"65000" },
+        { permit_:"M6", issue_date:d(2), street_number:"901", street_name:"N MICHIGAN AVE", work_description:"Electrical upgrade and fire alarm work", estimated_cost:"310000" }
+      ];
+    }
+  }
+
+  const engine = new Engine();
 </script>
 
 </body>
