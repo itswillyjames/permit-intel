@@ -2,1012 +2,848 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Permit Intelligence Engine v12 — Solo Tool</title>
-  <meta
-    name="description"
-    content="Real-data-first OSINT permit intelligence console: normalize, score, route buyers, and generate sellable client briefs."
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temporal Construction Engine</title>
   <style>
-    :root{
-      --bg:#0a0a10;
-      --panel:#14141a;
-      --panel2:#1b1b24;
-      --line:#2c2c39;
-      --text:#f4f4f5;
-      --muted:#a1a1aa;
-      --accent:#ef4444;
-      --good:#22c55e;
-      --warn:#f59e0b;
-      --blue:#3b82f6;
-      --violet:#8b5cf6;
-      --radius:14px;
-      --shadow:0 10px 30px rgba(0,0,0,.28);
+    :root {
+      --bg-dark: #09090b;
+      --bg-panel: #18181b;
+      --bg-hover: #27272a;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent: #3b82f6;
+      --now: #ef4444;
+      --next: #eab308;
+      --latent: #8b5cf6;
+      --border: #3f3f46;
+      --good: #10b981;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      background:linear-gradient(180deg,#09090b 0%,#101019 100%);
-      color:var(--text);
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Arial, sans-serif;
     }
-    button,select,input,textarea{font:inherit}
-    .wrap{max-width:1440px;margin:0 auto;padding:18px}
-    .hero{
-      display:grid;gap:12px;margin-bottom:16px;
-      background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(59,130,246,.1));
-      border:1px solid var(--line);
-      border-radius:18px;padding:20px;
-      box-shadow:var(--shadow);
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .eyebrow{color:#fca5a5;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
-    h1{margin:0;font-size:clamp(26px,4vw,42px);line-height:1.05}
-    .sub{color:var(--muted);max-width:980px;line-height:1.45}
-    .toolbar{
-      display:grid;
-      grid-template-columns:1.5fr .8fr .8fr .8fr 1.2fr auto auto;
-      gap:10px;
-      align-items:center;
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-panel);
+      gap: 16px;
     }
-    .field,.btn,.seg button,.pill{
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
-      min-height:46px;
-      padding:0 14px;
+
+    header h1 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
     }
-    .field{width:100%}
-    .btn{cursor:pointer;font-weight:800;transition:.18s ease}
-    .btn:hover{transform:translateY(-1px)}
-    .btn.primary{background:var(--accent);border-color:#b91c1c}
-    .btn.ghost{background:var(--panel)}
-    .btn.small{min-height:38px;padding:0 12px}
-    .seg{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .seg button{min-height:38px;cursor:pointer;color:var(--muted);font-weight:800;padding:0 12px}
-    .seg button.active{color:var(--text);border-color:#57576b;background:var(--panel2)}
-    .statusbar{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-    .pill{display:inline-flex;align-items:center;font-size:13px;color:var(--muted);gap:8px}
-    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
-    .stat{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px;
-      box-shadow:var(--shadow);
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    .stat .n{font-size:30px;font-weight:900;margin-bottom:6px}
-    .stat .l{color:var(--muted);font-size:14px}
-    .layout{display:grid;grid-template-columns:1.2fr 1.05fr;gap:14px}
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      min-height:440px;
-      overflow:hidden;
+
+    .tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 8px;
+      text-transform: uppercase;
     }
-    .panelhead{
-      display:flex;justify-content:space-between;align-items:center;gap:10px;
-      padding:14px 16px;border-bottom:1px solid var(--line);
-      background:rgba(255,255,255,.015);
+
+    .tab.active {
+      color: var(--text-main);
+      border-bottom: 2px solid var(--accent);
     }
-    .panelhead h2{margin:0;font-size:17px}
-    .small{color:var(--muted);font-size:13px}
-    .signals{display:grid;gap:10px;padding:14px}
-    .card{
-      border:1px solid var(--line);
-      background:var(--panel2);
-      border-radius:14px;
-      padding:14px;
-      cursor:pointer;
-      transition:.16s ease;
+
+    .run-btn {
+      color: var(--accent);
+      font-weight: 700;
     }
-    .card:hover{transform:translateY(-1px);border-color:#55556a}
-    .card.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px rgba(239,68,68,.2)}
-    .toprow,.tags,.meta,.actions{display:flex;gap:8px;flex-wrap:wrap}
-    .toprow{justify-content:space-between;align-items:start;margin-bottom:8px}
-    .title{font-size:16px;font-weight:900}
-    .score{
-      padding:5px 9px;border-radius:999px;
-      border:1px solid #4b5563;background:#111827;color:#dbeafe;
-      font-size:12px;font-weight:900;white-space:nowrap;
+
+    .status {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 8px;
     }
-    .tag{
-      padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;
-      border:1px solid var(--line);color:var(--muted);background:#111118;
+
+    main {
+      display: grid;
+      grid-template-columns: 360px 1fr 360px;
+      flex: 1;
+      overflow: hidden;
     }
-    .tag.good{color:#bbf7d0;border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.08)}
-    .tag.warn{color:#fde68a;border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.08)}
-    .tag.blue{color:#bfdbfe;border-color:rgba(59,130,246,.25);background:rgba(59,130,246,.08)}
-    .tag.violet{color:#ddd6fe;border-color:rgba(139,92,246,.25);background:rgba(139,92,246,.08)}
-    .meta{color:var(--muted);font-size:13px;margin:8px 0}
-    .desc{color:#e4e4e7;font-size:14px;line-height:1.5;margin-top:8px}
-    .detail{padding:16px;display:grid;gap:14px}
-    .box{
-      border:1px solid var(--line);
-      background:var(--panel2);
-      border-radius:14px;
-      padding:14px;
+
+    .col {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: var(--bg-dark);
+      position: relative;
+      min-width: 0;
     }
-    .box h3{margin:0 0 10px;font-size:15px}
-    .box p{margin:0;color:#e4e4e7;line-height:1.55}
-    .list{margin:0;padding-left:18px;color:#e4e4e7}
-    .list li{margin:6px 0}
-    .actions{margin-top:8px}
-    .brief{
-      white-space:pre-wrap;
-      line-height:1.55;
-      color:#f4f4f5;
-      font-size:14px;
-      max-height:420px;
-      overflow:auto;
+
+    .col:last-child {
+      border-right: none;
     }
-    .footerNote{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.55}
-    details.debug{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.02);
-      border-radius:14px;
-      padding:10px 12px;
+
+    .col-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
-    details.debug summary{cursor:pointer;color:#e5e7eb;font-weight:900}
-    pre.debug{
-      margin:10px 0 0;
-      white-space:pre-wrap;
-      word-break:break-word;
-      color:#e5e7eb;
-      font-size:12px;
-      line-height:1.5;
+
+    .sub-tabs {
+      display: flex;
+      gap: 8px;
     }
-    code{color:#f5f5f5}
-    @media (max-width:1180px){
-      .toolbar{grid-template-columns:1fr 1fr 1fr}
-      .layout{grid-template-columns:1fr}
-      .grid4{grid-template-columns:1fr 1fr}
+
+    .sub-tab {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 10px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
     }
-    @media (max-width:760px){
-      .toolbar{grid-template-columns:1fr}
-      .grid4{grid-template-columns:1fr}
+
+    .sub-tab.active {
+      background: var(--bg-hover);
+      color: var(--text-main);
+      border-color: var(--accent);
+    }
+
+    .card {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .card:hover {
+      background: var(--bg-hover);
+    }
+
+    .card.selected {
+      background: var(--bg-hover);
+      border-left: 3px solid var(--accent);
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .tag.now {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--now);
+    }
+
+    .tag.next {
+      background: rgba(234, 179, 8, 0.2);
+      color: var(--next);
+    }
+
+    .tag.latent {
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--latent);
+    }
+
+    .tag.entity {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--accent);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      text-transform: capitalize;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      word-break: break-word;
+    }
+
+    .detail-view,
+    .conversion-panel {
+      padding: 24px;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .data-label {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .data-value {
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .buyer-match {
+      background: var(--bg-panel);
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .buyer-match-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      gap: 12px;
+    }
+
+    .buyer-match-score {
+      color: var(--good);
+      white-space: nowrap;
+    }
+
+    .buyer-match-why {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      background: var(--bg-hover);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn.primary:hover {
+      background: #2563eb;
+    }
+
+    #output-area {
+      width: 100%;
+      height: 260px;
+      background: #000;
+      border: 1px solid var(--border);
+      color: var(--good);
+      padding: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      resize: none;
+      margin-top: 16px;
+      outline: none;
+    }
+
+    .copy-btn {
+      margin-top: 8px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 4px;
+      width: 100%;
+    }
+
+    .copy-btn:hover {
+      background: var(--bg-hover);
+    }
+
+    .loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent);
+      animation: load 1.5s infinite;
+      display: none;
+    }
+
+    @keyframes load {
+      0% { width: 0; left: 0; }
+      50% { width: 100%; left: 0; }
+      100% { width: 100%; left: 100%; }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--bg-panel);
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .empty-state {
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1200px) {
+      main {
+        grid-template-columns: 320px 1fr 320px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      body {
+        overflow: auto;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        overflow: auto;
+      }
+
+      .col {
+        min-height: 320px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .col:last-child {
+        border-bottom: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <div class="eyebrow">OSINT arbitrage • solo deal console</div>
-      <h1>Permit Intelligence Engine v12</h1>
-      <div class="sub">
-        Real-data-first, free, static, deployable today. Pull public permits, normalize into one schema, score for sellability,
-        route to buyer type, and generate printable client briefs you can sell immediately.
-      </div>
-
-      <div class="toolbar">
-        <select id="sourceSelect" class="field"></select>
-        <input id="daysInput" class="field" type="number" min="7" max="365" value="90" />
-        <input id="limitInput" class="field" type="number" min="25" max="1000" value="250" />
-        <input id="minScoreInput" class="field" type="number" min="0" max="100" value="55" />
-        <input id="searchInput" class="field" type="text" placeholder="Search address / type / contact" />
-        <button id="runBtn" class="btn primary">Run Engine</button>
-        <button id="mockBtn" class="btn ghost">Mock Fallback</button>
-      </div>
-
-      <div class="seg" id="buyerSeg"></div>
-
-      <div class="statusbar">
-        <div class="pill" id="statusPill">Idle</div>
-        <div class="pill" id="pipelinePill">raw: 0 • normalized: 0 • scored: 0 • rendered: 0</div>
-        <div class="pill" id="modePill">mode: none</div>
-        <button id="clearCacheBtn" class="btn ghost small">Clear cache</button>
-      </div>
-
-      <details class="debug">
-        <summary>Debug (last fetch + error)</summary>
-        <pre class="debug" id="debugText">No fetch yet.</pre>
-      </details>
-    </section>
-
-    <section class="grid4">
-      <div class="stat"><div class="n" id="signalsCount">0</div><div class="l">Signals processed</div></div>
-      <div class="stat"><div class="n" id="totalValue">$0</div><div class="l">Total estimated value</div></div>
-      <div class="stat"><div class="n" id="sellableCount">0</div><div class="l">Sellable (>= min score)</div></div>
-      <div class="stat"><div class="n" id="majorCount">0</div><div class="l">Major (>$500k)</div></div>
-    </section>
-
-    <section class="layout">
-      <div class="panel">
-        <div class="panelhead">
-          <h2>Ranked Signals</h2>
-          <div class="small" id="resultsMeta">No results yet</div>
-        </div>
-        <div id="signals" class="signals"></div>
-      </div>
-
-      <div class="panel">
-        <div class="panelhead">
-          <h2>Deal Panel</h2>
-          <div class="small" id="detailMeta">Select a signal</div>
-        </div>
-        <div id="detail" class="detail">
-          <div class="box"><p>Run the engine, select a signal, and the buyer-specific brief will appear here.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <div class="footerNote">
-      Live data → cached last-good → mock fallback. If fetch fails, open Debug and paste the error. Optional later: add a Socrata app token in <code>APP_TOKEN</code> to reduce throttling and shared-IP issues.
+  <header>
+    <h1>Temporal Construction Intelligence</h1>
+    <div class="tabs">
+      <button class="tab active" data-tab="signals" onclick="switchMainTab('signals', this)">Signals</button>
+      <button class="tab" data-tab="entities" onclick="switchMainTab('entities', this)">Entities</button>
+      <button class="tab" data-tab="zones" onclick="switchMainTab('zones', this)">Zones</button>
+      <button class="tab run-btn" onclick="triggerCron()">[Run Engines]</button>
+      <span class="status" id="status-text">Ready</span>
     </div>
-  </div>
+  </header>
+
+  <main>
+    <div class="col">
+      <div class="loader" id="loader"></div>
+      <div class="col-header">
+        <span id="list-title">Intelligence Feed</span>
+        <div id="zone-subtabs" class="sub-tabs hidden">
+          <button class="sub-tab active" onclick="loadZones('zip', this)">ZIPs</button>
+          <button class="sub-tab" onclick="loadZones('corridor', this)">Corridors</button>
+        </div>
+      </div>
+      <div id="list-container"></div>
+    </div>
+
+    <div class="col">
+      <div class="col-header">Intelligence Detail</div>
+      <div id="detail-container" class="detail-view">
+        <p style="color:var(--text-muted); font-size:13px;">Select an item from the list to analyze.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-header">Asset Generation</div>
+      <div class="conversion-panel">
+        <button class="btn primary" onclick="generateOutput('Contractor Lead Brief')">Contractor Brief</button>
+        <button class="btn" onclick="generateOutput('Capital Intelligence Brief')">Capital Brief</button>
+        <button class="btn" onclick="generateOutput('Distress Opportunity Brief')">Distress Brief</button>
+        <button class="btn" onclick="generateOutput('Outreach Copy')">Outreach Email Draft</button>
+        <textarea id="output-area" readonly placeholder="Awaiting asset generation..."></textarea>
+        <button class="copy-btn" onclick="copyOutput()">Copy to Clipboard</button>
+      </div>
+    </div>
+  </main>
 
   <script>
-    const APP_TOKEN = "";
-
-    const FIELD = {
-      date: [
-        "issue_date","application_date","applied_date","application_start_date","permit_and_complaint_status_date","issue_date_2",
-        "issueddate","applieddate","expiresdate","completeddate"
-      ],
-      value: [
-        "estimated_cost","reported_cost","value","valuation","declared_value","project_value","est_project_cost","cost",
-        "estprojectcost"
-      ],
-      permitId: [
-        "id","permit_number","permit_num","application_number","recordid","permit_and_complaint_id","permit_","permitnum"
-      ],
-      permitType: [
-        "permit_type","permittype","work_type","category","permit_class","permit_class_mapped","record_type",
-        "permitclass","permittypedesc","permittypemapped"
-      ],
-      description: [
-        "work_description","description","brief_description","comments","scope_of_work","project_description","projectdesc"
-      ],
-      owner: [
-        "owner_name","owner","property_owner","contact_1_name","name","applicantname"
-      ],
-      contractor: [
-        "contractor_name","contractor","applicant","applicant_name","company_name","licensed_professional_name","contractorname"
-      ],
-      address: [
-        "address","street_address","site_address","project_address","address_full","originaladdress",
-        "siteaddress","address1","address2"
-      ]
-    };
-
-    const SOURCES = [
-      {
-        id: "chicago-building-permits",
-        label: "Chicago — Building Permits",
-        city: "Chicago",
-        url: "https://data.cityofchicago.org/resource/ydr8-5enu.json",
-        orderBy: "issue_date"
-      },
-      {
-        id: "seattle-building-permits",
-        label: "Seattle — Building Permits",
-        city: "Seattle",
-        url: "https://data.seattle.gov/resource/76t5-zqzr.json",
-        orderBy: "issueddate"
-      }
-    ];
-
-    const BUYERS = [
-      { id: "all", label: "All" },
-      { id: "supplier", label: "Supplier / Vendor" },
-      { id: "contractor", label: "Contractor / Trades" },
-      { id: "capital", label: "Capital / Lender / Broker" },
-      { id: "service", label: "Local Service / Agency" }
-    ];
+    const API_BASE = 'https://tce-api.trev-tce.workers.dev/api';
 
     const state = {
-      scored: [],
-      filtered: [],
-      selectedId: null,
-      buyerFilter: "all",
-      usedCache: false,
-      usedMock: false,
-      sourceId: SOURCES[0].id,
-      pipeline: { raw: 0, normalized: 0, scored: 0, rendered: 0 },
-      lastFetch: { url: "", status: "", error: "" }
+      data: [],
+      selected: null,
+      currentTab: 'signals'
     };
 
-    const $ = (id) => document.getElementById(id);
-
-    function init(){
-      renderSourceSelect();
-      renderBuyerSeg();
-      bind();
-      hydrateFromCache();
-      runEngine();
+    function setStatus(message) {
+      document.getElementById('status-text').textContent = message;
     }
 
-    function bind(){
-      $("runBtn").addEventListener("click", () => runEngine());
-      $("mockBtn").addEventListener("click", () => runEngine({ forceMock:true }));
-      $("searchInput").addEventListener("input", applyFilters);
-      $("minScoreInput").addEventListener("input", applyFilters);
-      $("sourceSelect").addEventListener("change", (e) => {
-        state.sourceId = e.target.value;
-        state.selectedId = null;
-        hydrateFromCache();
-        runEngine();
-      });
-      $("clearCacheBtn").addEventListener("click", () => {
-        try { localStorage.removeItem(cacheKey()); } catch(e){}
-        state.usedCache = false;
-        state.usedMock = false;
-        setStatus("Cache cleared for this source.");
-        renderModePill();
-      });
+    function showLoader(show) {
+      document.getElementById('loader').style.display = show ? 'block' : 'none';
     }
 
-    function renderSourceSelect(){
-      const el = $("sourceSelect");
-      el.innerHTML = SOURCES.map(s => `<option value="${s.id}">${escapeHtml(s.label)}</option>`).join("");
-      el.value = state.sourceId;
-    }
+    async function api(path, opts = {}) {
+      const res = await fetch(API_BASE + path, opts);
+      const text = await res.text();
 
-    function renderBuyerSeg(){
-      const wrap = $("buyerSeg");
-      wrap.innerHTML = BUYERS.map(b => `<button data-buyer="${b.id}" class="${b.id === state.buyerFilter ? "active" : ""}">${escapeHtml(b.label)}</button>`).join("");
-      [...wrap.querySelectorAll("button")].forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.buyerFilter = btn.dataset.buyer;
-          renderBuyerSeg();
-          applyFilters();
-        });
-      });
-    }
-
-    function getSource(){
-      return SOURCES.find(s => s.id === state.sourceId) || SOURCES[0];
-    }
-
-    function setStatus(text){
-      $("statusPill").textContent = text;
-    }
-
-    function renderModePill(){
-      $("modePill").textContent = state.usedMock ? "mode: mock fallback" : state.usedCache ? "mode: cached last-good" : "mode: live";
-    }
-
-    function setPipeline(){
-      const p = state.pipeline;
-      $("pipelinePill").textContent = `raw: ${p.raw} • normalized: ${p.normalized} • scored: ${p.scored} • rendered: ${p.rendered}`;
-      renderModePill();
-    }
-
-    function cacheKey(){
-      return `permit-intel-cache:${state.sourceId}`;
-    }
-
-    function hydrateFromCache(){
-      try{
-        const raw = localStorage.getItem(cacheKey());
-        if(!raw) return;
-        const parsed = JSON.parse(raw);
-        if(Array.isArray(parsed?.rows) && parsed.rows.length){
-          state.scored = parsed.rows;
-          state.usedCache = true;
-          state.usedMock = false;
-          state.pipeline = { raw: parsed.rows.length, normalized: parsed.rows.length, scored: parsed.rows.length, rendered: 0 };
-          setStatus(`Loaded cached last-good data for ${getSource().city}`);
-          setPipeline();
-          applyFilters();
-        }
-      } catch(e){}
-    }
-
-    function writeDebug(){
-      const s = state.lastFetch;
-      $("debugText").textContent =
-        `Source: ${getSource().label}\n` +
-        `URL: ${s.url || "(none)"}\n` +
-        `HTTP: ${s.status || "(none)"}\n` +
-        (s.error ? `Error: ${s.error}\n` : "") +
-        `Tip: HTTP none usually means browser/network/extension blocking before a normal response. 400 usually means a bad field. 429 usually means throttling.`;
-    }
-
-    async function runEngine(opts = {}){
-      const forceMock = !!opts.forceMock;
-
-      state.usedCache = false;
-      state.usedMock = false;
-      state.pipeline = { raw: 0, normalized: 0, scored: 0, rendered: 0 };
-      state.lastFetch = { url: "", status: "", error: "" };
-      setPipeline();
-      writeDebug();
-
-      if(forceMock){
-        loadMock("Manual mock fallback");
-        return;
+      if (!res.ok) {
+        throw new Error(text || `Request failed: ${res.status}`);
       }
 
-      setStatus(`Fetching live permit data… (${getSource().city})`);
-
-      try{
-        const { rows, fetchUrl, httpStatus } = await fetchSourceRows(getSource(), Number($("limitInput").value || 250));
-        state.lastFetch.url = fetchUrl;
-        state.lastFetch.status = String(httpStatus || "");
-        state.pipeline.raw = rows.length;
-
-        if(!rows.length) throw new Error("No live rows returned");
-
-        const normalized = rows.map(r => normalizeRecord(r, getSource())).filter(Boolean);
-        state.pipeline.normalized = normalized.length;
-
-        if(!normalized.length) throw new Error("Normalization produced 0 usable rows");
-
-        const scored = normalized
-          .map(scoreRecord)
-          .sort((a,b) => {
-            if (b.saleability !== a.saleability) return b.saleability - a.saleability;
-            if ((b.value||0) !== (a.value||0)) return (b.value||0) - (a.value||0);
-            return (a.urgencyDays||9999) - (b.urgencyDays||9999);
-          });
-
-        state.pipeline.scored = scored.length;
-        state.scored = scored;
-
-        try{
-          localStorage.setItem(cacheKey(), JSON.stringify({ savedAt:new Date().toISOString(), rows:scored }));
-        } catch(e){}
-
-        setStatus(`Live data loaded from ${getSource().city}`);
-        setPipeline();
-        writeDebug();
-        applyFilters();
-      } catch(err){
-        console.error(err);
-        state.lastFetch.error = err && err.message ? err.message : String(err || "Unknown error");
-        writeDebug();
-
-        const cached = tryLoadCacheRows();
-        if(cached.length){
-          state.usedCache = true;
-          state.usedMock = false;
-          state.scored = cached;
-          state.pipeline = { raw: cached.length, normalized: cached.length, scored: cached.length, rendered: 0 };
-          setStatus("Live fetch failed — using cached last-good data");
-          setPipeline();
-          applyFilters();
-          return;
-        }
-
-        loadMock("Live fetch failed — using mock fallback");
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new Error('API did not return valid JSON');
       }
     }
 
-    async function fetchSourceRows(source, limit){
-      const baseQs = new URLSearchParams();
-      baseQs.set("$limit", String(Math.max(25, Math.min(1000, limit || 250))));
-
-      const headers = { "Accept":"application/json" };
-      if(APP_TOKEN) headers["X-App-Token"] = APP_TOKEN;
-
-      const attemptList = [
-        { withOrder:true, label:"ordered" },
-        { withOrder:true, label:"ordered retry" },
-        { withOrder:false, label:"unordered fallback" }
-      ];
-
-      let lastErr = null;
-
-      for(const attempt of attemptList){
-        try{
-          const qs = new URLSearchParams(baseQs);
-          if(attempt.withOrder && source.orderBy) qs.set("$order", `${source.orderBy} DESC`);
-
-          const fetchUrl = `${source.url}?${qs.toString()}`;
-          state.lastFetch.url = fetchUrl;
-          state.lastFetch.status = "";
-          state.lastFetch.error = "";
-          writeDebug();
-
-          const res = await fetch(fetchUrl, {
-            headers,
-            cache: "no-store",
-            mode: "cors"
-          });
-
-          const httpStatus = res.status;
-          state.lastFetch.status = String(httpStatus);
-
-          if(!res.ok){
-            let msg = `HTTP ${res.status}`;
-            try{
-              const txt = await res.text();
-              if(txt) msg += ` — ${txt.slice(0,240)}`;
-            } catch(e){}
-            throw new Error(`${attempt.label}: ${msg}`);
-          }
-
-          const data = await res.json();
-          if(!Array.isArray(data)) throw new Error(`${attempt.label}: Unexpected payload`);
-
-          const days = clamp(Number($("daysInput").value || 90), 7, 365);
-          const cutoff = Date.now() - days * 86400000;
-
-          const rows = data.filter((row) => {
-            const dt = pick(row, FIELD.date);
-            const t = Date.parse(dt);
-            return !Number.isFinite(t) || t >= cutoff;
-          });
-
-          state.lastFetch.error = "";
-          writeDebug();
-          return { rows, fetchUrl, httpStatus };
-        } catch(err){
-          lastErr = err;
-          state.lastFetch.error = err && err.message ? err.message : String(err);
-          writeDebug();
-          await delay(450);
-        }
-      }
-
-      throw lastErr || new Error("Failed to fetch");
-    }
-
-    function tryLoadCacheRows(){
-      try{
-        const parsed = JSON.parse(localStorage.getItem(cacheKey()) || "null");
-        return Array.isArray(parsed?.rows) ? parsed.rows : [];
-      } catch(e){
-        return [];
+    function safeJson(v, fallback) {
+      try {
+        return JSON.parse(v);
+      } catch {
+        return fallback;
       }
     }
 
-    function normalizeRecord(row, source){
-      const address = normalizeAddress(row);
-      const date = pick(row, FIELD.date);
-      const valueRaw = pick(row, FIELD.value);
-      const permitType = cleanText(pick(row, FIELD.permitType));
-      const description = cleanText(pick(row, FIELD.description));
-      const owner = cleanText(pick(row, FIELD.owner));
-      const contractor = cleanText(pick(row, FIELD.contractor));
-      const permitId = cleanText(pick(row, FIELD.permitId)) || cryptoRandomId();
-
-      const value = toMoney(valueRaw);
-      const textBlob = `${permitType} ${description} ${owner} ${contractor}`.toLowerCase();
-      const urgencyDays = daysAgo(date);
-
-      const buyerType = detectBuyerType(textBlob, value, permitType);
-      const channel = detectChannel(textBlob, value, permitType);
-      const vertical = detectVertical(textBlob);
-
-      return {
-        id: `${source.id}:${permitId}`,
-        permitId,
-        city: source.city,
-        sourceLabel: source.label,
-        sourceUrl: source.url,
-        address: address || `${source.city} permit record`,
-        date: date || "",
-        value,
-        permitType: permitType || "Permit",
-        description: description || "Public permit record pulled from open data source.",
-        owner,
-        contractor,
-        buyerType,
-        channel,
-        vertical,
-        raw: row,
-        urgencyDays,
-        textBlob
-      };
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
     }
 
-    function normalizeAddress(row){
-      const direct = cleanText(pick(row, FIELD.address));
-      if(direct) return direct;
-
-      const num = cleanText(pick(row, ["street_number","address_number","house_number"]));
-      const dir = cleanText(pick(row, ["street_direction","predirection"]));
-      const name = cleanText(pick(row, ["street_name","streetname","road_name"]));
-      const suffix = cleanText(pick(row, ["suffix","street_suffix","street_type"]));
-      const unit = cleanText(pick(row, ["unit","apt","suite"]));
-      return [num,dir,name,suffix,unit].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
+    function fmtSignalType(v) {
+      return String(v || 'signal').replaceAll('_', ' ');
     }
 
-    function detectVertical(text){
-      if (/(restaurant|kitchen|food|bar|cafe|brew|bakery|salon|spa)/.test(text)) return "Restaurant / Hospitality";
-      if (/(roof|shingle|siding|window|door|fence|garage|masonry|tuckpoint|envelope)/.test(text)) return "Exterior / Envelope";
-      if (/(electrical|generator|fire alarm|lighting|panel|low voltage|data\/video|communication)/.test(text)) return "Electrical";
-      if (/(hvac|mechanical|furnace|boiler|air condition|ventilation|rtu|chiller|heat pump)/.test(text)) return "HVAC / Mechanical";
-      if (/(plumb|sewer|water heater|sprinkler|grease|gas line|pedicure|sink)/.test(text)) return "Plumbing / Water";
-      if (/(demolition|new construction|new building|foundation|addition|mixed[- ]use|ground up|caisson)/.test(text)) return "Ground-up / Major Construction";
-      return "General Improvement";
+    function fmtDate(v) {
+      if (!v) return 'N/A';
+      return String(v);
     }
 
-    function detectBuyerType(text, value, permitType){
-      const isDemo = /(wreck|demolition)/.test(text) || /(wreck|demolition)/i.test(permitType||"");
-      const isGroundUp = /(new construction|new building|foundation|mixed[- ]use|addition|ground up|caisson)/.test(text);
-      const isTradeHeavy = /(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|tuckpoint|low voltage|heat pump|chiller)/.test(text);
-      const isVendorHeavy = /(restaurant|tenant improvement|interior build|kitchen|food|retail|signage|opening|salon|gym|fitness|showroom)/.test(text);
-
-      if (isDemo || isGroundUp || value >= 900000) return "capital";
-      if (isTradeHeavy && value < 900000) return "contractor";
-      if (isVendorHeavy && value < 1000000) return "supplier";
-      if (value >= 350000) return "capital";
-      return "service";
-    }
-
-    function detectChannel(text, value, permitType){
-      if (/(restaurant|retail|opening|ti|tenant improvement|salon|gym|fitness|showroom)/.test(text)) return "Vendor packet";
-      if (/(roof|electrical|hvac|plumb|repair|replace|reroof|tuckpoint|low voltage|heat pump|chiller)/.test(text)) return "Lead resale";
-      if (/(wreck|demolition)/.test(text) || /(wreck|demolition)/i.test(permitType||"") || value >= 900000 || /(new construction|new building|addition|mixed[- ]use)/.test(text)) return "Capital intro";
-      return "Local services";
-    }
-
-    function scoreRecord(rec){
-      let score = 18;
-
-      if (rec.value >= 2500000) score += 30;
-      else if (rec.value >= 1000000) score += 24;
-      else if (rec.value >= 500000) score += 18;
-      else if (rec.value >= 150000) score += 12;
-      else if (rec.value >= 50000) score += 7;
-
-      if (rec.urgencyDays >= 0 && rec.urgencyDays <= 14) score += 16;
-      else if (rec.urgencyDays <= 30) score += 10;
-      else if (rec.urgencyDays <= 60) score += 6;
-
-      if (rec.contractor) score += 8;
-      if (rec.owner) score += 5;
-      if (rec.address) score += 4;
-
-      if (/(restaurant|retail|tenant improvement|office|medical|mixed[- ]use|gym|fitness|salon|showroom)/.test(rec.textBlob)) score += 8;
-      if (/(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|tuckpoint|low voltage|heat pump|chiller)/.test(rec.textBlob)) score += 10;
-      if (/(demolition|new building|new construction|addition|foundation|ground up)/.test(rec.textBlob)) score += 12;
-      if (/(school|hospital|museum|grocery|planet fitness|jewel|showroom)/.test(rec.textBlob)) score += 6;
-
-      rec.saleability = Math.min(100, Math.round(score));
-      rec.immediate = rec.urgencyDays >= 0 && rec.urgencyDays <= 14;
-      rec.major = rec.value > 500000;
-      rec.angle = buildAngle(rec);
-      rec.outreach = buildOutreach(rec);
-      rec.brief = buildBrief(rec);
-      return rec;
-    }
-
-    function buildAngle(rec){
-      if (rec.buyerType === "supplier") return `This looks like a ${rec.vertical.toLowerCase()} opportunity where a vendor can get in before vendor decisions are fully locked.`;
-      if (rec.buyerType === "contractor") return `This is a direct trade-facing signal with concrete scope language that supports lead resale, dispatch-style outreach, or warm intro packaging.`;
-      if (rec.buyerType === "capital") return `This record signals active capital deployment, redevelopment, or a significant value event. Package it for lenders, brokers, private capital, or major vendors.`;
-      return `This is a service-trigger event that can be sold to agencies, inspectors, signage, insurance, telecom, or adjacent operators.`;
-    }
-
-    function buildOutreach(rec){
-      if (rec.buyerType === "supplier"){
-        return `I found a newly active ${rec.vertical.toLowerCase()} permit at ${rec.address}. It looks early enough to reach the project before vendor selection fully settles. I can send a concise project brief with scope, timing, and buyer angle.`;
-      }
-      if (rec.buyerType === "contractor"){
-        return `I found a permit at ${rec.address} with clear ${rec.vertical.toLowerCase()} scope. This is the kind of fresh job signal contractors buy because it lets them reach the project before the lead gets stale or fully shopped.`;
-      }
-      if (rec.buyerType === "capital"){
-        return `I surfaced a permit at ${rec.address} that looks like meaningful development or redevelopment activity. I can send a concise intelligence brief with timing, scope, and why it matters for financing or deal flow.`;
-      }
-      return `I found a live permit trigger at ${rec.address} pointing to an immediate local service need. I can send a one-page brief showing what changed, why it matters, and who should move first.`;
-    }
-
-    function buildBrief(rec){
-      const lines = [];
-      lines.push(`CLIENT BRIEF — ${rec.city.toUpperCase()} PERMIT SIGNAL`);
-      lines.push("");
-      lines.push(`Property: ${rec.address}`);
-      lines.push(`Permit ID: ${rec.permitId || "N/A"}`);
-      lines.push(`Date: ${formatDate(rec.date)}`);
-      lines.push(`Estimated Value: ${formatMoney(rec.value)}`);
-      lines.push(`Permit Type: ${rec.permitType}`);
-      lines.push(`Vertical: ${rec.vertical}`);
-      lines.push(`Buyer Route: ${prettyBuyer(rec.buyerType)}`);
-      lines.push(`Channel: ${rec.channel}`);
-      lines.push(`Saleability Score: ${rec.saleability}/100`);
-      lines.push("");
-      lines.push("Why this matters");
-      lines.push(rec.angle);
-      lines.push("");
-      lines.push("Project description");
-      lines.push(rec.description || "No description available.");
-      lines.push("");
-      lines.push("Named entities");
-      lines.push(`Owner / contact: ${rec.owner || "Not surfaced"}`);
-      lines.push(`Applicant / contractor: ${rec.contractor || "Not surfaced"}`);
-      lines.push("");
-      lines.push("Recommended buyer");
-      lines.push(recommendedBuyerNotes(rec));
-      lines.push("");
-      lines.push("Monetization path");
-      lines.push(monetizationNotes(rec));
-      lines.push("");
-      lines.push("Suggested outreach");
-      lines.push(rec.outreach);
-      lines.push("");
-      lines.push(`Source: ${rec.sourceLabel}`);
-      lines.push(`Source endpoint: ${rec.sourceUrl}`);
-      return lines.join("\n");
-    }
-
-    function recommendedBuyerNotes(rec){
-      if (rec.buyerType === "supplier") return "Sell to niche vendors: signage, POS, security, pest, marketing, opening support, specialty suppliers, service vendors.";
-      if (rec.buyerType === "contractor") return "Sell to trades, subs, distributors, estimators, and local firms that need early project awareness.";
-      if (rec.buyerType === "capital") return "Sell to lenders, capital brokers, equipment finance, private investors, major material suppliers, or CRE intermediaries.";
-      return "Sell to agencies, compliance vendors, inspectors, insurance, telecom, cleaning, waste, security, and other local operators.";
-    }
-
-    function monetizationNotes(rec){
-      if (rec.buyerType === "capital") return "Package as a premium intelligence brief, lender lead, redevelopment signal, or strategic intro asset.";
-      if (rec.buyerType === "contractor") return "Package as a fresh lead, route-ready job signal, or weekly trade-specific lead drop.";
-      if (rec.buyerType === "supplier") return "Package as a new-opening / active TI signal to vendors that win on timing.";
-      return "Package as a local trigger alert with a clear service angle and ready-to-send outreach copy.";
-    }
-
-    function applyFilters(){
-      const minScore = Number($("minScoreInput").value || 55);
-      const q = $("searchInput").value.trim().toLowerCase();
-
-      let rows = [...state.scored];
-      rows = rows.filter(r => r.saleability >= minScore);
-      if (state.buyerFilter !== "all") rows = rows.filter(r => r.buyerType === state.buyerFilter);
-      if (q) rows = rows.filter(r =>
-        `${r.address} ${r.permitType} ${r.description} ${r.owner} ${r.contractor}`.toLowerCase().includes(q)
-      );
-
-      state.filtered = rows;
-      state.pipeline.rendered = rows.length;
-      setPipeline();
-
-      renderStats(rows);
-      renderSignals(rows);
-
-      if (rows.length && !rows.find(r => r.id === state.selectedId)) state.selectedId = rows[0].id;
-      renderDetail(rows.find(r => r.id === state.selectedId) || null);
-    }
-
-    function renderStats(rows){
-      const total = rows.reduce((sum,r) => sum + (r.value || 0), 0);
-      $("signalsCount").textContent = rows.length.toLocaleString();
-      $("totalValue").textContent = formatMoney(total);
-      $("sellableCount").textContent = rows.length.toLocaleString();
-      $("majorCount").textContent = rows.filter(r => r.major).length.toLocaleString();
-      $("resultsMeta").textContent = `${rows.length} signals • ${getSource().city} • ${state.usedMock ? "mock fallback" : state.usedCache ? "cached" : "live"}`;
-    }
-
-    function renderSignals(rows){
-      const wrap = $("signals");
-      if (!rows.length){
-        wrap.innerHTML = `<div class="box"><p>No matching signals. Lower the score, widen days back, or switch source.</p></div>`;
-        return;
-      }
-
-      wrap.innerHTML = rows.map(r => `
-        <div class="card ${r.id === state.selectedId ? "active" : ""}" data-id="${escapeAttr(r.id)}">
-          <div class="toprow">
-            <div>
-              <div class="title">${escapeHtml(r.address)}</div>
-              <div class="small">${escapeHtml(r.permitType)} • ${escapeHtml(r.city)}</div>
-            </div>
-            <div class="score">${r.saleability}/100</div>
-          </div>
-          <div class="tags">
-            <span class="tag good">${formatMoney(r.value)}</span>
-            <span class="tag blue">${escapeHtml(prettyBuyer(r.buyerType))}</span>
-            <span class="tag violet">${escapeHtml(r.vertical)}</span>
-            ${r.immediate ? `<span class="tag warn">Immediate</span>` : ``}
-          </div>
-          <div class="meta">
-            <span>${escapeHtml(formatDate(r.date))}</span>
-            <span>•</span>
-            <span>${escapeHtml(r.channel)}</span>
-            ${r.contractor ? `<span>• ${escapeHtml(r.contractor)}</span>` : ``}
-          </div>
-          <div class="desc">${escapeHtml(truncate(r.description, 180))}</div>
-        </div>
-      `).join("");
-
-      [...wrap.querySelectorAll(".card")].forEach(card => {
-        card.addEventListener("click", () => {
-          state.selectedId = card.dataset.id;
-          renderSignals(rows);
-          renderDetail(rows.find(r => r.id === state.selectedId));
-        });
-      });
-    }
-
-    function renderDetail(rec){
-      $("detailMeta").textContent = rec ? `${rec.city} • ${prettyBuyer(rec.buyerType)} • ${rec.saleability}/100` : "Select a signal";
-      const el = $("detail");
-
-      if (!rec){
-        el.innerHTML = `<div class="box"><p>No signal selected.</p></div>`;
-        return;
-      }
-
-      el.innerHTML = `
-        <div class="box">
-          <h3>${escapeHtml(rec.address)}</h3>
-          <p>${escapeHtml(rec.angle)}</p>
-          <div class="actions">
-            <button class="btn primary" id="copyBriefBtn">Copy Brief</button>
-            <button class="btn ghost" id="copyPitchBtn">Copy Pitch</button>
-            <button class="btn ghost" id="printBtn">Print Brief</button>
-          </div>
-        </div>
-        <div class="box">
-          <h3>Why this is sellable</h3>
-          <ul class="list">
-            <li>Score: <strong>${rec.saleability}/100</strong></li>
-            <li>Value band: <strong>${escapeHtml(formatMoney(rec.value))}</strong></li>
-            <li>Buyer route: <strong>${escapeHtml(prettyBuyer(rec.buyerType))}</strong></li>
-            <li>Monetization channel: <strong>${escapeHtml(rec.channel)}</strong></li>
-            <li>Named entities: <strong>${escapeHtml(rec.owner || rec.contractor || "Partial")}</strong></li>
-          </ul>
-        </div>
-        <div class="box">
-          <h3>Client Brief</h3>
-          <div class="brief">${escapeHtml(rec.brief)}</div>
-        </div>
-      `;
-
-      $("copyBriefBtn").addEventListener("click", () => copyText(rec.brief, "Brief copied"));
-      $("copyPitchBtn").addEventListener("click", () => copyText(rec.outreach, "Pitch copied"));
-      $("printBtn").addEventListener("click", () => printBrief(rec));
-    }
-
-    function loadMock(reason){
-      state.usedMock = true;
-      state.usedCache = false;
-
-      const sourceCity = getSource().city;
-      const base = sourceCity === "Seattle" ? mockRowsSeattle() : mockRowsChicago();
-      const scored = base
-        .map(r => scoreRecord(r))
-        .sort((a,b) => {
-          if (b.saleability !== a.saleability) return b.saleability - a.saleability;
-          return (b.value||0) - (a.value||0);
-        });
-
-      state.scored = scored;
-      state.pipeline = { raw: scored.length, normalized: scored.length, scored: scored.length, rendered: 0 };
-      setStatus(reason || "Mock fallback loaded");
-      setPipeline();
-      applyFilters();
-    }
-
-    function mockRowsChicago(){
-      return [
-        baseMock("Chicago","3320 W DICKENS AVE","PERMIT - NEW CONSTRUCTION","Full building permit for multi-unit construction with rooftop deck and detached garage.",1131050,"2026-03-03","HANNA, JOHN C","", "capital"),
-        baseMock("Chicago","6920 S ASHLAND AVE","PERMIT - RENOVATION/ALTERATION","Retail space to nail salon buildout with 16 plumbed pedicure chairs and hand sinks.",150000,"2026-03-03","", "", "supplier"),
-        baseMock("Chicago","3530 W 38TH PL","PERMIT – EXPRESS PERMIT PROGRAM","Roof replacement with asphalt shingles.",1556369,"2026-03-02","", "Licensed Roofing Contractor", "contractor")
-      ];
-    }
-
-    function mockRowsSeattle(){
-      return [
-        baseMock("Seattle","456 1st Ave S","Demolition","Full structure demolition and site prep ahead of redevelopment.",760000,"2026-02-20","1st Ave Redevelopment LLC","", "capital"),
-        baseMock("Seattle","2215 4th Ave","Tenant Improvement","Cafe opening including plumbing, counters, and finish upgrades.",148000,"2026-02-26","Fourth Ave Foods","Urban Build Co", "supplier"),
-        baseMock("Seattle","1023 E Pike St","Mechanical","HVAC replacement and ventilation improvements for food-service occupancy.",94000,"2026-02-28","Pike Street Ventures","Northwest Mechanical", "contractor")
-      ];
-    }
-
-    function baseMock(city,address,permitType,description,value,date,owner,contractor,buyerType){
-      const textBlob = `${permitType} ${description} ${owner} ${contractor}`.toLowerCase();
-      return {
-        id: `${city}-${address}-${Math.random().toString(36).slice(2,8)}`,
-        permitId: `MOCK-${Math.random().toString(36).slice(2,8).toUpperCase()}`,
-        city,
-        sourceLabel: `${city} Mock`,
-        sourceUrl: "mock://local",
-        address,
-        date,
-        value,
-        permitType,
-        description,
-        owner,
-        contractor,
-        buyerType,
-        channel: detectChannel(textBlob, value, permitType),
-        vertical: detectVertical(textBlob),
-        raw: {},
-        urgencyDays: daysAgo(date),
-        textBlob
-      };
-    }
-
-    function pick(obj, keys){
-      for (const key of keys){
-        if (obj && obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== "") return obj[key];
-      }
-      return "";
-    }
-
-    function cleanText(v){ return String(v || "").replace(/\s+/g, " ").trim(); }
-
-    function toMoney(v){
-      const n = Number(String(v || "").replace(/[^\d.-]/g, ""));
+    function fmtScore(v) {
+      const n = Number(v);
       return Number.isFinite(n) ? n : 0;
     }
 
-    function daysAgo(iso){
-      const t = Date.parse(iso);
-      if (!Number.isFinite(t)) return 9999;
-      return Math.max(0, Math.floor((Date.now() - t) / 86400000));
+    function clearSelection() {
+      state.selected = null;
+      document.getElementById('detail-container').innerHTML =
+        '<p style="color:var(--text-muted); font-size:13px;">Select an item from the list to analyze.</p>';
+      document.getElementById('output-area').value = '';
     }
 
-    function formatMoney(n){
-      return new Intl.NumberFormat("en-US", {
-        style:"currency",
-        currency:"USD",
-        maximumFractionDigits:0
-      }).format(Number(n || 0));
+    async function init() {
+      await loadSignals();
     }
 
-    function formatDate(iso){
-      const t = Date.parse(iso);
-      if (!Number.isFinite(t)) return "Unknown date";
-      return new Intl.DateTimeFormat("en-US", {
-        year:"numeric",
-        month:"short",
-        day:"numeric"
-      }).format(new Date(t));
-    }
-
-    function prettyBuyer(v){
-      return ({
-        all:"All",
-        supplier:"Supplier / Vendor",
-        contractor:"Contractor / Trades",
-        capital:"Capital / Lender / Broker",
-        service:"Local Service / Agency"
-      }[v] || v);
-    }
-
-    function truncate(s,n){
-      return (s||"").length > n ? s.slice(0,n-1) + "…" : (s||"");
-    }
-
-    function cryptoRandomId(){
-      return Math.random().toString(36).slice(2,10).toUpperCase();
-    }
-
-    function escapeHtml(s){
-      return String(s || "").replace(/[&<>"']/g, (m) => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-      }[m]));
-    }
-
-    function escapeAttr(s){
-      return escapeHtml(s).replace(/"/g, "&quot;");
-    }
-
-    function clamp(n,min,max){
-      n = Number(n);
-      if (!Number.isFinite(n)) return min;
-      return Math.max(min, Math.min(max, n));
-    }
-
-    function delay(ms){
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function copyText(text, msg){
-      try{
-        await navigator.clipboard.writeText(text);
-        setStatus(msg);
-      } catch(e){
-        setStatus("Copy failed in this browser");
+    async function triggerCron() {
+      try {
+        showLoader(true);
+        setStatus('Running engines...');
+        const result = await api('/cron/fetch', { method: 'POST' });
+        setStatus(`Inserted ${result.inserted || 0} permits`);
+        if (state.currentTab === 'signals') {
+          await loadSignals();
+        } else if (state.currentTab === 'entities') {
+          await loadEntities();
+        } else if (state.currentTab === 'zones') {
+          const activeZoneBtn = document.querySelector('#zone-subtabs .sub-tab.active');
+          if (activeZoneBtn && activeZoneBtn.textContent.toLowerCase().includes('corridor')) {
+            await loadZones('corridor', activeZoneBtn);
+          } else {
+            await loadZones('zip', document.querySelector('#zone-subtabs .sub-tab'));
+          }
+        }
+      } catch (e) {
+        setStatus('Run failed');
+        alert('Fetch failed: ' + e.message);
+      } finally {
+        showLoader(false);
       }
     }
 
-    function printBrief(rec){
-      const w = window.open("", "_blank");
-      if(!w) return;
-      w.document.write(`<!doctype html><html><head><title>Client Brief</title><style>body{font-family:Arial,sans-serif;padding:24px;line-height:1.55;color:#111}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><h1>${escapeHtml(rec.address)}</h1><pre>${escapeHtml(rec.brief)}</pre></body></html>`);
-      w.document.close();
-      w.focus();
-      w.print();
+    async function switchMainTab(tab, btn) {
+      document.querySelectorAll('.tab[data-tab]').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+
+      state.currentTab = tab;
+      clearSelection();
+      document.getElementById('zone-subtabs').classList.add('hidden');
+
+      if (tab === 'signals') {
+        document.getElementById('list-title').innerText = 'Intelligence Feed';
+        await loadSignals();
+      } else if (tab === 'entities') {
+        document.getElementById('list-title').innerText = 'Active Entities';
+        await loadEntities();
+      } else if (tab === 'zones') {
+        document.getElementById('list-title').innerText = 'Zone Analysis';
+        document.getElementById('zone-subtabs').classList.remove('hidden');
+        const first = document.querySelector('#zone-subtabs .sub-tab');
+        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        first.classList.add('active');
+        await loadZones('zip', first);
+      }
+    }
+
+    async function loadSignals() {
+      showLoader(true);
+      setStatus('Loading signals...');
+      try {
+        state.data = await api('/signals');
+        renderList(state.data, 'signal');
+        setStatus(`${state.data.length} signals loaded`);
+      } catch (e) {
+        setStatus('Signals failed');
+        alert('Signals failed: ' + e.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function loadEntities() {
+      showLoader(true);
+      setStatus('Loading entities...');
+      try {
+        state.data = await api('/entities');
+        renderList(state.data, 'entity');
+        setStatus(`${state.data.length} entities loaded`);
+      } catch (e) {
+        setStatus('Entities failed');
+        alert('Entities failed: ' + e.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function loadZones(type, btn) {
+      document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+
+      showLoader(true);
+      setStatus(`Loading ${type === 'zip' ? 'ZIPs' : 'corridors'}...`);
+      clearSelection();
+
+      try {
+        state.data = await api(type === 'zip' ? '/zip-stats' : '/corridors');
+        renderList(state.data, type);
+        setStatus(`${state.data.length} ${type === 'zip' ? 'ZIPs' : 'corridors'} loaded`);
+      } catch (e) {
+        setStatus('Zones failed');
+        alert('Zones failed: ' + e.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function renderList(items, type) {
+      const container = document.getElementById('list-container');
+      container.innerHTML = '';
+
+      if (!items || !items.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            No results found.<br /><br />
+            Try clicking <strong>[Run Engines]</strong> to refresh the live dataset.
+          </div>
+        `;
+        return;
+      }
+
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.onclick = () => selectItem(item, type, div);
+
+        if (type === 'signal') {
+          const horiz = String(item.temporal_horizon || 'LATENT').toLowerCase();
+          div.innerHTML = `
+            <div class="tag ${horiz}">${item.temporal_horizon || 'LATENT'}</div>
+            <div class="card-title">${fmtSignalType(item.signal_type)}</div>
+            <div class="card-meta">${item.address || item.target_id || item.id || 'Unknown target'}</div>
+            <div class="card-meta">Score: ${fmtScore(item.score)}</div>
+          `;
+        } else if (type === 'entity') {
+          div.innerHTML = `
+            <div class="tag entity">ENTITY</div>
+            <div class="card-title">${item.display_name || 'Unknown'}</div>
+            <div class="card-meta">Permits: ${item.total_permits || 0} | ZIPs: ${item.zip_count || 0}</div>
+            <div class="card-meta">First seen: ${fmtDate(item.first_seen)}</div>
+          `;
+        } else if (type === 'zip') {
+          div.innerHTML = `
+            <div class="card-title">ZIP ${item.zip_code || 'Unknown'}</div>
+            <div class="card-meta">Permits: ${item.permit_count || 0}</div>
+            <div class="card-meta">Acceleration: ${Number(item.acceleration_pct || 0).toFixed(1)}%</div>
+          `;
+        } else if (type === 'corridor') {
+          div.innerHTML = `
+            <div class="card-title">${item.street || 'Unknown'} Corridor</div>
+            <div class="card-meta">Active Permits: ${item.permit_count || 0} | Sub Score: ${item.sub_score || 0}</div>
+            <div class="card-meta">MEP: ${item.mep_count || 0} | Struct: ${item.structure_count || 0} | Finish: ${item.finish_count || 0}</div>
+          `;
+        }
+
+        container.appendChild(div);
+      });
+    }
+
+    function selectItem(item, type, element) {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+      element.classList.add('selected');
+      state.selected = { item, type };
+
+      let html = '';
+
+      if (type === 'signal') {
+        const meta = safeJson(item.metadata, {});
+        const buyers = safeJson(item.best_buyers, []);
+
+        html = `
+          <div class="detail-section">
+            <h3>Signal Vector</h3>
+            <div class="data-grid">
+              <div><div class="data-label">Type</div><div class="data-value">${fmtSignalType(item.signal_type)}</div></div>
+              <div><div class="data-label">Horizon</div><div class="data-value">${item.temporal_horizon || ''}</div></div>
+              <div><div class="data-label">Target</div><div class="data-value">${item.target_id || item.address || ''}</div></div>
+              <div><div class="data-label">Score</div><div class="data-value">${fmtScore(item.score)}</div></div>
+              <div><div class="data-label">Address</div><div class="data-value">${item.address || ''}</div></div>
+              <div><div class="data-label">Permit Type</div><div class="data-value">${item.permit_type || ''}</div></div>
+              <div><div class="data-label">City</div><div class="data-value">${item.city || ''}</div></div>
+              <div><div class="data-label">Issued Date</div><div class="data-value">${item.issued_date || 'N/A'}</div></div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h3>Metadata</h3>
+            <pre>${escapeHtml(JSON.stringify(meta, null, 2))}</pre>
+          </div>
+          <div class="detail-section">
+            <h3>Buyer Match Routing</h3>
+            ${buyers.length ? buyers.map(b => `
+              <div class="buyer-match">
+                <div class="buyer-match-header">
+                  <span>${b.buyer_type || ''}</span>
+                  <span class="buyer-match-score">${b.fit_score || 0} FIT</span>
+                </div>
+                <div class="buyer-match-why">${b.why || ''}</div>
+              </div>
+            `).join('') : '<div class="buyer-match"><div class="buyer-match-why">No buyer matches available.</div></div>'}
+          </div>
+        `;
+      } else if (type === 'entity') {
+        html = `
+          <div class="detail-section">
+            <h3>Entity Dossier</h3>
+            <div class="data-grid">
+              <div><div class="data-label">Name</div><div class="data-value">${item.display_name || ''}</div></div>
+              <div><div class="data-label">Total Permits</div><div class="data-value">${item.total_permits || 0}</div></div>
+              <div><div class="data-label">ZIP Count</div><div class="data-value">${item.zip_count || 0}</div></div>
+              <div><div class="data-label">First Seen</div><div class="data-value">${fmtDate(item.first_seen)}</div></div>
+              <div><div class="data-label">Last Seen</div><div class="data-value">${fmtDate(item.last_seen)}</div></div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h3>Why This Matters</h3>
+            <pre>${escapeHtml(JSON.stringify(item, null, 2))}</pre>
+          </div>
+        `;
+      } else if (type === 'corridor') {
+        html = `
+          <div class="detail-section">
+            <h3>Corridor Intelligence</h3>
+            <div class="data-grid">
+              <div><div class="data-label">Street</div><div class="data-value">${item.street || ''}</div></div>
+              <div><div class="data-label">Permits</div><div class="data-value">${item.permit_count || 0}</div></div>
+              <div><div class="data-label">MEP</div><div class="data-value">${item.mep_count || 0}</div></div>
+              <div><div class="data-label">Structure</div><div class="data-value">${item.structure_count || 0}</div></div>
+              <div><div class="data-label">Finish</div><div class="data-value">${item.finish_count || 0}</div></div>
+              <div><div class="data-label">Sub Score</div><div class="data-value">${item.sub_score || 0}</div></div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h3>Why This Matters</h3>
+            <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">
+              High-activity corridors can indicate concentrated bidding opportunity for subs, suppliers, capital providers,
+              and local service vendors.
+            </p>
+          </div>
+        `;
+      } else {
+        html = `
+          <div class="detail-section">
+            <h3>Zone Data</h3>
+            <pre>${escapeHtml(JSON.stringify(item, null, 2))}</pre>
+          </div>
+        `;
+      }
+
+      document.getElementById('detail-container').innerHTML = html;
+    }
+
+    function generateOutput(briefType) {
+      if (!state.selected) {
+        alert('Select an item first.');
+        return;
+      }
+
+      const { item, type } = state.selected;
+      const targetId = item.target_id || item.display_name || item.zip_code || item.street || item.address || 'Target';
+      const meta = type === 'signal' ? safeJson(item.metadata, {}) : item;
+      const date = new Date().toISOString().split('T')[0];
+      let text = '';
+
+      if (briefType === 'Contractor Lead Brief') {
+        text = `TITLE: Tactical Contractor Pipeline Brief
+DATE: ${date}
+GENERATED FOR: Local Subs & GCs
+
+TARGET RECORD: ${targetId}
+SIGNAL TYPE: ${item.signal_type || 'N/A'}
+PERMIT TYPE: ${item.permit_type || meta.permit_type || 'N/A'}
+CITY: ${item.city || meta.city || 'N/A'}
+
+WHY THIS MATTERS NOW:
+This record suggests active construction movement and probable vendor demand in the near term.
+
+RECOMMENDED OUTREACH:
+Lead with speed, availability, and direct relevance to the current project phase.
+
+NOTES:
+Address: ${item.address || meta.address || 'N/A'}
+Source ID: ${meta.source_id || item.id || 'N/A'}`;
+      } else if (briefType === 'Capital Intelligence Brief') {
+        text = `TITLE: Capital Movement & Expansion Intelligence
+DATE: ${date}
+
+ACTIVE ASSET / ZONE: ${targetId}
+VECTOR: ${item.signal_type || 'N/A'}
+HORIZON: ${item.temporal_horizon || 'N/A'}
+
+NEXT 30-90 DAYS IMPLICATION:
+Permit activity suggests expansion, redevelopment, repositioning, or near-term deployment needs.
+
+NOTES:
+Permit Type: ${item.permit_type || meta.permit_type || 'N/A'}
+City: ${item.city || meta.city || 'N/A'}`;
+      } else if (briefType === 'Distress Opportunity Brief') {
+        text = `TITLE: Stalled Asset & Distress Signals
+DATE: ${date}
+
+FLAGGED RECORD: ${targetId}
+SIGNAL: ${item.signal_type || 'N/A'}
+HORIZON: ${item.temporal_horizon || 'N/A'}
+
+ANALYSIS:
+This record may indicate trapped capital, delayed execution, redevelopment turnover, or repositioning opportunity.
+
+NOTES:
+Address: ${item.address || meta.address || 'N/A'}
+Permit Type: ${item.permit_type || meta.permit_type || 'N/A'}`;
+      } else if (briefType === 'Outreach Copy') {
+        text = `SUBJECT: Quick question regarding ${targetId}
+
+Hi [Name],
+
+I noticed recent permit activity tied to ${targetId}.
+
+Usually when this type of movement shows up, teams are lining up vendors, subs, or capital for the next phase.
+
+Are you currently taking bids or conversations for this phase?
+
+Best,
+[Your Name]`;
+      }
+
+      document.getElementById('output-area').value = text;
+    }
+
+    function copyOutput() {
+      const text = document.getElementById('output-area').value;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        setStatus('Copied to clipboard');
+      }).catch(() => {
+        alert('Copy failed. Please copy manually.');
+      });
     }
 
     init();
