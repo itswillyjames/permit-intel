@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Permit Intelligence Engine v11 — Solo Tool</title>
-  <meta name="description" content="Real-data-first OSINT permit intelligence console: normalize, score, route buyers, generate sellable briefs." />
+  <title>Permit Intelligence Engine v12 — Solo Tool</title>
+  <meta
+    name="description"
+    content="Real-data-first OSINT permit intelligence console: normalize, score, route buyers, and generate sellable client briefs."
+  />
   <style>
     :root{
       --bg:#0a0a10;
@@ -24,15 +27,15 @@
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background:linear-gradient(180deg,#09090b 0%, #101019 100%);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background:linear-gradient(180deg,#09090b 0%,#101019 100%);
       color:var(--text);
     }
     button,select,input,textarea{font:inherit}
     .wrap{max-width:1440px;margin:0 auto;padding:18px}
     .hero{
       display:grid;gap:12px;margin-bottom:16px;
-      background:linear-gradient(135deg, rgba(239,68,68,.16), rgba(59,130,246,.1));
+      background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(59,130,246,.1));
       border:1px solid var(--line);
       border-radius:18px;padding:20px;
       box-shadow:var(--shadow);
@@ -42,8 +45,9 @@
     .sub{color:var(--muted);max-width:980px;line-height:1.45}
     .toolbar{
       display:grid;
-      grid-template-columns: 1.6fr .9fr .9fr .9fr 1.2fr auto auto;
-      gap:10px;align-items:center;
+      grid-template-columns:1.5fr .8fr .8fr .8fr 1.2fr auto auto;
+      gap:10px;
+      align-items:center;
     }
     .field,.btn,.seg button,.pill{
       border-radius:12px;
@@ -58,16 +62,12 @@
     .btn:hover{transform:translateY(-1px)}
     .btn.primary{background:var(--accent);border-color:#b91c1c}
     .btn.ghost{background:var(--panel)}
-    .btn.small{min-height:38px;padding:0 12px;font-weight:800}
+    .btn.small{min-height:38px;padding:0 12px}
     .seg{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .seg button{
-      min-height:38px;cursor:pointer;color:var(--muted);font-weight:800;
-      padding:0 12px;
-    }
+    .seg button{min-height:38px;cursor:pointer;color:var(--muted);font-weight:800;padding:0 12px}
     .seg button.active{color:var(--text);border-color:#57576b;background:var(--panel2)}
     .statusbar{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
     .pill{display:inline-flex;align-items:center;font-size:13px;color:var(--muted);gap:8px}
-    .pill b{color:var(--text)}
     .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
     .stat{
       background:var(--panel);
@@ -78,13 +78,14 @@
     }
     .stat .n{font-size:30px;font-weight:900;margin-bottom:6px}
     .stat .l{color:var(--muted);font-size:14px}
-    .layout{display:grid;grid-template-columns:1.25fr 1.05fr;gap:14px}
+    .layout{display:grid;grid-template-columns:1.2fr 1.05fr;gap:14px}
     .panel{
       background:var(--panel);
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      min-height:440px;overflow:hidden;
+      min-height:440px;
+      overflow:hidden;
     }
     .panelhead{
       display:flex;justify-content:space-between;align-items:center;gap:10px;
@@ -123,15 +124,32 @@
     .meta{color:var(--muted);font-size:13px;margin:8px 0}
     .desc{color:#e4e4e7;font-size:14px;line-height:1.5;margin-top:8px}
     .detail{padding:16px;display:grid;gap:14px}
-    .box{border:1px solid var(--line);background:var(--panel2);border-radius:14px;padding:14px}
+    .box{
+      border:1px solid var(--line);
+      background:var(--panel2);
+      border-radius:14px;
+      padding:14px;
+    }
     .box h3{margin:0 0 10px;font-size:15px}
     .box p{margin:0;color:#e4e4e7;line-height:1.55}
     .list{margin:0;padding-left:18px;color:#e4e4e7}
     .list li{margin:6px 0}
     .actions{margin-top:8px}
-    .brief{white-space:pre-wrap;line-height:1.55;color:#f4f4f5;font-size:14px;max-height:420px;overflow:auto}
+    .brief{
+      white-space:pre-wrap;
+      line-height:1.55;
+      color:#f4f4f5;
+      font-size:14px;
+      max-height:420px;
+      overflow:auto;
+    }
     .footerNote{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.55}
-    details.debug{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:14px;padding:10px 12px}
+    details.debug{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      border-radius:14px;
+      padding:10px 12px;
+    }
     details.debug summary{cursor:pointer;color:#e5e7eb;font-weight:900}
     pre.debug{
       margin:10px 0 0;
@@ -142,7 +160,6 @@
       line-height:1.5;
     }
     code{color:#f5f5f5}
-    a{color:#93c5fd}
     @media (max-width:1180px){
       .toolbar{grid-template-columns:1fr 1fr 1fr}
       .layout{grid-template-columns:1fr}
@@ -158,10 +175,10 @@
   <div class="wrap">
     <section class="hero">
       <div class="eyebrow">OSINT arbitrage • solo deal console</div>
-      <h1>Permit Intelligence Engine v11</h1>
+      <h1>Permit Intelligence Engine v12</h1>
       <div class="sub">
         Real-data-first, free, static, deployable today. Pull public permits, normalize into one schema, score for sellability,
-        route to buyer type, and generate a printable Client Brief you can sell immediately.
+        route to buyer type, and generate printable client briefs you can sell immediately.
       </div>
 
       <div class="toolbar">
@@ -180,10 +197,10 @@
         <div class="pill" id="statusPill">Idle</div>
         <div class="pill" id="pipelinePill">raw: 0 • normalized: 0 • scored: 0 • rendered: 0</div>
         <div class="pill" id="modePill">mode: none</div>
-        <button id="clearCacheBtn" class="btn ghost small" title="Clear cached last-good data for this source">Clear cache</button>
+        <button id="clearCacheBtn" class="btn ghost small">Clear cache</button>
       </div>
 
-      <details class="debug" id="debugBox">
+      <details class="debug">
         <summary>Debug (last fetch + error)</summary>
         <pre class="debug" id="debugText">No fetch yet.</pre>
       </details>
@@ -217,39 +234,27 @@
     </section>
 
     <div class="footerNote">
-      Live data → cached last-good → mock fallback (only as a safety rail). If Seattle fails again, open Debug and paste the error.
-      Optional later: add a Socrata app token in <code>APP_TOKEN</code> to reduce throttling.
+      Live data → cached last-good → mock fallback. If fetch fails, open Debug and paste the error. Optional later: add a Socrata app token in <code>APP_TOKEN</code> to reduce throttling and shared-IP issues.
     </div>
   </div>
 
   <script>
-    // Optional later (still free): create a Socrata app token and paste here to reduce throttling.
     const APP_TOKEN = "";
 
-    // Global field dictionary (keeps Seattle from breaking due to different column names)
     const FIELD = {
       date: [
-        // Chicago-style
         "issue_date","application_date","applied_date","application_start_date","permit_and_complaint_status_date","issue_date_2",
-        // Seattle-style (76t5-zqzr)
         "issueddate","applieddate","expiresdate","completeddate"
       ],
       value: [
-        // Chicago-ish
-        "estimated_cost","reported_cost","value","valuation","declared_value","project_value","est_project_cost","est_project_cost_2","cost",
-        // Seattle
+        "estimated_cost","reported_cost","value","valuation","declared_value","project_value","est_project_cost","cost",
         "estprojectcost"
       ],
       permitId: [
-        // Chicago-ish
-        "id","permit_number","permit_num","application_number","recordid","permit_and_complaint_id","permit_",
-        // Seattle
-        "permitnum"
+        "id","permit_number","permit_num","application_number","recordid","permit_and_complaint_id","permit_","permitnum"
       ],
       permitType: [
-        // Chicago-ish
         "permit_type","permittype","work_type","category","permit_class","permit_class_mapped","record_type",
-        // Seattle
         "permitclass","permittypedesc","permittypemapped"
       ],
       description: [
@@ -263,7 +268,6 @@
       ],
       address: [
         "address","street_address","site_address","project_address","address_full","originaladdress",
-        // Seattle often has address fields like this
         "siteaddress","address1","address2"
       ]
     };
@@ -274,7 +278,6 @@
         label: "Chicago — Building Permits",
         city: "Chicago",
         url: "https://data.cityofchicago.org/resource/ydr8-5enu.json",
-        // Chicago supports issue_date ordering
         orderBy: "issue_date"
       },
       {
@@ -282,7 +285,6 @@
         label: "Seattle — Building Permits",
         city: "Seattle",
         url: "https://data.seattle.gov/resource/76t5-zqzr.json",
-        // FIX: Seattle uses issueddate/applieddate, not application_date
         orderBy: "issueddate"
       }
     ];
@@ -296,7 +298,6 @@
     ];
 
     const state = {
-      raw: [],
       scored: [],
       filtered: [],
       selectedId: null,
@@ -320,7 +321,7 @@
 
     function bind(){
       $("runBtn").addEventListener("click", () => runEngine());
-      $("mockBtn").addEventListener("click", () => runEngine({forceMock:true}));
+      $("mockBtn").addEventListener("click", () => runEngine({ forceMock:true }));
       $("searchInput").addEventListener("input", applyFilters);
       $("minScoreInput").addEventListener("input", applyFilters);
       $("sourceSelect").addEventListener("change", (e) => {
@@ -330,8 +331,9 @@
         runEngine();
       });
       $("clearCacheBtn").addEventListener("click", () => {
-        try { localStorage.removeItem(cacheKey()); } catch(e) {}
+        try { localStorage.removeItem(cacheKey()); } catch(e){}
         state.usedCache = false;
+        state.usedMock = false;
         setStatus("Cache cleared for this source.");
         renderModePill();
       });
@@ -355,7 +357,9 @@
       });
     }
 
-    function getSource(){ return SOURCES.find(s => s.id === state.sourceId) || SOURCES[0]; }
+    function getSource(){
+      return SOURCES.find(s => s.id === state.sourceId) || SOURCES[0];
+    }
 
     function setStatus(text){
       $("statusPill").textContent = text;
@@ -371,10 +375,11 @@
       renderModePill();
     }
 
-    function cacheKey(){ return `permit-intel-cache:${state.sourceId}`; }
+    function cacheKey(){
+      return `permit-intel-cache:${state.sourceId}`;
+    }
 
     function hydrateFromCache(){
-      // Only hydrate if we have cached rows; do not overwrite a live run in progress.
       try{
         const raw = localStorage.getItem(cacheKey());
         if(!raw) return;
@@ -385,6 +390,7 @@
           state.usedMock = false;
           state.pipeline = { raw: parsed.rows.length, normalized: parsed.rows.length, scored: parsed.rows.length, rendered: 0 };
           setStatus(`Loaded cached last-good data for ${getSource().city}`);
+          setPipeline();
           applyFilters();
         }
       } catch(e){}
@@ -397,7 +403,7 @@
         `URL: ${s.url || "(none)"}\n` +
         `HTTP: ${s.status || "(none)"}\n` +
         (s.error ? `Error: ${s.error}\n` : "") +
-        `Tip: If HTTP is 400, it usually means a bad $order field. If HTTP is 429, it is throttling.`;
+        `Tip: HTTP none usually means browser/network/extension blocking before a normal response. 400 usually means a bad field. 429 usually means throttling.`;
     }
 
     async function runEngine(opts = {}){
@@ -411,7 +417,6 @@
       writeDebug();
 
       if(forceMock){
-        setStatus("Loading mock fallback…");
         loadMock("Manual mock fallback");
         return;
       }
@@ -428,21 +433,31 @@
 
         const normalized = rows.map(r => normalizeRecord(r, getSource())).filter(Boolean);
         state.pipeline.normalized = normalized.length;
+
         if(!normalized.length) throw new Error("Normalization produced 0 usable rows");
 
-        const scored = normalized.map(scoreRecord).sort((a,b) => b.saleability - a.saleability);
-        state.pipeline.scored = scored.length;
+        const scored = normalized
+          .map(scoreRecord)
+          .sort((a,b) => {
+            if (b.saleability !== a.saleability) return b.saleability - a.saleability;
+            if ((b.value||0) !== (a.value||0)) return (b.value||0) - (a.value||0);
+            return (a.urgencyDays||9999) - (b.urgencyDays||9999);
+          });
 
+        state.pipeline.scored = scored.length;
         state.scored = scored;
-        try { localStorage.setItem(cacheKey(), JSON.stringify({ savedAt: new Date().toISOString(), rows: scored })); } catch(e) {}
+
+        try{
+          localStorage.setItem(cacheKey(), JSON.stringify({ savedAt:new Date().toISOString(), rows:scored }));
+        } catch(e){}
 
         setStatus(`Live data loaded from ${getSource().city}`);
         setPipeline();
         writeDebug();
         applyFilters();
-      } catch (err){
+      } catch(err){
         console.error(err);
-        state.lastFetch.error = (err && err.message) ? err.message : String(err || "Unknown error");
+        state.lastFetch.error = err && err.message ? err.message : String(err || "Unknown error");
         writeDebug();
 
         const cached = tryLoadCacheRows();
@@ -457,8 +472,78 @@
           return;
         }
 
-        loadMock("Live fetch failed — using mock fallback (open Debug to see why)");
+        loadMock("Live fetch failed — using mock fallback");
       }
+    }
+
+    async function fetchSourceRows(source, limit){
+      const baseQs = new URLSearchParams();
+      baseQs.set("$limit", String(Math.max(25, Math.min(1000, limit || 250))));
+
+      const headers = { "Accept":"application/json" };
+      if(APP_TOKEN) headers["X-App-Token"] = APP_TOKEN;
+
+      const attemptList = [
+        { withOrder:true, label:"ordered" },
+        { withOrder:true, label:"ordered retry" },
+        { withOrder:false, label:"unordered fallback" }
+      ];
+
+      let lastErr = null;
+
+      for(const attempt of attemptList){
+        try{
+          const qs = new URLSearchParams(baseQs);
+          if(attempt.withOrder && source.orderBy) qs.set("$order", `${source.orderBy} DESC`);
+
+          const fetchUrl = `${source.url}?${qs.toString()}`;
+          state.lastFetch.url = fetchUrl;
+          state.lastFetch.status = "";
+          state.lastFetch.error = "";
+          writeDebug();
+
+          const res = await fetch(fetchUrl, {
+            headers,
+            cache: "no-store",
+            mode: "cors"
+          });
+
+          const httpStatus = res.status;
+          state.lastFetch.status = String(httpStatus);
+
+          if(!res.ok){
+            let msg = `HTTP ${res.status}`;
+            try{
+              const txt = await res.text();
+              if(txt) msg += ` — ${txt.slice(0,240)}`;
+            } catch(e){}
+            throw new Error(`${attempt.label}: ${msg}`);
+          }
+
+          const data = await res.json();
+          if(!Array.isArray(data)) throw new Error(`${attempt.label}: Unexpected payload`);
+
+          const days = clamp(Number($("daysInput").value || 90), 7, 365);
+          const cutoff = Date.now() - days * 86400000;
+
+          const rows = data.filter((row) => {
+            const dt = pick(row, FIELD.date);
+            const t = Date.parse(dt);
+            return !Number.isFinite(t) || t >= cutoff;
+          });
+
+          state.lastFetch.error = "";
+          writeDebug();
+          return { rows, fetchUrl, httpStatus };
+        } catch(err){
+          lastErr = err;
+          state.lastFetch.error = err && err.message ? err.message : String(err);
+          writeDebug();
+          await delay(450);
+        }
+      }
+
+      throw lastErr || new Error("Failed to fetch");
     }
 
     function tryLoadCacheRows(){
@@ -468,50 +553,6 @@
       } catch(e){
         return [];
       }
-    }
-
-    async function fetchSourceRows(source, limit){
-      const qs = new URLSearchParams();
-      qs.set("$limit", String(Math.max(25, Math.min(1000, limit || 250))));
-
-      // IMPORTANT: only order by a field we intentionally configured for the source (prevents Seattle break).
-      if(source.orderBy) qs.set("$order", `${source.orderBy} DESC`);
-
-      const headers = { "Accept": "application/json" };
-      if(APP_TOKEN) headers["X-App-Token"] = APP_TOKEN;
-
-      const fetchUrl = `${source.url}?${qs.toString()}`;
-      state.lastFetch.url = fetchUrl;
-      writeDebug();
-
-      const res = await fetch(fetchUrl, { headers });
-      const httpStatus = res.status;
-
-      if(!res.ok){
-        // Try to read Socrata error payload for better debugging.
-        let msg = `HTTP ${res.status}`;
-        try{
-          const txt = await res.text();
-          if(txt) msg += ` — ${txt.slice(0, 240)}`;
-        } catch(e){}
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      if(!Array.isArray(data)) throw new Error("Unexpected payload");
-
-      const days = clamp(Number($("daysInput").value || 90), 7, 365);
-      const cutoff = Date.now() - days * 86400000;
-
-      // Filter in-browser by date for maximum compatibility across datasets.
-      const rows = data.filter((row) => {
-        const dt = pick(row, FIELD.date);
-        const t = Date.parse(dt);
-        // If we can't parse, keep it (some records have blank dates but still valuable).
-        return !Number.isFinite(t) || t >= cutoff;
-      });
-
-return { rows, fetchUrl, httpStatus };
     }
 
     function normalizeRecord(row, source){
@@ -528,8 +569,8 @@ return { rows, fetchUrl, httpStatus };
       const textBlob = `${permitType} ${description} ${owner} ${contractor}`.toLowerCase();
       const urgencyDays = daysAgo(date);
 
-      const buyerType = detectBuyerType(textBlob, value);
-      const channel = detectChannel(textBlob, value);
+      const buyerType = detectBuyerType(textBlob, value, permitType);
+      const channel = detectChannel(textBlob, value, permitType);
       const vertical = detectVertical(textBlob);
 
       return {
@@ -563,57 +604,60 @@ return { rows, fetchUrl, httpStatus };
       const name = cleanText(pick(row, ["street_name","streetname","road_name"]));
       const suffix = cleanText(pick(row, ["suffix","street_suffix","street_type"]));
       const unit = cleanText(pick(row, ["unit","apt","suite"]));
-
-      return [num, dir, name, suffix, unit].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
+      return [num,dir,name,suffix,unit].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
     }
 
     function detectVertical(text){
-      if (/(restaurant|kitchen|food|bar|cafe|brew|bakery)/.test(text)) return "Restaurant / Hospitality";
-      if (/(roof|shingle|siding|window|door|fence|garage|masonry|tuckpoint)/.test(text)) return "Exterior / Envelope";
+      if (/(restaurant|kitchen|food|bar|cafe|brew|bakery|salon|spa)/.test(text)) return "Restaurant / Hospitality";
+      if (/(roof|shingle|siding|window|door|fence|garage|masonry|tuckpoint|envelope)/.test(text)) return "Exterior / Envelope";
       if (/(electrical|generator|fire alarm|lighting|panel|low voltage|data\/video|communication)/.test(text)) return "Electrical";
       if (/(hvac|mechanical|furnace|boiler|air condition|ventilation|rtu|chiller|heat pump)/.test(text)) return "HVAC / Mechanical";
-      if (/(plumb|sewer|water heater|sprinkler|grease|gas line)/.test(text)) return "Plumbing / Water";
-      if (/(demolition|new building|new construction|foundation|addition|core and shell|mixed[- ]use)/.test(text)) return "Ground-up / Major Construction";
+      if (/(plumb|sewer|water heater|sprinkler|grease|gas line|pedicure|sink)/.test(text)) return "Plumbing / Water";
+      if (/(demolition|new construction|new building|foundation|addition|mixed[- ]use|ground up|caisson)/.test(text)) return "Ground-up / Major Construction";
       return "General Improvement";
     }
 
-    function detectBuyerType(text, value){
-      if (/(demolition|new building|new construction|addition|mixed[- ]use|foundation|developer|llc)/.test(text) || value >= 900000) return "capital";
-      if (/(restaurant|tenant improvement|interior build|kitchen|food|retail|signage|opening|salon|gym|fitness)/.test(text)) return "supplier";
-      if (/(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|service upgrade|tuckpoint)/.test(text)) return "contractor";
-      return value >= 250000 ? "capital" : "service";
+    function detectBuyerType(text, value, permitType){
+      const isDemo = /(wreck|demolition)/.test(text) || /(wreck|demolition)/i.test(permitType||"");
+      const isGroundUp = /(new construction|new building|foundation|mixed[- ]use|addition|ground up|caisson)/.test(text);
+      const isTradeHeavy = /(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|tuckpoint|low voltage|heat pump|chiller)/.test(text);
+      const isVendorHeavy = /(restaurant|tenant improvement|interior build|kitchen|food|retail|signage|opening|salon|gym|fitness|showroom)/.test(text);
+
+      if (isDemo || isGroundUp || value >= 900000) return "capital";
+      if (isTradeHeavy && value < 900000) return "contractor";
+      if (isVendorHeavy && value < 1000000) return "supplier";
+      if (value >= 350000) return "capital";
+      return "service";
     }
 
-    function detectChannel(text, value){
-      if (/(restaurant|retail|opening|ti|tenant improvement|salon|gym|fitness)/.test(text)) return "Vendor packet";
-      if (/(roof|electrical|hvac|plumb|repair|replace|reroof|tuckpoint)/.test(text)) return "Lead resale";
-      if (value >= 900000 || /(new construction|demolition|addition|mixed[- ]use)/.test(text)) return "Capital intro";
+    function detectChannel(text, value, permitType){
+      if (/(restaurant|retail|opening|ti|tenant improvement|salon|gym|fitness|showroom)/.test(text)) return "Vendor packet";
+      if (/(roof|electrical|hvac|plumb|repair|replace|reroof|tuckpoint|low voltage|heat pump|chiller)/.test(text)) return "Lead resale";
+      if (/(wreck|demolition)/.test(text) || /(wreck|demolition)/i.test(permitType||"") || value >= 900000 || /(new construction|new building|addition|mixed[- ]use)/.test(text)) return "Capital intro";
       return "Local services";
     }
 
     function scoreRecord(rec){
-      let score = 20;
+      let score = 18;
 
-      // Value
-      if (rec.value >= 1000000) score += 28;
-      else if (rec.value >= 500000) score += 22;
-      else if (rec.value >= 150000) score += 14;
-      else if (rec.value >= 50000) score += 8;
+      if (rec.value >= 2500000) score += 30;
+      else if (rec.value >= 1000000) score += 24;
+      else if (rec.value >= 500000) score += 18;
+      else if (rec.value >= 150000) score += 12;
+      else if (rec.value >= 50000) score += 7;
 
-      // Freshness
       if (rec.urgencyDays >= 0 && rec.urgencyDays <= 14) score += 16;
       else if (rec.urgencyDays <= 30) score += 10;
       else if (rec.urgencyDays <= 60) score += 6;
 
-      // Contact richness
       if (rec.contractor) score += 8;
       if (rec.owner) score += 5;
       if (rec.address) score += 4;
 
-      // Intent signals
-      if (/(restaurant|retail|tenant improvement|office|medical|mixed[- ]use|gym|fitness)/.test(rec.textBlob)) score += 9;
-      if (/(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|tuckpoint)/.test(rec.textBlob)) score += 9;
-      if (/(demolition|new building|new construction|addition|foundation)/.test(rec.textBlob)) score += 12;
+      if (/(restaurant|retail|tenant improvement|office|medical|mixed[- ]use|gym|fitness|salon|showroom)/.test(rec.textBlob)) score += 8;
+      if (/(roof|electrical|hvac|mechanical|plumb|repair|replace|reroof|tuckpoint|low voltage|heat pump|chiller)/.test(rec.textBlob)) score += 10;
+      if (/(demolition|new building|new construction|addition|foundation|ground up)/.test(rec.textBlob)) score += 12;
+      if (/(school|hospital|museum|grocery|planet fitness|jewel|showroom)/.test(rec.textBlob)) score += 6;
 
       rec.saleability = Math.min(100, Math.round(score));
       rec.immediate = rec.urgencyDays >= 0 && rec.urgencyDays <= 14;
@@ -625,23 +669,23 @@ return { rows, fetchUrl, httpStatus };
     }
 
     function buildAngle(rec){
-      if (rec.buyerType === "supplier") return `This looks like a ${rec.vertical.toLowerCase()} opportunity where a vendor can get in before first quote lock-in.`;
-      if (rec.buyerType === "contractor") return `This is a direct trade-facing signal with concrete scope language that supports lead resale or warm intro packaging.`;
-      if (rec.buyerType === "capital") return `This record signals active capital deployment or pre-deployment. Package it for lenders, brokers, private capital, or major vendors.`;
-      return `This is a serviceable local-business trigger that can be sold to agencies, inspectors, insurance, signage, or adjacent vendors.`;
+      if (rec.buyerType === "supplier") return `This looks like a ${rec.vertical.toLowerCase()} opportunity where a vendor can get in before vendor decisions are fully locked.`;
+      if (rec.buyerType === "contractor") return `This is a direct trade-facing signal with concrete scope language that supports lead resale, dispatch-style outreach, or warm intro packaging.`;
+      if (rec.buyerType === "capital") return `This record signals active capital deployment, redevelopment, or a significant value event. Package it for lenders, brokers, private capital, or major vendors.`;
+      return `This is a service-trigger event that can be sold to agencies, inspectors, signage, insurance, telecom, or adjacent operators.`;
     }
 
     function buildOutreach(rec){
-      if (rec.buyerType === "supplier") {
-        return `I found a newly active ${rec.vertical.toLowerCase()} permit at ${rec.address}. It looks early enough to get in before vendor decisions are locked. I can send a one-page intelligence brief with scope, timing, and why it matters.`;
+      if (rec.buyerType === "supplier"){
+        return `I found a newly active ${rec.vertical.toLowerCase()} permit at ${rec.address}. It looks early enough to reach the project before vendor selection fully settles. I can send a concise project brief with scope, timing, and buyer angle.`;
       }
-      if (rec.buyerType === "contractor") {
-        return `I found a permit at ${rec.address} with clear ${rec.vertical.toLowerCase()} scope. This is the kind of fresh job signal trades buy because it lets them reach the project before it gets shopped out.`;
+      if (rec.buyerType === "contractor"){
+        return `I found a permit at ${rec.address} with clear ${rec.vertical.toLowerCase()} scope. This is the kind of fresh job signal contractors buy because it lets them reach the project before the lead gets stale or fully shopped.`;
       }
-      if (rec.buyerType === "capital") {
-        return `I surfaced a permit at ${rec.address} that looks like meaningful development activity. I can send a concise intelligence brief with timing, scope, and why it matters for financing or deal flow.`;
+      if (rec.buyerType === "capital"){
+        return `I surfaced a permit at ${rec.address} that looks like meaningful development or redevelopment activity. I can send a concise intelligence brief with timing, scope, and why it matters for financing or deal flow.`;
       }
-      return `I found a live permit trigger at ${rec.address} that points to an immediate local service need. I can send the one-page brief showing what changed and who should move first.`;
+      return `I found a live permit trigger at ${rec.address} pointing to an immediate local service need. I can send a one-page brief showing what changed, why it matters, and who should move first.`;
     }
 
     function buildBrief(rec){
@@ -683,17 +727,17 @@ return { rows, fetchUrl, httpStatus };
     }
 
     function recommendedBuyerNotes(rec){
-      if (rec.buyerType === "supplier") return "Sell to niche vendors: signage, POS, pest, linen, security, insurance, marketing, opening support, specialty suppliers.";
-      if (rec.buyerType === "contractor") return "Sell to trades, distributors, subcontractors, estimators, and firms that need early job awareness.";
-      if (rec.buyerType === "capital") return "Sell to lenders, capital brokers, equipment finance, private investors, major material suppliers, CRE intermediaries.";
-      return "Sell to agencies, compliance vendors, inspectors, signage, telecom, cleaning, waste, security, business support operators.";
+      if (rec.buyerType === "supplier") return "Sell to niche vendors: signage, POS, security, pest, marketing, opening support, specialty suppliers, service vendors.";
+      if (rec.buyerType === "contractor") return "Sell to trades, subs, distributors, estimators, and local firms that need early project awareness.";
+      if (rec.buyerType === "capital") return "Sell to lenders, capital brokers, equipment finance, private investors, major material suppliers, or CRE intermediaries.";
+      return "Sell to agencies, compliance vendors, inspectors, insurance, telecom, cleaning, waste, security, and other local operators.";
     }
 
     function monetizationNotes(rec){
-      if (rec.buyerType === "capital") return "Package as a premium intelligence brief, lender lead, or strategic intro asset (higher-ticket resale).";
-      if (rec.buyerType === "contractor") return "Package as fresh leads by trade + ZIP, weekly drops, or a monthly micro-intel feed.";
-      if (rec.buyerType === "supplier") return "Package as ‘new opening / active TI’ triggers to vendors who live on timing.";
-      return "Package as local trigger alerts with clear angles and ready-to-send outreach copy.";
+      if (rec.buyerType === "capital") return "Package as a premium intelligence brief, lender lead, redevelopment signal, or strategic intro asset.";
+      if (rec.buyerType === "contractor") return "Package as a fresh lead, route-ready job signal, or weekly trade-specific lead drop.";
+      if (rec.buyerType === "supplier") return "Package as a new-opening / active TI signal to vendors that win on timing.";
+      return "Package as a local trigger alert with a clear service angle and ready-to-send outreach copy.";
     }
 
     function applyFilters(){
@@ -703,7 +747,9 @@ return { rows, fetchUrl, httpStatus };
       let rows = [...state.scored];
       rows = rows.filter(r => r.saleability >= minScore);
       if (state.buyerFilter !== "all") rows = rows.filter(r => r.buyerType === state.buyerFilter);
-      if (q) rows = rows.filter(r => `${r.address} ${r.permitType} ${r.description} ${r.owner} ${r.contractor}`.toLowerCase().includes(q));
+      if (q) rows = rows.filter(r =>
+        `${r.address} ${r.permitType} ${r.description} ${r.owner} ${r.contractor}`.toLowerCase().includes(q)
+      );
 
       state.filtered = rows;
       state.pipeline.rendered = rows.length;
@@ -728,11 +774,12 @@ return { rows, fetchUrl, httpStatus };
     function renderSignals(rows){
       const wrap = $("signals");
       if (!rows.length){
-        wrap.innerHTML = `<div class="box"><p>No matching signals. Lower minimum score, widen days back, or switch source.</p></div>`;
+        wrap.innerHTML = `<div class="box"><p>No matching signals. Lower the score, widen days back, or switch source.</p></div>`;
         return;
       }
+
       wrap.innerHTML = rows.map(r => `
-        <divclass="card ${r.id === state.selectedId ? "active" : ""}" data-id="${escapeAttr(r.id)}">
+        <div class="card ${r.id === state.selectedId ? "active" : ""}" data-id="${escapeAttr(r.id)}">
           <div class="toprow">
             <div>
               <div class="title">${escapeHtml(r.address)}</div>
@@ -768,10 +815,12 @@ return { rows, fetchUrl, httpStatus };
     function renderDetail(rec){
       $("detailMeta").textContent = rec ? `${rec.city} • ${prettyBuyer(rec.buyerType)} • ${rec.saleability}/100` : "Select a signal";
       const el = $("detail");
+
       if (!rec){
         el.innerHTML = `<div class="box"><p>No signal selected.</p></div>`;
         return;
       }
+
       el.innerHTML = `
         <div class="box">
           <h3>${escapeHtml(rec.address)}</h3>
@@ -794,7 +843,7 @@ return { rows, fetchUrl, httpStatus };
         </div>
         <div class="box">
           <h3>Client Brief</h3>
-          <div class="brief" id="briefText">${escapeHtml(rec.brief)}</div>
+          <div class="brief">${escapeHtml(rec.brief)}</div>
         </div>
       `;
 
@@ -803,18 +852,21 @@ return { rows, fetchUrl, httpStatus };
       $("printBtn").addEventListener("click", () => printBrief(rec));
     }
 
-    // --- Mock fallback: make it SOURCE-SPECIFIC so Seattle mock doesn't show Chicago records ---
     function loadMock(reason){
       state.usedMock = true;
       state.usedCache = false;
 
       const sourceCity = getSource().city;
-      const base = (sourceCity === "Seattle") ? mockRowsSeattle() : mockRowsChicago();
-      const scored = base.map(r => scoreRecord(r)).sort((a,b) => b.saleability - a.saleability);
+      const base = sourceCity === "Seattle" ? mockRowsSeattle() : mockRowsChicago();
+      const scored = base
+        .map(r => scoreRecord(r))
+        .sort((a,b) => {
+          if (b.saleability !== a.saleability) return b.saleability - a.saleability;
+          return (b.value||0) - (a.value||0);
+        });
 
       state.scored = scored;
       state.pipeline = { raw: scored.length, normalized: scored.length, scored: scored.length, rendered: 0 };
-
       setStatus(reason || "Mock fallback loaded");
       setPipeline();
       applyFilters();
@@ -822,17 +874,16 @@ return { rows, fetchUrl, httpStatus };
 
     function mockRowsChicago(){
       return [
-        baseMock("Chicago","3320 W DICKENS AVE","PERMIT - NEW CONSTRUCTION","Full building permit for multi-unit building with rooftop deck and garage per plans.",1131050,"2026-03-03","HANNA, JOHN C","", "capital"),
-        baseMock("Chicago","2401 S WABASH AVE","PERMIT - RENOVATION/ALTERATION","Alteration of existing building including museum space and mechanical room per plans.",3800000,"2026-03-03","", "", "capital"),
-        baseMock("Chicago","3530 W 38TH PL","PERMIT – EXPRESS PERMIT PROGRAM","Roof replacement; asphalt shingles; full roof replacement.",1556369,"2026-03-02","", "IL ROOFING CONTRACTOR", "contractor"),
-        baseMock("Chicago","6920 S ASHLAND AVE","PERMIT - RENOVATION/ALTERATION","Retail space to nail salon buildout with plumbing-intensive install.",150000,"2026-03-03","", "", "supplier")
+        baseMock("Chicago","3320 W DICKENS AVE","PERMIT - NEW CONSTRUCTION","Full building permit for multi-unit construction with rooftop deck and detached garage.",1131050,"2026-03-03","HANNA, JOHN C","", "capital"),
+        baseMock("Chicago","6920 S ASHLAND AVE","PERMIT - RENOVATION/ALTERATION","Retail space to nail salon buildout with 16 plumbed pedicure chairs and hand sinks.",150000,"2026-03-03","", "", "supplier"),
+        baseMock("Chicago","3530 W 38TH PL","PERMIT – EXPRESS PERMIT PROGRAM","Roof replacement with asphalt shingles.",1556369,"2026-03-02","", "Licensed Roofing Contractor", "contractor")
       ];
     }
 
     function mockRowsSeattle(){
       return [
-        baseMock("Seattle","456 1st Ave S","Demolition","Full structure demolition and site preparation ahead of redevelopment.",760000,"2026-02-20","1st Ave Redevelopment LLC","", "capital"),
-        baseMock("Seattle","2215 4th Ave","Tenant Improvement","Tenant improvement for cafe opening including plumbing, counters, and finish upgrades.",148000,"2026-02-26","Fourth Ave Foods","Urban Build Co", "supplier"),
+        baseMock("Seattle","456 1st Ave S","Demolition","Full structure demolition and site prep ahead of redevelopment.",760000,"2026-02-20","1st Ave Redevelopment LLC","", "capital"),
+        baseMock("Seattle","2215 4th Ave","Tenant Improvement","Cafe opening including plumbing, counters, and finish upgrades.",148000,"2026-02-26","Fourth Ave Foods","Urban Build Co", "supplier"),
         baseMock("Seattle","1023 E Pike St","Mechanical","HVAC replacement and ventilation improvements for food-service occupancy.",94000,"2026-02-28","Pike Street Ventures","Northwest Mechanical", "contractor")
       ];
     }
@@ -853,7 +904,7 @@ return { rows, fetchUrl, httpStatus };
         owner,
         contractor,
         buyerType,
-        channel: detectChannel(textBlob, value),
+        channel: detectChannel(textBlob, value, permitType),
         vertical: detectVertical(textBlob),
         raw: {},
         urgencyDays: daysAgo(date),
@@ -861,31 +912,44 @@ return { rows, fetchUrl, httpStatus };
       };
     }
 
-    // --- utilities ---
     function pick(obj, keys){
       for (const key of keys){
-        if(obj && obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== "") return obj[key];
+        if (obj && obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== "") return obj[key];
       }
       return "";
     }
-    function cleanText(v){ return String(v || "").replace(/\s+/g," ").trim(); }
+
+    function cleanText(v){ return String(v || "").replace(/\s+/g, " ").trim(); }
+
     function toMoney(v){
-      const n = Number(String(v || "").replace(/[^\d.-]/g,""));
+      const n = Number(String(v || "").replace(/[^\d.-]/g, ""));
       return Number.isFinite(n) ? n : 0;
     }
+
     function daysAgo(iso){
       const t = Date.parse(iso);
-      if(!Number.isFinite(t)) return 9999;
-      return Math.max(0, Math.floor((Date.now()-t)/86400000));
+      if (!Number.isFinite(t)) return 9999;
+      return Math.max(0, Math.floor((Date.now() - t) / 86400000));
     }
+
     function formatMoney(n){
-      return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(Number(n||0));
+      return new Intl.NumberFormat("en-US", {
+        style:"currency",
+        currency:"USD",
+        maximumFractionDigits:0
+      }).format(Number(n || 0));
     }
+
     function formatDate(iso){
       const t = Date.parse(iso);
-      if(!Number.isFinite(t)) return "Unknown date";
-      return new Intl.DateTimeFormat("en-US",{year:"numeric",month:"short",day:"numeric"}).format(new Date(t));
+      if (!Number.isFinite(t)) return "Unknown date";
+      return new Intl.DateTimeFormat("en-US", {
+        year:"numeric",
+        month:"short",
+        day:"numeric"
+      }).format(new Date(t));
     }
+
     function prettyBuyer(v){
       return ({
         all:"All",
@@ -895,13 +959,38 @@ return { rows, fetchUrl, httpStatus };
         service:"Local Service / Agency"
       }[v] || v);
     }
-    function truncate(s,n){ return (s||"").length>n ? s.slice(0,n-1)+"…" : (s||""); }
-    function cryptoRandomId(){ return Math.random().toString(36).slice(2,10).toUpperCase(); }
-    function escapeHtml(s){
-      return String(s || "").replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+
+    function truncate(s,n){
+      return (s||"").length > n ? s.slice(0,n-1) + "…" : (s||"");
     }
-    function escapeAttr(s){ return escapeHtml(s).replace(/"/g,"&quot;"); }
-    function clamp(n,min,max){ n=Number(n); if(!Number.isFinite(n)) return min; return Math.max(min, Math.min(max, n)); }
+
+    function cryptoRandomId(){
+      return Math.random().toString(36).slice(2,10).toUpperCase();
+    }
+
+    function escapeHtml(s){
+      return String(s || "").replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+      }[m]));
+    }
+
+    function escapeAttr(s){
+      return escapeHtml(s).replace(/"/g, "&quot;");
+    }
+
+    function clamp(n,min,max){
+      n = Number(n);
+      if (!Number.isFinite(n)) return min;
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function delay(ms){
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     async function copyText(text, msg){
       try{
