@@ -3,7 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <title>Permit Intel v2.1</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permit Intelligence Terminal</title>
+<style>
+body { background:#111; color:#ffc; font-family:"IBM Plex Mono", monospace; }
+button { background:#333; color:#ffc; padding:6px 12px; margin:2px; border:none; cursor:pointer; }
+#console { border:1px solid #444; padding:12px; height:500px; overflow:auto; }
+</style>
+</head>
+<body>
+<h1>Permit Intelligence Terminal</h1>
+<div>
+  <button onclick="fetchPermits('chicago')">Fetch CHI</button>
+  <button onclick="fetchPermits('seattle')">Fetch SEA</button>
+  <button onclick="fetchPermits('cincinnati')">Fetch CIN</button>
+</div>
+<div id="console">Worker: checking…</div>
+
+<script>
+async function fetchPermits(city) {
+  const consoleDiv = document.getElementById("console");
+  consoleDiv.innerHTML = `Fetching ${city.toUpperCase()} permits…`;
+
+  try {
+    const res = await fetch(`/api/permits?source=${city}`);
+    const permits = await res.json();
+    consoleDiv.innerHTML = "";
+
+    for(const p of permits){
+      const btn = document.createElement("button");
+      btn.textContent = `Enrich Lead: ${p.project}`;
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.textContent = "Enriching…";
+        const enriched = await fetch(`/api/enrich`, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(p)
+        }).then(r=>r.json());
+        consoleDiv.innerHTML += `<pre>${JSON.stringify(enriched,null,2)}</pre>`;
+        btn.textContent = "Enrich Lead Done";
+      };
+      consoleDiv.appendChild(btn);
+    }
+  } catch(e) {
+    consoleDiv.innerHTML = `Error: ${e.message}`;
+  }
+}
+</script>
+</body>
+</html>
+
 </head>
 <body>
 <h1>Permit Intel Terminal v2.1</h1>
