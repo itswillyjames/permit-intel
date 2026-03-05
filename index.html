@@ -38,58 +38,53 @@ button:hover { background:#333; }
 </div>
 
 <script>
-// --- Mock permits
-const mockPermits = [
-{ address:"1504 N Hudson Ave", contractor:"TREEWRIGHT CONSTRUCTION SERVICES LLC", value:2125200, city:"CHI" },
-{ address:"123 Main St", contractor:"ACME BUILDERS", value:500000, city:"CHI" },
-{ address:"456 Pine St", contractor:"SEATTLE GENERAL CONTRACTORS", value:1200000, city:"SEA" },
-{ address:"789 Elm St", contractor:"CINCINNATI CONSTRUCTION CO", value:800000, city:"CIN" }
-];
+const workerUrl = "https://permit-intel-proxy.trev-tce.workers.dev/api";
 
 let permits = [];
 
-// --- Fetch button
-document.getElementById("fetchBtn").onclick = () => {
+document.getElementById("fetchBtn").onclick = async () => {
   const city = document.getElementById("city").value;
-  permits = mockPermits.filter(p => p.city===city);
-  document.getElementById("pipelineLog").textContent=`Fetched ${permits.length} permits for ${city}`;
-  document.getElementById("briefOutput").textContent="No briefs yet.";
+  document.getElementById("pipelineLog").textContent = "Fetching permits...";
+  try {
+    const res = await fetch(workerUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ city })
+    });
+    const data = await res.json();
+    if(data.ok && data.permits){
+      permits = data.permits;
+      document.getElementById("pipelineLog").textContent = `Fetched ${permits.length} permits for ${city}`;
+      document.getElementById("briefOutput").textContent = "No briefs yet.";
+    } else {
+      document.getElementById("pipelineLog").textContent = "Error fetching permits: " + (data.error||"Unknown");
+    }
+  } catch(e){
+    document.getElementById("pipelineLog").textContent = "Fetch failed: "+e.message;
+  }
 };
 
-// --- Pipeline button
 document.getElementById("runPipelineBtn").onclick = async () => {
   if(!permits.length){ alert("Fetch permits first!"); return; }
   const logs=[]; const briefs=[];
   for(const p of permits){
-    if(p.value<100000){ logs.push(`Skipping low-value permit: ${p.address}`); continue; }
     logs.push(`Processing permit: ${p.address}`);
-
-    // --- Enrichment via Worker
-    let enriched = {...p};
-    try {
-      const resp = await fetch('/api', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)});
-      enriched = await resp.json();
-      logs.push(`Enriched: ${enriched.emails?.length || 0} emails found`);
-    } catch(e){ logs.push(`Enrichment failed: ${e.message}`); }
-
-    // --- Score
+    // Score
     const score = Math.min(100, Math.floor(Math.random()*30)+70);
     logs.push(`Score: ${score}/100`);
 
-    // --- Buyer brief
     const brief = `
-PROJECT: ${enriched.address}
-CONTRACTOR: ${enriched.contractor}
-VALUE: $${enriched.value.toLocaleString()}
-EMAILS: ${enriched.emails?.map(e=>e.email).join(', ') || 'None'}
+PROJECT: ${p.address}
+CONTRACTOR: ${p.contractor}
+VALUE: $${p.value?.toLocaleString() || 'N/A'}
+EMAILS: ${p.emails?.map(e=>e.email).join(', ') || 'None'}
 SCORE: ${score}/100
 TLDR: High-value opportunity for construction suppliers.
     `.trim();
     briefs.push(brief);
   }
-
-  document.getElementById("pipelineLog").textContent=logs.join("\n");
-  document.getElementById("briefOutput").textContent=briefs.join("\n\n---\n\n");
+  document.getElementById("pipelineLog").textContent = logs.join("\n");
+  document.getElementById("briefOutput").textContent = briefs.join("\n\n---\n\n");
 };
 </script>
 
