@@ -32,7 +32,6 @@
     button{cursor:pointer}
     button.primary{background:var(--accent);border-color:var(--accent);font-weight:700}
     button.ghost:hover{border-color:var(--accent)}
-    button[disabled]{opacity:.55;cursor:not-allowed}
     .status{font-size:13px;color:var(--muted)}
     .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
     .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
@@ -43,7 +42,7 @@
     .col:last-child{border-right:none}
     .panel{padding:12px 14px;border-bottom:1px solid var(--border)}
     .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
-    .list{height:calc(100vh - 64px - 68px);overflow:auto}
+    .list{height:calc(100vh - 64px - 92px);overflow:auto}
     .item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
     .item:hover{background:rgba(255,255,255,.03)}
     .item.sel{background:rgba(59,130,246,.12);border-left:3px solid var(--accent)}
@@ -141,13 +140,8 @@
 </main>
 
 <script>
+  // Worker base
   const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
-
-  const SOURCES = {
-    chicago: { label: "Chicago — Building Permits" },
-    seattle: { label: "Seattle — Permits" },
-    cincinnati: { label: "Cincinnati — Building Permits" }
-  };
 
   const $ = (id) => document.getElementById(id);
 
@@ -209,10 +203,10 @@
   }
 
   async function workerHealth(){
-    const url = `${WORKER_BASE}/api/health`;
+    const url = `${WORKER_BASE}/api/health?cb=${Date.now()}`;
     try{
       const r = await fetch(url, { cache: "no-store" });
-      const j = await r.json();
+      const j = await r.json().catch(()=> ({}));
       if(r.ok && j && j.ok){
         setWorkerPill("good","Worker: OK");
         state.aiAvailable = !!j.ai;
@@ -233,7 +227,7 @@
   }
 
   async function fetchPermits(source, limit){
-    const url = `${WORKER_BASE}/api/permits?source=${encodeURIComponent(source)}&limit=${encodeURIComponent(limit)}`;
+    const url = `${WORKER_BASE}/api/permits?source=${encodeURIComponent(source)}&limit=${encodeURIComponent(limit)}&cb=${Date.now()}`;
     dbg(`Fetching: ${url}`);
     const ctrl = new AbortController();
     const to = setTimeout(()=>ctrl.abort(), 20000);
@@ -252,7 +246,9 @@
     }
   }
 
-  // Seattle cost: prefer explicit numeric fields; fallback to $ in description
+  // Seattle value extraction:
+  // - use common numeric fields when present (estprojectcost is common)
+  // - fallback: parse $ amounts inside description
   function extractSeattleValue(row){
     const candidates = [
       row.estprojectcost,
@@ -260,9 +256,7 @@
       row.projectcost,
       row.valuation,
       row.value,
-      row.cost,
-      row.est_value,
-      row.est_value_amt
+      row.cost
     ];
     for(const c of candidates){
       const n = parseMoneyLike(c);
@@ -270,7 +264,7 @@
     }
     const desc = String(row.description || "");
     const m = desc.match(/\$\s*([0-9][0-9,]*)(\.[0-9]{1,2})?/);
-    if(m){
+    if(m && m[0]){
       const n = parseMoneyLike(m[0]);
       if(n > 0) return n;
     }
@@ -296,20 +290,18 @@
         id: row.permitnum || row.id || "unknown",
         address: row.originaladdress1 || row.address || "Unknown address",
         type: row.permittypedesc || row.permittypemapped || row.permittype || "Permit",
-        date: row.issueddate || row.applieddate || row.issue_date || "",
+        date: row.applieddate || row.issueddate || row.issue_date || "",
         value: extractSeattleValue(row),
         desc: row.description || "",
         contact: row.applicant || row.contractor || row.owner || ""
       };
     }
 
-    // Cincinnati (fields vary by dataset)
-    const addr = row.address || row.site_address || row.street_address || row.location || row.parcel_address || "Unknown address";
+    // Cincinnati (your dataset already returns est_value + number_key etc)
+    const addr = row.address || row.site_address || row.location || row.street_address || "Unknown address";
     const desc = row.description || row.work_description || row.permit_description || "";
-    const date = row.issued_date || row.issue_date || row.applied_date || row.date || row.permit_date || "";
-    const value = parseMoneyLike(
-      row.est_value || row.estimated_cost || row.est_cost || row.value || row.cost || row.valuation || 0
-    );
+    const date = row.issued_date || row.issue_date || row.applied_date || row.date || "";
+    const value = parseMoneyLike(row.est_value || row.estimated_cost || row.est_cost || row.value || row.cost || 0);
 
     return {
       id: row.number_key || row.permit_id || row.permit_number || row.id || "unknown",
@@ -327,7 +319,6 @@
     const t = (x.type||"").toLowerCase();
     if(t.includes("new")) s += 15;
     if(t.includes("demol")) s += 10;
-    if(t.includes("hvac") || t.includes("mechanical")) s += 5;
     if(x.value >= 500000) s += 15;
     if(x.value >= 1000000) s += 10;
     if((x.desc||"").length > 80) s += 5;
@@ -397,21 +388,15 @@
 
     setStatus("AI rewriting…");
     try{
-      const r = await fetch(`${WORKER_BASE}/api/ai/rewrite`, {
+      const r = await fetch(`${WORKER_BASE}/api/ai/rewrite?cb=${Date.now()}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ mode: "rewrite", text: $("brief").value })
       });
 
-      const text = await r.text();
-      let j = null;
-      try{ j = JSON.parse(text); }catch{}
-
-      if(!r.ok){
-        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : `HTTP ${r.status}: ${text.slice(0,200)}`);
-      }
-      if(!j || j.ok !== true){
-        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : "Unknown AI error");
+      const j = await r.json().catch(()=> ({}));
+      if(!r.ok || !j || j.ok === false){
+        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : `HTTP ${r.status}`);
       }
 
       $("brief").value = String(j.text || "").trim() || $("brief").value;
@@ -513,21 +498,26 @@
     dbg("Cache cleared manually.");
     render();
   });
+
   $("source").addEventListener("change", ()=>{
     state.selected = null;
     $("brief").value = "";
     run();
   });
+
   $("q").addEventListener("input", render);
   $("minScore").addEventListener("input", render);
+
   $("copyBrief").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText($("brief").value);
   });
+
   $("copyPitch").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText(makePitch(state.selected));
   });
+
   $("aiRewrite").addEventListener("click", aiRewriteBrief);
 
   (async function boot(){
