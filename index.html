@@ -9,7 +9,7 @@
       --bg:#07070b; --panel:#12121a; --border:#2a2a38;
       --text:#e8e8f2; --muted:#a1a1b3; --accent:#3b82f6;
       --good:#10b981; --warn:#f59e0b; --bad:#ef4444;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       --r:12px;
     }
@@ -22,40 +22,43 @@
       padding:12px 14px;
       display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
     }
-    .brand{font-weight:800;letter-spacing:.3px}
+    .brand{font-weight:900;letter-spacing:.2px}
+    .tagline{color:var(--muted);font-size:13px}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     select,input,button{
       background:var(--panel);color:var(--text);border:1px solid var(--border);
       padding:9px 10px;border-radius:10px;font-size:14px;
     }
-    input{width:220px}
+    input{width:240px}
     button{cursor:pointer}
-    button.primary{background:var(--accent);border-color:var(--accent);font-weight:700}
+    button.primary{background:var(--accent);border-color:var(--accent);font-weight:800}
     button.ghost:hover{border-color:var(--accent)}
     .status{font-size:13px;color:var(--muted)}
     .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
     .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
     .pill.warn{color:var(--warn);border-color:rgba(245,158,11,.4)}
     .pill.bad{color:var(--bad);border-color:rgba(239,68,68,.4)}
-    main{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 64px)}
-    .col{border-right:1px solid var(--border)}
+    main{display:grid;grid-template-columns:460px 1fr;min-height:calc(100vh - 72px)}
+    .col{border-right:1px solid var(--border);min-width:0}
     .col:last-child{border-right:none}
     .panel{padding:12px 14px;border-bottom:1px solid var(--border)}
-    .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
-    .list{height:calc(100vh - 64px - 68px);overflow:auto}
+    .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:800}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .mini{font-size:12px;color:var(--muted)}
+    .list{height:calc(100vh - 72px - 110px);overflow:auto}
     .item{
       padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;
     }
     .item:hover{background:rgba(255,255,255,.03)}
     .item.sel{background:rgba(59,130,246,.12);border-left:3px solid var(--accent)}
-    .addr{font-weight:800}
+    .addr{font-weight:900}
     .meta{margin-top:4px;color:var(--muted);font-size:13px;line-height:1.35;word-break:break-word}
     .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
     .kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:10px}
-    .kpi .n{font-size:18px;font-weight:900}
+    .kpi .n{font-size:18px;font-weight:1000}
     .kpi .l{font-size:12px;color:var(--muted);margin-top:3px}
     textarea{
-      width:100%;min-height:240px;resize:vertical;
+      width:100%;min-height:260px;resize:vertical;
       background:var(--panel);border:1px solid var(--border);
       color:var(--text);border-radius:var(--r);padding:12px;
       font-family:var(--mono);font-size:12px;line-height:1.4;
@@ -69,26 +72,34 @@
     @media (max-width: 980px){
       main{grid-template-columns:1fr}
       .col{border-right:none;border-bottom:1px solid var(--border)}
-      .list{height:auto;max-height:45vh}
+      .list{height:auto;max-height:48vh}
+      input{width:100%}
     }
   </style>
 </head>
 <body>
 <header>
   <div class="row">
-    <div class="brand">Permit Intelligence Engine</div>
+    <div>
+      <div class="brand">Permit Intelligence Engine</div>
+      <div class="tagline">Real-data-first. All permit fetches go through your Worker proxy.</div>
+    </div>
     <span id="workerPill" class="pill warn">Worker: checking…</span>
   </div>
+
   <div class="row">
     <select id="source">
       <option value="chicago">Chicago — Building Permits</option>
       <option value="seattle">Seattle — Permits</option>
     </select>
+
     <select id="limit">
       <option value="50">50</option>
       <option value="100" selected>100</option>
       <option value="250">250</option>
+      <option value="500">500</option>
     </select>
+
     <input id="q" placeholder="Search address / type / contact" />
     <button class="primary" id="runBtn">RUN ENGINE</button>
     <button class="ghost" id="clearBtn">CLEAR CACHE</button>
@@ -100,22 +111,41 @@
   <div class="col">
     <div class="panel">
       <div class="title">Ranked Signals</div>
+
+      <div class="controls">
+        <label class="mini">Min score:</label>
+        <select id="minScore">
+          <option value="0">0</option>
+          <option value="55">55</option>
+          <option value="60">60</option>
+          <option value="65">65</option>
+          <option value="70" selected>70</option>
+          <option value="75">75</option>
+          <option value="80">80</option>
+          <option value="85">85</option>
+        </select>
+        <span class="mini" id="modeText">—</span>
+      </div>
+
       <div class="kpis">
         <div class="kpi"><div class="n" id="kSignals">0</div><div class="l">Signals</div></div>
         <div class="kpi"><div class="n" id="kSellable">0</div><div class="l">Sellable (>= min)</div></div>
         <div class="kpi"><div class="n" id="kValue">$0</div><div class="l">Total Est. Value</div></div>
       </div>
     </div>
+
     <div class="list" id="list"></div>
   </div>
 
   <div class="col">
     <div class="panel">
       <div class="title">Deal Panel</div>
+
       <div class="btnrow">
         <button id="copyBrief" class="ghost">COPY BRIEF</button>
         <button id="copyPitch" class="ghost">COPY PITCH</button>
       </div>
+
       <div style="margin-top:10px">
         <textarea id="brief" readonly placeholder="Select a signal…"></textarea>
       </div>
@@ -129,13 +159,8 @@
 </main>
 
 <script>
-  // ✅ ONLY this endpoint is used for permits
+  // ONLY this endpoint is used for permits
   const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
-
-  const SOURCES = {
-    chicago: { label: "Chicago — Building Permits" },
-    seattle: { label: "Seattle — Permits" }
-  };
 
   const $ = (id) => document.getElementById(id);
 
@@ -163,10 +188,18 @@
 
   function money(n){
     const x = Number(n||0);
-    if(!Number.isFinite(x)) return "$0";
+    if(!Number.isFinite(x) || x <= 0) return "$0";
     return "$" + Math.round(x).toLocaleString();
   }
 
+  function escapeHtml(str){
+    return String(str||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  // last-good cache
   function cacheKey(source){ return `permitintel:lastgood:${source}`; }
   function saveLastGood(source, raw){
     try{ localStorage.setItem(cacheKey(source), JSON.stringify({t:Date.now(), raw})); }catch{}
@@ -203,80 +236,93 @@
     }
   }
 
-  // Fetch with timeout + full debug
   async function fetchPermits(source, limit){
     const url = `${WORKER_BASE}/api/permits?source=${encodeURIComponent(source)}&limit=${encodeURIComponent(limit)}`;
     dbg(`Fetching: ${url}`);
+
     const ctrl = new AbortController();
-    const to = setTimeout(()=>ctrl.abort(), 15000);
+    const to = setTimeout(()=>ctrl.abort(), 20000);
+
     try{
       const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
       const text = await r.text();
       dbg(`HTTP ${r.status} from Worker. bytes=${text.length}`);
+
       if(!r.ok){
-        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 200)}`);
+        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 250)}`);
       }
+
       const data = JSON.parse(text);
       if(!Array.isArray(data)) throw new Error("Worker did not return an array");
       return data;
-    }finally{
+    } finally {
       clearTimeout(to);
     }
   }
 
-  // Minimal normalization across Chicago + Seattle responses
+  // Normalize into one schema
   function normalize(source, row){
-    // Chicago has: street_number, street_direction, street_name, permit_type, issue_date, reported_cost, work_description, contact_*
-    // Seattle has: originaladdress1, permittypedesc, applieddate, estprojectcost, description
     if(source === "chicago"){
       const addr = [row.street_number, row.street_direction, row.street_name].filter(Boolean).join(" ");
+      const val = Number(row.reported_cost || 0);
       return {
         id: row.id || row.permit_ || "unknown",
         address: addr || "Unknown address",
         type: row.permit_type || "Permit",
         date: row.issue_date || row.application_start_date || "",
-        value: Number(row.reported_cost || 0),
+        value: Number.isFinite(val) ? val : 0,
         desc: row.work_description || "",
         contact: row.contact_3_name || row.contact_1_name || row.contact_2_name || ""
       };
     }
-    // Seattle
+
+    // Seattle (your Worker now returns 1 row per permitnum)
+    const v = Number(row.estprojectcost || 0);
     return {
       id: row.permitnum || "unknown",
       address: row.originaladdress1 || "Unknown address",
       type: row.permittypedesc || row.permittypemapped || "Permit",
-      date: row.applieddate || "",
-      value: Number(row.estprojectcost || 0),
+      date: row.issueddate || row.applieddate || "",
+      value: Number.isFinite(v) ? v : 0,
       desc: row.description || "",
-      contact: "" // Seattle feed often doesn’t have person/company names
+      contact: "" // usually not available
     };
   }
 
-  // Simple “signal” scoring for now (fast + reliable)
+  // Fast “sellability” scoring
   function scoreSig(x){
+    const t = String(x.type||"").toLowerCase();
+    const d = String(x.desc||"");
     let s = 50;
-    if((x.type||"").toLowerCase().includes("new")) s += 15;
-    if((x.type||"").toLowerCase().includes("demol")) s += 10;
-    if(x.value >= 500000) s += 15;
+
+    if(t.includes("new")) s += 16;
+    if(t.includes("demol") || t.includes("wre")) s += 10;
+    if(t.includes("renov") || t.includes("alter")) s += 8;
+
+    if(x.value >= 100000) s += 6;
+    if(x.value >= 500000) s += 14;
     if(x.value >= 1000000) s += 10;
-    if((x.desc||"").length > 80) s += 5;
-    if((x.contact||"").length > 2) s += 5;
+
+    if(d.length > 80) s += 6;
+    if(d.length > 180) s += 4;
+
+    if((x.contact||"").length > 2) s += 6;
+
     return Math.max(0, Math.min(100, s));
   }
 
   function buildSignals(source, raw){
     const norm = raw.map(r=>normalize(source, r));
-    const sigs = norm.map(n=>({
-      ...n,
-      score: scoreSig(n)
-    }))
-    .sort((a,b)=>b.score-a.score);
-    return sigs;
+    return norm.map(n=>({ ...n, score: scoreSig(n) }))
+      .sort((a,b)=> b.score - a.score);
   }
 
   function render(){
     const q = ($("q").value||"").trim().toLowerCase();
+    const minScore = Number($("minScore").value || 0);
+
     const items = state.signals.filter(s=>{
+      if(s.score < minScore) return false;
       if(!q) return true;
       return (s.address||"").toLowerCase().includes(q)
         || (s.type||"").toLowerCase().includes(q)
@@ -285,15 +331,20 @@
     });
 
     $("kSignals").textContent = items.length;
-    const sellable = items.filter(x=>x.score >= 70);
+    const sellable = items.filter(x=>x.score >= minScore);
     $("kSellable").textContent = sellable.length;
+
     const totalValue = items.reduce((a,x)=>a+(Number(x.value)||0),0);
     $("kValue").textContent = money(totalValue);
 
     const list = $("list");
     list.innerHTML = "";
+
     if(!items.length){
-      list.innerHTML = `<div class="item"><div class="addr">No data loaded yet.</div><div class="meta">Click RUN ENGINE. If it fails, check Debug.</div></div>`;
+      list.innerHTML = `<div class="item">
+        <div class="addr">No data loaded yet.</div>
+        <div class="meta">Click RUN ENGINE. If it fails, check Debug.</div>
+      </div>`;
       return;
     }
 
@@ -310,13 +361,6 @@
     }
   }
 
-  function escapeHtml(str){
-    return String(str||"")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
-  }
-
   function makeBrief(s){
     const today = new Date().toISOString().slice(0,10);
     return [
@@ -331,7 +375,7 @@
       s.contact ? `Contact/Entity: ${s.contact}` : `Contact/Entity: N/A`,
       ``,
       `Why this matters:`,
-      `This record indicates active work. High score usually means larger scope, clearer intent, or better buyer fit.`,
+      `This record indicates active work. Higher score typically means clearer intent, bigger scope, or easier buyer fit.`,
       ``,
       `Description:`,
       `${s.desc || "N/A"}`,
@@ -341,7 +385,7 @@
   }
 
   function makePitch(s){
-    return `Quick heads up — I spotted a permit at ${s.address}. It looks like real work (type: ${s.type}, est. ${money(s.value)}). Want the 1-page brief + key details so you can act on it fast?`;
+    return `Quick heads up — I spotted a permit at ${s.address}. It looks like real work (type: ${s.type}${s.value ? `, est. ${money(s.value)}` : ""}). Want the 1-page brief + key details so you can act fast?`;
   }
 
   function selectSignal(s){
@@ -363,19 +407,25 @@
   async function run(){
     const source = $("source").value;
     const limit = Number($("limit").value||100);
+    $("modeText").textContent = `${source} • limit ${limit}`;
+
     setStatus("Fetching live data…");
     try{
       const raw = await fetchPermits(source, limit);
       state.raw = raw;
       saveLastGood(source, raw);
       state.signals = buildSignals(source, raw);
+
       setStatus("Live data loaded");
       render();
-      if(state.signals[0]) selectSignal(state.signals[0]);
+
+      // auto-select top record if nothing selected
+      if(!state.selected && state.signals[0]) selectSignal(state.signals[0]);
     }catch(e){
       const msg = String(e && e.message || e);
       setStatus("Live fetch failed — using cached last-good");
       dbg(`Live fetch failed: ${msg}`);
+
       const cached = loadLastGood(source);
       if(cached && Array.isArray(cached.raw)){
         state.raw = cached.raw;
@@ -385,6 +435,8 @@
       }else{
         state.raw = [];
         state.signals = [];
+        state.selected = null;
+        $("brief").value = "";
         setStatus("Live fetch failed — no cache");
         dbg(`Live fetch failed. Error: ${msg}. No cached last-good data found.`);
         render();
@@ -409,6 +461,7 @@
     run();
   });
   $("q").addEventListener("input", render);
+  $("minScore").addEventListener("change", render);
   $("copyBrief").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText($("brief").value);
