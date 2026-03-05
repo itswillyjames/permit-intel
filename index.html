@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,50 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Permit Intelligence Terminal</title>
 <style>
-body { margin:0; font-family:monospace; background:#111; color:#eee; }
-header { background:#222; padding:10px; display:flex; justify-content:space-between; }
-button { margin:0 5px; padding:5px 10px; background:#333; color:#eee; border:none; cursor:pointer; }
-button:hover { background:#555; }
-main { padding:10px; }
-.terminal { background:#000; padding:10px; min-height:400px; overflow:auto; }
-.permit { border-bottom:1px solid #333; margin-bottom:5px; padding-bottom:5px; }
-.score-high { color:#0f0; }
-.score-medium { color:#ff0; }
-.score-low { color:#f00; }
+  body { background: #111; color: #0f0; font-family: monospace; margin:0; padding:0;}
+  #terminal { padding: 20px; height: 90vh; overflow-y: scroll;}
+  button { background:#222;color:#0f0;border:1px solid #0f0;padding:5px 10px;margin:5px;cursor:pointer;}
+  pre { background:#111;color:#0f0;padding:10px;margin-top:10px;overflow-x:auto;}
+  .panel { border-top:1px solid #0f0; padding-top:10px; margin-top:10px;}
 </style>
 </head>
 <body>
-<header>
-<div>
-  <button id="btnHealth">HEALTH</button>
-  <button id="btnCHI">CHI</button>
-  <button id="btnSEA">SEA</button>
-  <button id="btnCIN">CIN</button>
+
+<div id="terminal">
+  <h2>Permit Intelligence Terminal</h2>
+  <button id="health-btn">HEALTH</button>
+  <button id="run-engine-btn">RUN ENGINE</button>
+  <button id="enrich-btn">ENRICH</button>
+
+  <div class="panel">
+    <h3>Pipeline Output</h3>
+    <pre id="pipeline-output">No data yet.</pre>
+  </div>
+
+  <div class="panel">
+    <h3>Enrichment Output</h3>
+    <pre id="enrichment-panel">No enrichment yet.</pre>
+  </div>
 </div>
-<div>
-  <button id="btnFetch">FETCH</button>
-  <button id="btnRunPipeline">▶ RUN PIPELINE</button>
-</div>
-</header>
-<main>
-<div class="terminal" id="terminal"></div>
-</main>
+
 <script>
-const terminal=document.getElementById('terminal');
-let currentCity='CHI', permits=[];
-function log(msg){terminal.innerHTML+=msg+'<br>';terminal.scrollTop=terminal.scrollHeight;}
-async function checkHealth(){try{const res=await fetch('https://permit-intel-proxy.trev-tce.workers.dev/api/health');const data=await res.json();log('HEALTH: GROQ: '+(data.ai_groq?'✓':'✗')+', version: '+data.version);}catch(e){log('HEALTH FAILED:'+e.message);}}
-async function fetchPermits(){try{log(`Fetching ${currentCity}...`);const res=await fetch(`https://permit-intel-proxy.trev-tce.workers.dev/api/permits?source=${currentCity.toLowerCase()}&limit=30`);const data=await res.json();if(!data.ok)throw new Error(data.error||'Unknown');permits=data.permits;log(`Fetched ${permits.length} permits.`);renderPermits();}catch(e){log('FETCH FAILED:'+e.message);}}
-function renderPermits(){terminal.innerHTML='';permits.forEach((p,i)=>{let gradeClass='score-low';if(p.score>=80)gradeClass='score-high';else if(p.score>=50)gradeClass='score-medium';terminal.innerHTML+=`<div class="permit"><strong>${i+1}. ${p.address||'N/A'}</strong><br>Permit: ${p.permit||'N/A'}<br>Value: $${p.value}<br>Score: <span class="${gradeClass}">${p.score}</span><br><button onclick="enrich(${i})">ENRICH</button><pre id="brief${i}"></pre></div>`})}
-async function runPipeline(){permits.forEach((p,i)=>{document.getElementById(`brief${i}`).innerText=p.brief||'No brief';});}
-async function enrich(index){const p=permits[index];try{log(`Enriching ${p.address}...`);const res=await fetch('https://permit-intel-proxy.trev-tce.workers.dev/api/enrich',{method:'POST',body:JSON.stringify(p)});const data=await res.json();if(!data.ok)throw new Error(data.error||'Enrich failed');permits[index]=data.permit;document.getElementById(`brief${index}`).innerText=data.permit.brief||'No brief';log(`Enriched ${p.address}`);}catch(e){log('ENRICH FAILED:'+e.message);}}
-document.getElementById('btnHealth').onclick=checkHealth;
-document.getElementById('btnFetch').onclick=fetchPermits;
-document.getElementById('btnRunPipeline').onclick=runPipeline;
-document.getElementById('btnCHI').onclick=()=>{currentCity='CHI';log('City set to CHI');};
-document.getElementById('btnSEA').onclick=()=>{currentCity='SEA';log('City set to SEA');};
-document.getElementById('btnCIN').onclick=()=>{currentCity='CIN';log('City set to CIN');};
-checkHealth();
+const terminal = document.getElementById('terminal');
+const pipelineOutput = document.getElementById('pipeline-output');
+const enrichmentPanel = document.getElementById('enrichment-panel');
+
+let selectedLead = null; // Placeholder, replace with actual lead selection logic
+let leads = [
+  { contractor_name: "Treewright Construction Services LLC", address: "1504 N Hudson Ave", est_value: "$2.1M" }
+];
+selectedLead = leads[0];
+
+// HEALTH check
+document.getElementById('health-btn').addEventListener('click', async () => {
+  try {
+    const resp = await fetch('/api/health');
+    const data = await resp.json();
+    pipelineOutput.innerText = JSON.stringify(data, null, 2);
+  } catch(err) {
+    pipelineOutput.innerText = 'Health check failed: ' + err;
+  }
+});
+
+// RUN ENGINE (simulated pipeline)
+document.getElementById('run-engine-btn').addEventListener('click', async () => {
+  pipelineOutput.innerText = 'Running pipeline...';
+  try {
+    // Mock fetch example
+    await new Promise(r => setTimeout(r, 1000));
+    pipelineOutput.innerText = JSON.stringify(selectedLead, null, 2);
+  } catch(err) {
+    pipelineOutput.innerText = 'Pipeline failed: ' + err;
+  }
+});
+
+// ENRICH button
+document.getElementById('enrich-btn').addEventListener('click', async () => {
+  if (!selectedLead) return alert('No lead selected!');
+  enrichmentPanel.innerText = 'Enriching lead...';
+
+  try {
+    const resp = await fetch('/api/enrich', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(selectedLead)
+    });
+    const enriched = await resp.json();
+    enrichmentPanel.innerText = JSON.stringify(enriched.enrichment, null, 2);
+  } catch(err) {
+    console.error('Enrichment failed:', err);
+    enrichmentPanel.innerText = 'Enrichment failed: ' + err;
+  }
+});
 </script>
+
 </body>
 </html>
