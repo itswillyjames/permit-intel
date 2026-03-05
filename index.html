@@ -32,6 +32,7 @@
     button{cursor:pointer}
     button.primary{background:var(--accent);border-color:var(--accent);font-weight:700}
     button.ghost:hover{border-color:var(--accent)}
+    button:disabled{opacity:.5;cursor:not-allowed}
     .status{font-size:13px;color:var(--muted)}
     .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
     .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
@@ -142,12 +143,6 @@
 <script>
   const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
 
-  const SOURCES = {
-    chicago: { label: "Chicago — Building Permits" },
-    seattle: { label: "Seattle — Permits" },
-    cincinnati: { label: "Cincinnati — Building Permits" }
-  };
-
   const $ = (id) => document.getElementById(id);
 
   const state = {
@@ -183,7 +178,6 @@
     if(typeof v === "number") return Number.isFinite(v) ? v : 0;
     const s = String(v).trim();
     if(!s) return 0;
-    // remove $, commas, spaces
     const cleaned = s.replace(/[$,\s]/g,"");
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
@@ -213,6 +207,7 @@
     try{
       const r = await fetch(url, { cache: "no-store" });
       const j = await r.json();
+
       if(r.ok && j && j.ok){
         setWorkerPill("good","Worker: OK");
         state.aiAvailable = !!j.ai;
@@ -220,6 +215,7 @@
         setWorkerPill("warn","Worker: maybe");
         state.aiAvailable = false;
       }
+
       $("aiRewrite").disabled = !state.aiAvailable;
       dbg(`Health OK via ${url} :: ai=${state.aiAvailable}`);
       return true;
@@ -252,32 +248,27 @@
     }
   }
 
-  // BEST Seattle value extraction:
-  // - primary: estprojectcost / estimatedcost / value-like fields if present
-  // - fallback: parse numbers from description when it includes “$###,###” (rare)
+  // Seattle value extraction (best-effort from common fields)
   function extractSeattleValue(row){
-    // common cost fields (varies by dataset)
     const candidates = [
       row.estprojectcost,
       row.estimatedcost,
       row.projectcost,
       row.valuation,
       row.value,
-      row.cost
+      row.cost,
+      row.est_value
     ];
     for(const c of candidates){
       const n = parseMoneyLike(c);
       if(n > 0) return n;
     }
-
-    // fallback: find $ amounts inside description
     const desc = String(row.description || "");
     const m = desc.match(/\$\s*([0-9][0-9,]*)(\.[0-9]{1,2})?/);
-    if(m && m[1]){
+    if(m && m[0]){
       const n = parseMoneyLike(m[0]);
       if(n > 0) return n;
     }
-
     return 0;
   }
 
@@ -303,20 +294,26 @@
         date: row.issueddate || row.applieddate || row.issue_date || "",
         value: extractSeattleValue(row),
         desc: row.description || "",
-        contact: row.applicant || row.contractor || row.owner || "" // if present
+        contact: row.applicant || row.contractor || row.owner || ""
       };
     }
 
-    // cincinnati (timeline dataset fields vary)
+    // Cincinnati
     const addr = row.address || row.site_address || row.location || row.street_address || "Unknown address";
     const desc = row.description || row.work_description || row.permit_description || "";
-    const date = row.issue_date || row.issuedate || row.date || row.permit_date || "";
-    const value = parseMoneyLike(row.estimated_cost || row.est_cost || row.value || row.cost || 0);
+    const date = row.issued_date || row.issue_date || row.issuedate || row.date || row.permit_date || row.applied_date || "";
+    const value =
+      parseMoneyLike(row.est_value) ||
+      parseMoneyLike(row.estimated_cost) ||
+      parseMoneyLike(row.est_cost) ||
+      parseMoneyLike(row.value) ||
+      parseMoneyLike(row.cost) ||
+      0;
 
     return {
-      id: row.permit_id || row.id || row.permit_number || "unknown",
+      id: row.number_key || row.permit_id || row.id || row.permit_number || "unknown",
       address: addr,
-      type: row.permit_type || row.type || "Permit",
+      type: row.work_type || row.permit_type || row.type || "Permit",
       date,
       value,
       desc,
@@ -404,9 +401,13 @@
         body: JSON.stringify({ mode: "rewrite", text: $("brief").value })
       });
 
-      const j = await r.json();
-      if(!r.ok || !j || j.ok === false){
-        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : `HTTP ${r.status}`);
+      const text = await r.text();
+      let j = null;
+      try{ j = JSON.parse(text); } catch {}
+
+      if(!r.ok || !j || j.ok !== true){
+        const msg = (j && (j.details || j.error)) ? (j.details || j.error) : text.slice(0, 200);
+        throw new Error(msg || `HTTP ${r.status}`);
       }
 
       $("brief").value = String(j.text || "").trim() || $("brief").value;
@@ -435,9 +436,7 @@
     });
 
     $("kSignals").textContent = items.length;
-
-    const sellable = items.filter(x=>x.score >= min);
-    $("kSellable").textContent = sellable.length;
+    $("kSellable").textContent = items.length;
 
     const totalValue = items.reduce((a,x)=>a+(Number(x.value)||0),0);
     $("kValue").textContent = money(totalValue);
