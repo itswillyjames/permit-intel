@@ -2,98 +2,63 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Permit Intel v2.1</title>
-<link rel="stylesheet" href="style.css"><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Permit Intelligence Terminal</title>
+<title>Permit Intel Terminal v2.1</title>
 <style>
-body { background:#111; color:#ffc; font-family:"IBM Plex Mono", monospace; }
-button { background:#333; color:#ffc; padding:6px 12px; margin:2px; border:none; cursor:pointer; }
-#console { border:1px solid #444; padding:12px; height:500px; overflow:auto; }
+body { background:#111; color:#ffa; font-family: "IBM Plex Mono", monospace; }
+button { background:#222; color:#ffa; border:1px solid #ffa; padding:5px 10px; margin:2px; cursor:pointer; }
+#pipeline { margin-top:1em; }
+#briefs { margin-top:1em; white-space:pre-wrap; }
 </style>
-</head>
-<body>
-<h1>Permit Intelligence Terminal</h1>
-<div>
-  <button onclick="fetchPermits('chicago')">Fetch CHI</button>
-  <button onclick="fetchPermits('seattle')">Fetch SEA</button>
-  <button onclick="fetchPermits('cincinnati')">Fetch CIN</button>
-</div>
-<div id="console">Worker: checking…</div>
-
-<script>
-async function fetchPermits(city) {
-  const consoleDiv = document.getElementById("console");
-  consoleDiv.innerHTML = `Fetching ${city.toUpperCase()} permits…`;
-
-  try {
-    const res = await fetch(`/api/permits?source=${city}`);
-    const permits = await res.json();
-    consoleDiv.innerHTML = "";
-
-    for(const p of permits){
-      const btn = document.createElement("button");
-      btn.textContent = `Enrich Lead: ${p.project}`;
-      btn.onclick = async () => {
-        btn.disabled = true;
-        btn.textContent = "Enriching…";
-        const enriched = await fetch(`/api/enrich`, {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(p)
-        }).then(r=>r.json());
-        consoleDiv.innerHTML += `<pre>${JSON.stringify(enriched,null,2)}</pre>`;
-        btn.textContent = "Enrich Lead Done";
-      };
-      consoleDiv.appendChild(btn);
-    }
-  } catch(e) {
-    consoleDiv.innerHTML = `Error: ${e.message}`;
-  }
-}
-</script>
-</body>
-</html>
-
 </head>
 <body>
 <h1>Permit Intel Terminal v2.1</h1>
 <div>
-  <label>Select City:</label>
-  <select id="city">
-    <option value="CHI">Chicago</option>
-    <option value="SEA">Seattle</option>
-  </select>
-  <button onclick="fetchPermits()">Fetch Permits</button>
+  Select City:
+  <button onclick="fetchPermits('chicago')">Chicago</button>
+  <button onclick="fetchPermits('seattle')">Seattle</button>
+  <button onclick="fetchPermits('cincinnati')">Cincinnati</button>
 </div>
-<div id="pipeline">
-  <h2>Pipeline Status</h2>
-  <pre id="log"></pre>
-</div>
-<div>
-  <h2>Briefs</h2>
-  <div id="briefs"></div>
-</div>
+<div id="status">Worker: checking…</div>
+<div id="pipeline">## Pipeline Status</div>
+<div id="briefs">## Briefs</div>
 
 <script>
-async function fetchPermits() {
-  const city = document.getElementById('city').value;
-  const log = document.getElementById('log');
-  const briefsDiv = document.getElementById('briefs');
-  log.textContent = 'Fetching permits...';
-  const res = await fetch(`/api?city=${city}`);
-  const data = await res.json();
-  log.textContent = 'Pipeline complete.\nSpiderFoot + Google Dorks auto-enriched.';
-  briefsDiv.innerHTML = '';
-  data.briefs.forEach(b=>{
-    const pre = document.createElement('pre');
-    pre.textContent = JSON.stringify(b,null,2);
-    briefsDiv.appendChild(pre);
-  });
+const workerURL = "https://permit-intel-proxy.trev-tce.workers.dev"
+
+async function checkWorker() {
+  try {
+    const res = await fetch(workerURL + "/api/health")
+    const json = await res.json()
+    if(json.ai_groq) document.getElementById('status').textContent = "Worker: connected ✅"
+  } catch(e) {
+    document.getElementById('status').textContent = "Worker: failed ❌"
+  }
 }
+
+async function fetchPermits(city) {
+  document.getElementById('pipeline').textContent = "Fetching permits…"
+  try {
+    const res = await fetch(`${workerURL}/api/permits?source=${city}&limit=10`)
+    const data = await res.json()
+    document.getElementById('pipeline').textContent = `Fetched ${data.length} permits`
+    runPipeline(data)
+  } catch(e) {
+    document.getElementById('pipeline').textContent = "Error fetching permits"
+  }
+}
+
+async function runPipeline(permits) {
+  let briefs = ""
+  for(let p of permits){
+    // Example brief; replace with AI enrichment
+    briefs += `PERMIT: ${p.permit_number || p.id} | VALUE: ${p.value || 'N/A'}\n`
+  }
+  document.getElementById('briefs').textContent = briefs
+}
+
+// Initial Worker check
+checkWorker()
 </script>
 </body>
 </html>
