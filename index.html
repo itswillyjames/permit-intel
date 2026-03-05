@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,45 +6,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Permit Intelligence Terminal</title>
 <style>
-body { background:#0d0d0d; color:#f0f0f0; font-family:monospace; padding:1rem; }
-h1 { color:#00ffcc; }
-button { background:#222; color:#0ff; border:none; padding:0.5rem 1rem; margin:0.25rem; cursor:pointer; }
-button:hover { background:#00ffcc; color:#000; }
-#output { border:1px solid #0ff; padding:1rem; margin-top:1rem; max-height:400px; overflow:auto; }
+body { margin:0; font-family:monospace; background:#111; color:#eee; }
+header { background:#222; padding:10px; display:flex; justify-content:space-between; }
+button { margin:0 5px; padding:5px 10px; background:#333; color:#eee; border:none; cursor:pointer; }
+button:hover { background:#555; }
+main { padding:10px; }
+.terminal { background:#000; padding:10px; min-height:400px; overflow:auto; }
+.permit { border-bottom:1px solid #333; margin-bottom:5px; padding-bottom:5px; }
+.score-high { color:#0f0; }
+.score-medium { color:#ff0; }
+.score-low { color:#f00; }
 </style>
 </head>
 <body>
-<h1>Permit Intelligence Terminal</h1>
-<button id="healthBtn">Health</button>
-<button id="runBtn">Run Engine</button>
-<div id="output"></div>
-
+<header>
+<div>
+  <button id="btnHealth">HEALTH</button>
+  <button id="btnCHI">CHI</button>
+  <button id="btnSEA">SEA</button>
+  <button id="btnCIN">CIN</button>
+</div>
+<div>
+  <button id="btnFetch">FETCH</button>
+  <button id="btnRunPipeline">▶ RUN PIPELINE</button>
+</div>
+</header>
+<main>
+<div class="terminal" id="terminal"></div>
+</main>
 <script>
-const output = document.getElementById('output');
-const WORKER_URL = 'https://permit-intel-proxy.trev-tce.workers.dev';
-
-function log(msg){ output.innerHTML += msg+'<br>'; }
-
-document.getElementById('healthBtn').addEventListener('click', async ()=>{
-    log('Checking worker health...');
-    try{
-        const res = await fetch(`${WORKER_URL}/api/health`);
-        const data = await res.json();
-        log('Worker Health: '+JSON.stringify(data));
-    }catch(e){ log('Health check failed: '+e.message); }
-});
-
-document.getElementById('runBtn').addEventListener('click', async ()=>{
-    log('Running pipeline...');
-    try{
-        const res = await fetch(`${WORKER_URL}/api/batch-pipeline`);
-        const data = await res.json();
-        log('Briefs generated: '+data.briefs.length);
-        data.briefs.forEach((b,i)=>{
-            log(`<b>Brief ${i+1}:</b> ${b.headline} — Score: ${b.score}`);
-        });
-    }catch(e){ log('Pipeline failed: '+e.message); }
-});
+const terminal=document.getElementById('terminal');
+let currentCity='CHI', permits=[];
+function log(msg){terminal.innerHTML+=msg+'<br>';terminal.scrollTop=terminal.scrollHeight;}
+async function checkHealth(){try{const res=await fetch('https://permit-intel-proxy.trev-tce.workers.dev/api/health');const data=await res.json();log('HEALTH: GROQ: '+(data.ai_groq?'✓':'✗')+', version: '+data.version);}catch(e){log('HEALTH FAILED:'+e.message);}}
+async function fetchPermits(){try{log(`Fetching ${currentCity}...`);const res=await fetch(`https://permit-intel-proxy.trev-tce.workers.dev/api/permits?source=${currentCity.toLowerCase()}&limit=30`);const data=await res.json();if(!data.ok)throw new Error(data.error||'Unknown');permits=data.permits;log(`Fetched ${permits.length} permits.`);renderPermits();}catch(e){log('FETCH FAILED:'+e.message);}}
+function renderPermits(){terminal.innerHTML='';permits.forEach((p,i)=>{let gradeClass='score-low';if(p.score>=80)gradeClass='score-high';else if(p.score>=50)gradeClass='score-medium';terminal.innerHTML+=`<div class="permit"><strong>${i+1}. ${p.address||'N/A'}</strong><br>Permit: ${p.permit||'N/A'}<br>Value: $${p.value}<br>Score: <span class="${gradeClass}">${p.score}</span><br><button onclick="enrich(${i})">ENRICH</button><pre id="brief${i}"></pre></div>`})}
+async function runPipeline(){permits.forEach((p,i)=>{document.getElementById(`brief${i}`).innerText=p.brief||'No brief';});}
+async function enrich(index){const p=permits[index];try{log(`Enriching ${p.address}...`);const res=await fetch('https://permit-intel-proxy.trev-tce.workers.dev/api/enrich',{method:'POST',body:JSON.stringify(p)});const data=await res.json();if(!data.ok)throw new Error(data.error||'Enrich failed');permits[index]=data.permit;document.getElementById(`brief${index}`).innerText=data.permit.brief||'No brief';log(`Enriched ${p.address}`);}catch(e){log('ENRICH FAILED:'+e.message);}}
+document.getElementById('btnHealth').onclick=checkHealth;
+document.getElementById('btnFetch').onclick=fetchPermits;
+document.getElementById('btnRunPipeline').onclick=runPipeline;
+document.getElementById('btnCHI').onclick=()=>{currentCity='CHI';log('City set to CHI');};
+document.getElementById('btnSEA').onclick=()=>{currentCity='SEA';log('City set to SEA');};
+document.getElementById('btnCIN').onclick=()=>{currentCity='CIN';log('City set to CIN');};
+checkHealth();
 </script>
 </body>
 </html>
