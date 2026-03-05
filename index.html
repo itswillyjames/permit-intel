@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Permit Intelligence Engine — Worker Routed + AI</title>
+  <title>Permit Intelligence Engine — Worker Routed</title>
   <style>
     :root{
       --bg:#07070b; --panel:#12121a; --border:#2a2a38;
@@ -22,14 +22,13 @@
       padding:12px 14px;
       display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
     }
-    .brand{font-weight:900;letter-spacing:.3px}
+    .brand{font-weight:800;letter-spacing:.3px}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     select,input,button{
       background:var(--panel);color:var(--text);border:1px solid var(--border);
       padding:9px 10px;border-radius:10px;font-size:14px;
     }
-    input[type="text"]{width:220px}
-    input[type="number"]{width:90px}
+    input{width:240px}
     button{cursor:pointer}
     button.primary{background:var(--accent);border-color:var(--accent);font-weight:800}
     button.ghost:hover{border-color:var(--accent)}
@@ -38,12 +37,12 @@
     .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
     .pill.warn{color:var(--warn);border-color:rgba(245,158,11,.4)}
     .pill.bad{color:var(--bad);border-color:rgba(239,68,68,.4)}
-    main{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 64px)}
+    main{display:grid;grid-template-columns:460px 1fr;min-height:calc(100vh - 64px)}
     .col{border-right:1px solid var(--border)}
     .col:last-child{border-right:none}
     .panel{padding:12px 14px;border-bottom:1px solid var(--border)}
     .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:800}
-    .list{height:calc(100vh - 64px - 108px);overflow:auto}
+    .list{height:calc(100vh - 64px - 86px);overflow:auto}
     .item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer}
     .item:hover{background:rgba(255,255,255,.03)}
     .item.sel{background:rgba(59,130,246,.12);border-left:3px solid var(--accent)}
@@ -65,11 +64,14 @@
       font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word
     }
     .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .small{font-size:12px;color:var(--muted)}
+    .minrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+    .minrow label{color:var(--muted);font-size:13px}
+    .minrow input{width:90px}
     @media (max-width: 980px){
       main{grid-template-columns:1fr}
       .col{border-right:none;border-bottom:1px solid var(--border)}
       .list{height:auto;max-height:45vh}
+      input{width:100%}
     }
   </style>
 </head>
@@ -78,7 +80,6 @@
   <div class="row">
     <div class="brand">Permit Intelligence Engine</div>
     <span id="workerPill" class="pill warn">Worker: checking…</span>
-    <span id="aiPill" class="pill warn">AI: checking…</span>
   </div>
   <div class="row">
     <select id="source">
@@ -92,14 +93,10 @@
       <option value="250">250</option>
     </select>
 
-    <label class="small">Min score:</label>
-    <input id="minScore" type="number" min="0" max="100" value="70" />
-
-    <input id="q" type="text" placeholder="Search address / type / contact" />
-
+    <input id="q" placeholder="Search address / type / contact" />
     <button class="primary" id="runBtn">RUN ENGINE</button>
     <button class="ghost" id="clearBtn">CLEAR CACHE</button>
-
+    <button class="ghost" id="aiBtn" title="Uses /api/ai/rewrite on your Worker">AI REWRITE BRIEF</button>
     <span class="status" id="status">Ready</span>
   </div>
 </header>
@@ -108,12 +105,18 @@
   <div class="col">
     <div class="panel">
       <div class="title">Ranked Signals</div>
+
+      <div class="minrow">
+        <label for="minScore">Min score:</label>
+        <input id="minScore" type="number" min="0" max="100" value="70" />
+        <span class="status" id="modeText">—</span>
+      </div>
+
       <div class="kpis">
         <div class="kpi"><div class="n" id="kSignals">0</div><div class="l">Signals</div></div>
         <div class="kpi"><div class="n" id="kSellable">0</div><div class="l">Sellable (>= min)</div></div>
         <div class="kpi"><div class="n" id="kValue">$0</div><div class="l">Total Est. Value</div></div>
       </div>
-      <div class="small" style="margin-top:10px" id="modeText">—</div>
     </div>
     <div class="list" id="list"></div>
   </div>
@@ -124,7 +127,6 @@
       <div class="btnrow">
         <button id="copyBrief" class="ghost">COPY BRIEF</button>
         <button id="copyPitch" class="ghost">COPY PITCH</button>
-        <button id="aiRewrite" class="ghost">AI REWRITE BRIEF</button>
       </div>
       <div style="margin-top:10px">
         <textarea id="brief" readonly placeholder="Select a signal…"></textarea>
@@ -139,8 +141,13 @@
 </main>
 
 <script>
-  // All data + AI go through your Worker
+  // Only your Worker is used
   const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
+
+  const SOURCES = {
+    chicago: { label: "chicago" },
+    seattle: { label: "seattle" }
+  };
 
   const $ = (id) => document.getElementById(id);
 
@@ -149,13 +156,13 @@
     signals: [],
     selected: null,
     lastDebug: "",
-    lastError: null
   };
 
   function setStatus(msg){ $("status").textContent = msg; }
+  function setMode(){ $("modeText").textContent = `${$("source").value} • limit ${$("limit").value}`; }
 
-  function setPill(id, kind, text){
-    const el = $(id);
+  function setWorkerPill(kind, text){
+    const el = $("workerPill");
     el.className = "pill " + kind;
     el.textContent = text;
   }
@@ -179,7 +186,6 @@
       .replaceAll(">","&gt;");
   }
 
-  // Cache last-good per source
   function cacheKey(source){ return `permitintel:lastgood:${source}`; }
   function saveLastGood(source, raw){
     try{ localStorage.setItem(cacheKey(source), JSON.stringify({t:Date.now(), raw})); }catch{}
@@ -203,55 +209,47 @@
     const url = `${WORKER_BASE}/api/health`;
     try{
       const r = await fetch(url, { cache: "no-store" });
-      const j = await r.json().catch(()=>null);
-      if(r.ok && j && j.ok){
-        setPill("workerPill","good","Worker: OK");
-        setPill("aiPill", j.ai ? "good" : "warn", j.ai ? "AI: ready" : "AI: off");
-        dbg(`Health OK. ai=${!!j.ai} token=${!!j.hasAppToken}`);
-        return true;
-      }
-      setPill("workerPill","warn","Worker: maybe");
-      setPill("aiPill","warn","AI: unknown");
-      dbg(`Health unclear. HTTP ${r.status}`);
-      return false;
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json();
+      if(j && j.ok) setWorkerPill("good","Worker: OK");
+      else setWorkerPill("warn","Worker: maybe");
+      dbg(`Health OK via ${url}`);
+      return true;
     }catch(e){
-      setPill("workerPill","bad","Worker: failed");
-      setPill("aiPill","bad","AI: failed");
-      dbg(`Health FAIL :: ${String(e && e.message || e)}`);
+      setWorkerPill("bad","Worker: failed");
+      dbg(`Health FAIL via ${url} :: ${String(e && e.message || e)}`);
       return false;
     }
   }
 
-  // Fetch with timeout + debug
   async function fetchPermits(source, limit){
     const url = `${WORKER_BASE}/api/permits?source=${encodeURIComponent(source)}&limit=${encodeURIComponent(limit)}`;
     dbg(`Fetching: ${url}`);
-
     const ctrl = new AbortController();
     const to = setTimeout(()=>ctrl.abort(), 20000);
-
     try{
       const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
       const text = await r.text();
       dbg(`HTTP ${r.status} from Worker. bytes=${text.length}`);
       if(!r.ok){
-        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 200)}`);
+        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 260)}`);
       }
       const data = JSON.parse(text);
       if(!Array.isArray(data)) throw new Error("Worker did not return an array");
       return data;
-    } finally {
+    }finally{
       clearTimeout(to);
     }
   }
 
-  // Seattle value extraction (cleanest): prefer estprojectcost, fallback to parsing $ amounts in description
-  function parseMoneyFromText(txt){
-    const s = String(txt||"");
-    // capture things like "$1,200,000" or "1,200,000" preceded by $
-    const m = s.match(/\$\s*([0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?)/);
+  // ---- Seattle value extraction (clean) ----
+  function parseMoneyFromText(s){
+    const t = String(s||"");
+    // Matches: $310,000 or 310000 or 310000.00
+    const m = t.match(/\$?\s*([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})(?:\.\d{1,2})?/);
     if(!m) return 0;
-    const n = Number(String(m[1]).replaceAll(",",""));
+    const raw = m[1].replaceAll(",","");
+    const n = Number(raw);
     return Number.isFinite(n) ? n : 0;
   }
 
@@ -269,43 +267,41 @@
       };
     }
 
-    // Seattle
-    const est = Number(row.estprojectcost || 0);
-    const value =
-      (Number.isFinite(est) && est > 0) ? est :
-      parseMoneyFromText(row.description);
+    // Seattle (your Worker is returning fields like: permitnum, permittypedesc, description, estprojectcost, applieddate/issueddate, originaladdress1)
+    const est = Number(String(row.estprojectcost || "").replaceAll(",",""));
+    const estVal = Number.isFinite(est) ? est : 0;
+
+    // fallback: try to parse from description text if estprojectcost missing/0
+    const descVal = estVal > 0 ? 0 : parseMoneyFromText(row.description);
 
     return {
       id: row.permitnum || "unknown",
       address: row.originaladdress1 || "Unknown address",
       type: row.permittypedesc || row.permittypemapped || "Permit",
       date: row.issueddate || row.applieddate || "",
-      value: value || 0,
+      value: estVal > 0 ? estVal : descVal,
       desc: row.description || "",
-      contact: "" // usually not present in Seattle feed
+      contact: "" // Seattle feed often doesn’t include a named firm/person
     };
   }
 
   function scoreSig(x){
     let s = 50;
-
     const t = (x.type||"").toLowerCase();
-    if(t.includes("new")) s += 16;
-    if(t.includes("demol")) s += 12;
-    if(t.includes("addition") || t.includes("alteration") || t.includes("renov")) s += 8;
-
-    if(x.value >= 500000) s += 14;
+    if(t.includes("new")) s += 18;
+    if(t.includes("demol")) s += 10;
+    if(t.includes("addition") || t.includes("alteration")) s += 6;
+    if(x.value >= 250000) s += 10;
+    if(x.value >= 500000) s += 12;
     if(x.value >= 1000000) s += 10;
-
     if((x.desc||"").length > 80) s += 5;
     if((x.contact||"").length > 2) s += 5;
-
     return Math.max(0, Math.min(100, s));
   }
 
   function buildSignals(source, raw){
-    const norm = raw.map(r=>normalize(source, r));
-    return norm
+    return raw
+      .map(r=>normalize(source, r))
       .map(n=>({ ...n, score: scoreSig(n) }))
       .sort((a,b)=>b.score-a.score);
   }
@@ -314,7 +310,7 @@
     const q = ($("q").value||"").trim().toLowerCase();
     const min = Math.max(0, Math.min(100, Number($("minScore").value||70)));
 
-    const filtered = state.signals.filter(s=>{
+    const items = state.signals.filter(s=>{
       if(s.score < min) return false;
       if(!q) return true;
       return (s.address||"").toLowerCase().includes(q)
@@ -323,20 +319,19 @@
         || (s.desc||"").toLowerCase().includes(q);
     });
 
-    $("kSignals").textContent = filtered.length;
-    $("kSellable").textContent = filtered.length; // already filtered by min
-    const totalValue = filtered.reduce((a,x)=>a+(Number(x.value)||0),0);
+    $("kSignals").textContent = items.length;
+    $("kSellable").textContent = items.length; // because we already filtered by min
+    const totalValue = items.reduce((a,x)=>a+(Number(x.value)||0),0);
     $("kValue").textContent = money(totalValue);
 
     const list = $("list");
     list.innerHTML = "";
-
-    if(!filtered.length){
+    if(!items.length){
       list.innerHTML = `<div class="item"><div class="addr">No data loaded yet.</div><div class="meta">Click RUN ENGINE. If it fails, check Debug.</div></div>`;
       return;
     }
 
-    for(const s of filtered){
+    for(const s of items){
       const div = document.createElement("div");
       div.className = "item" + (state.selected && state.selected.id === s.id ? " sel" : "");
       div.onclick = ()=>selectSignal(s);
@@ -373,7 +368,7 @@
   }
 
   function makePitch(s){
-    return `Quick heads up — I spotted a permit at ${s.address}. It looks like real work (type: ${s.type}, est. ${money(s.value)}). Want the 1-page brief + key details so you can act fast?`;
+    return `Quick heads up — I spotted a permit at ${s.address}. It looks like real work (type: ${s.type}, est. ${money(s.value)}). Want the 1-page brief + key details so you can act on it fast?`;
   }
 
   function selectSignal(s){
@@ -392,13 +387,32 @@
     }
   }
 
+  async function aiRewriteBrief(){
+    if(!state.selected) return alert("Select a signal first.");
+    setStatus("AI rewriting…");
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/ai/rewrite`, {
+        method: "POST",
+        headers: { "content-type":"application/json" },
+        body: JSON.stringify({ mode:"rewrite", text: $("brief").value })
+      });
+      const text = await r.text();
+      if(!r.ok) throw new Error(`AI HTTP ${r.status}: ${text.slice(0,200)}`);
+      const j = JSON.parse(text);
+      if(j && j.text) $("brief").value = String(j.text);
+      setStatus("AI rewrite done");
+      dbg(`AI rewrite OK. bytes=${text.length}`);
+    }catch(e){
+      setStatus("AI rewrite failed");
+      dbg(`AI rewrite failed: ${String(e && e.message || e)}`);
+      alert("AI rewrite failed. Open Debug panel for details.");
+    }
+  }
+
   async function run(){
     const source = $("source").value;
     const limit = Number($("limit").value||100);
-    const min = Math.max(0, Math.min(100, Number($("minScore").value||70)));
-
-    $("modeText").textContent = `${source} • limit ${limit} • min ${min}`;
-
+    setMode();
     setStatus("Fetching live data…");
     try{
       const raw = await fetchPermits(source, limit);
@@ -428,40 +442,6 @@
     }
   }
 
-  async function aiRewriteBrief(){
-    if(!state.selected) return alert("Select a signal first.");
-    setStatus("AI rewriting…");
-
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/ai/rewrite`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ mode: "rewrite", text: $("brief").value })
-      });
-
-      const text = await r.text();
-      if(!r.ok){
-        dbg(`AI HTTP ${r.status}: ${text.slice(0, 250)}`);
-        setStatus("AI rewrite failed");
-        return alert("AI rewrite failed. Check Debug.");
-      }
-
-      const j = JSON.parse(text);
-      if(j && j.ok && typeof j.text === "string"){
-        $("brief").value = j.text.trim();
-        setStatus("AI rewrite applied");
-      }else{
-        dbg(`AI unexpected: ${text.slice(0,250)}`);
-        setStatus("AI rewrite failed");
-        alert("AI rewrite returned unexpected output.");
-      }
-    }catch(e){
-      dbg(`AI error: ${String(e && e.message || e)}`);
-      setStatus("AI rewrite failed");
-      alert("AI rewrite error. Check Debug.");
-    }
-  }
-
   $("runBtn").addEventListener("click", run);
   $("clearBtn").addEventListener("click", ()=>{
     clearCacheAll();
@@ -478,9 +458,9 @@
     $("brief").value = "";
     run();
   });
+  $("limit").addEventListener("change", setMode);
   $("q").addEventListener("input", render);
   $("minScore").addEventListener("input", render);
-
   $("copyBrief").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText($("brief").value);
@@ -489,9 +469,10 @@
     if(!state.selected) return alert("Select a signal first.");
     copyText(makePitch(state.selected));
   });
-  $("aiRewrite").addEventListener("click", aiRewriteBrief);
+  $("aiBtn").addEventListener("click", aiRewriteBrief);
 
   (async function boot(){
+    setMode();
     setStatus("Checking Worker…");
     await workerHealth();
     setStatus("Ready");
@@ -501,4 +482,3 @@
 </script>
 </body>
 </html>
-
