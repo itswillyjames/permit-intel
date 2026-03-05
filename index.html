@@ -4,52 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Permit Intelligence Terminal</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
 <style>
-  body { margin:0; font-family:'IBM Plex Mono', monospace; background:#111; color:#ffbf00; }
-  #header { padding:1rem; background:#222; display:flex; justify-content:space-between; align-items:center; }
-  #console { padding:1rem; height:70vh; overflow:auto; background:#111; border-top:1px solid #333; }
-  button { background:#333; color:#ffbf00; border:none; padding:0.5rem 1rem; margin:0.25rem; cursor:pointer; }
-  button:hover { background:#444; }
+body { background:#0d0d0d; color:#f0f0f0; font-family:monospace; padding:1rem; }
+h1 { color:#00ffcc; }
+button { background:#222; color:#0ff; border:none; padding:0.5rem 1rem; margin:0.25rem; cursor:pointer; }
+button:hover { background:#00ffcc; color:#000; }
+#output { border:1px solid #0ff; padding:1rem; margin-top:1rem; max-height:400px; overflow:auto; }
 </style>
 </head>
 <body>
-<div id="header">
-  <h1>Permit Intelligence Terminal</h1>
-  <div>
-    <button onclick="runBatch()">RUN BATCH</button>
-    <button onclick="clearCache()">CLEAR CACHE</button>
-    <button onclick="checkHealth()">HEALTH</button>
-  </div>
-</div>
-<div id="console"></div>
+<h1>Permit Intelligence Terminal</h1>
+<button id="healthBtn">Health</button>
+<button id="runBtn">Run Engine</button>
+<div id="output"></div>
+
 <script>
-const consoleEl = document.getElementById('console');
-const API_URL = "https://permit-intel-proxy.trev-tce.workers.dev/api";
+const output = document.getElementById('output');
+const WORKER_URL = 'https://permit-intel-proxy.trev-tce.workers.dev';
 
-function log(msg){ consoleEl.innerHTML += msg + "<br>"; consoleEl.scrollTop = consoleEl.scrollHeight; }
+function log(msg){ output.innerHTML += msg+'<br>'; }
 
-async function checkHealth(){
-  try{
-    const r = await fetch(`${API_URL}/health`);
-    const data = await r.json();
-    log("HEALTH STATUS: " + JSON.stringify(data));
-  } catch(e){ log("Health check failed: " + e); }
-}
+document.getElementById('healthBtn').addEventListener('click', async ()=>{
+    log('Checking worker health...');
+    try{
+        const res = await fetch(`${WORKER_URL}/api/health`);
+        const data = await res.json();
+        log('Worker Health: '+JSON.stringify(data));
+    }catch(e){ log('Health check failed: '+e.message); }
+});
 
-async function runBatch(){
-  log("Starting batch pipeline...");
-  try{
-    const resp = await fetch(`${API_URL}/batch-pipeline`, { method:'POST' });
-    const results = await resp.json();
-    log(`Batch complete. Generated ${results.briefs.length} briefs.`);
-    results.briefs.forEach((b,i)=>{
-      log(`<b>Brief #${i+1}:</b> ${b.headline} | Score: ${b.score}`);
-    });
-  }catch(e){ log("Batch pipeline failed: " + e); }
-}
-
-function clearCache(){ localStorage.clear(); log("Cache cleared."); }
+document.getElementById('runBtn').addEventListener('click', async ()=>{
+    log('Running pipeline...');
+    try{
+        const res = await fetch(`${WORKER_URL}/api/batch-pipeline`);
+        const data = await res.json();
+        log('Briefs generated: '+data.briefs.length);
+        data.briefs.forEach((b,i)=>{
+            log(`<b>Brief ${i+1}:</b> ${b.headline} — Score: ${b.score}`);
+        });
+    }catch(e){ log('Pipeline failed: '+e.message); }
+});
 </script>
 </body>
 </html>
