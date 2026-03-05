@@ -32,7 +32,7 @@
     button{cursor:pointer}
     button.primary{background:var(--accent);border-color:var(--accent);font-weight:700}
     button.ghost:hover{border-color:var(--accent)}
-    button:disabled{opacity:.5;cursor:not-allowed}
+    button[disabled]{opacity:.55;cursor:not-allowed}
     .status{font-size:13px;color:var(--muted)}
     .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
     .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
@@ -143,6 +143,12 @@
 <script>
   const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
 
+  const SOURCES = {
+    chicago: { label: "Chicago — Building Permits" },
+    seattle: { label: "Seattle — Permits" },
+    cincinnati: { label: "Cincinnati — Building Permits" }
+  };
+
   const $ = (id) => document.getElementById(id);
 
   const state = {
@@ -207,7 +213,6 @@
     try{
       const r = await fetch(url, { cache: "no-store" });
       const j = await r.json();
-
       if(r.ok && j && j.ok){
         setWorkerPill("good","Worker: OK");
         state.aiAvailable = !!j.ai;
@@ -215,7 +220,6 @@
         setWorkerPill("warn","Worker: maybe");
         state.aiAvailable = false;
       }
-
       $("aiRewrite").disabled = !state.aiAvailable;
       dbg(`Health OK via ${url} :: ai=${state.aiAvailable}`);
       return true;
@@ -248,7 +252,7 @@
     }
   }
 
-  // Seattle value extraction (best-effort from common fields)
+  // Seattle cost: prefer explicit numeric fields; fallback to $ in description
   function extractSeattleValue(row){
     const candidates = [
       row.estprojectcost,
@@ -257,7 +261,8 @@
       row.valuation,
       row.value,
       row.cost,
-      row.est_value
+      row.est_value,
+      row.est_value_amt
     ];
     for(const c of candidates){
       const n = parseMoneyLike(c);
@@ -265,7 +270,7 @@
     }
     const desc = String(row.description || "");
     const m = desc.match(/\$\s*([0-9][0-9,]*)(\.[0-9]{1,2})?/);
-    if(m && m[0]){
+    if(m){
       const n = parseMoneyLike(m[0]);
       if(n > 0) return n;
     }
@@ -298,20 +303,16 @@
       };
     }
 
-    // Cincinnati
-    const addr = row.address || row.site_address || row.location || row.street_address || "Unknown address";
+    // Cincinnati (fields vary by dataset)
+    const addr = row.address || row.site_address || row.street_address || row.location || row.parcel_address || "Unknown address";
     const desc = row.description || row.work_description || row.permit_description || "";
-    const date = row.issued_date || row.issue_date || row.issuedate || row.date || row.permit_date || row.applied_date || "";
-    const value =
-      parseMoneyLike(row.est_value) ||
-      parseMoneyLike(row.estimated_cost) ||
-      parseMoneyLike(row.est_cost) ||
-      parseMoneyLike(row.value) ||
-      parseMoneyLike(row.cost) ||
-      0;
+    const date = row.issued_date || row.issue_date || row.applied_date || row.date || row.permit_date || "";
+    const value = parseMoneyLike(
+      row.est_value || row.estimated_cost || row.est_cost || row.value || row.cost || row.valuation || 0
+    );
 
     return {
-      id: row.number_key || row.permit_id || row.id || row.permit_number || "unknown",
+      id: row.number_key || row.permit_id || row.permit_number || row.id || "unknown",
       address: addr,
       type: row.work_type || row.permit_type || row.type || "Permit",
       date,
@@ -326,6 +327,7 @@
     const t = (x.type||"").toLowerCase();
     if(t.includes("new")) s += 15;
     if(t.includes("demol")) s += 10;
+    if(t.includes("hvac") || t.includes("mechanical")) s += 5;
     if(x.value >= 500000) s += 15;
     if(x.value >= 1000000) s += 10;
     if((x.desc||"").length > 80) s += 5;
@@ -403,11 +405,13 @@
 
       const text = await r.text();
       let j = null;
-      try{ j = JSON.parse(text); } catch {}
+      try{ j = JSON.parse(text); }catch{}
 
-      if(!r.ok || !j || j.ok !== true){
-        const msg = (j && (j.details || j.error)) ? (j.details || j.error) : text.slice(0, 200);
-        throw new Error(msg || `HTTP ${r.status}`);
+      if(!r.ok){
+        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : `HTTP ${r.status}: ${text.slice(0,200)}`);
+      }
+      if(!j || j.ok !== true){
+        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : "Unknown AI error");
       }
 
       $("brief").value = String(j.text || "").trim() || $("brief").value;
@@ -453,7 +457,6 @@
       const div = document.createElement("div");
       div.className = "item" + (state.selected && state.selected.id === s.id ? " sel" : "");
       div.onclick = ()=>selectSignal(s);
-
       div.innerHTML = `
         <div class="addr">${escapeHtml(s.address)}</div>
         <div class="meta">${escapeHtml(s.type)} • score ${s.score}/100 • ${escapeHtml(s.date||"")}</div>
@@ -510,26 +513,21 @@
     dbg("Cache cleared manually.");
     render();
   });
-
   $("source").addEventListener("change", ()=>{
     state.selected = null;
     $("brief").value = "";
     run();
   });
-
   $("q").addEventListener("input", render);
   $("minScore").addEventListener("input", render);
-
   $("copyBrief").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText($("brief").value);
   });
-
   $("copyPitch").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText(makePitch(state.selected));
   });
-
   $("aiRewrite").addEventListener("click", aiRewriteBrief);
 
   (async function boot(){
