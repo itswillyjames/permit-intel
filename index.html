@@ -1,532 +1,1238 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Permit Intelligence Engine — Worker Routed</title>
-  <style>
-    :root{
-      --bg:#07070b; --panel:#12121a; --border:#2a2a38;
-      --text:#e8e8f2; --muted:#a1a1b3; --accent:#3b82f6;
-      --good:#10b981; --warn:#f59e0b; --bad:#ef4444;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      --r:12px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
-    header{
-      position:sticky;top:0;z-index:10;
-      background:rgba(18,18,26,.95);
-      border-bottom:1px solid var(--border);
-      padding:12px 14px;
-      display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
-    }
-    .brand{font-weight:800;letter-spacing:.3px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    select,input,button{
-      background:var(--panel);color:var(--text);border:1px solid var(--border);
-      padding:9px 10px;border-radius:10px;font-size:14px;
-    }
-    input{width:220px}
-    button{cursor:pointer}
-    button.primary{background:var(--accent);border-color:var(--accent);font-weight:700}
-    button.ghost:hover{border-color:var(--accent)}
-    .status{font-size:13px;color:var(--muted)}
-    .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
-    .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
-    .pill.warn{color:var(--warn);border-color:rgba(245,158,11,.4)}
-    .pill.bad{color:var(--bad);border-color:rgba(239,68,68,.4)}
-    main{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 64px)}
-    .col{border-right:1px solid var(--border)}
-    .col:last-child{border-right:none}
-    .panel{padding:12px 14px;border-bottom:1px solid var(--border)}
-    .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
-    .list{height:calc(100vh - 64px - 92px);overflow:auto}
-    .item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
-    .item:hover{background:rgba(255,255,255,.03)}
-    .item.sel{background:rgba(59,130,246,.12);border-left:3px solid var(--accent)}
-    .addr{font-weight:800}
-    .meta{margin-top:4px;color:var(--muted);font-size:13px;line-height:1.35;word-break:break-word}
-    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
-    .kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:10px}
-    .kpi .n{font-size:18px;font-weight:900}
-    .kpi .l{font-size:12px;color:var(--muted);margin-top:3px}
-    textarea{
-      width:100%;min-height:240px;resize:vertical;
-      background:var(--panel);border:1px solid var(--border);
-      color:var(--text);border-radius:var(--r);padding:12px;
-      font-family:var(--mono);font-size:12px;line-height:1.4;
-    }
-    pre{
-      margin:0;background:var(--panel);border:1px solid var(--border);
-      border-radius:var(--r);padding:10px;color:var(--muted);
-      font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word
-    }
-    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .minrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
-    .minrow label{font-size:13px;color:var(--muted)}
-    .minrow input{width:90px}
-    @media (max-width: 980px){
-      main{grid-template-columns:1fr}
-      .col{border-right:none;border-bottom:1px solid var(--border)}
-      .list{height:auto;max-height:45vh}
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PERMIT INTEL // INTELLIGENCE SYSTEM</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:        #07080d;
+  --bg2:       #0d0f17;
+  --bg3:       #121520;
+  --border:    #1e2235;
+  --border2:   #2a2f45;
+  --amber:     #d4920a;
+  --amber2:    #f0a820;
+  --amber-dim: rgba(212,146,10,0.12);
+  --amber-glow:rgba(212,146,10,0.06);
+  --green:     #22c55e;
+  --red:       #ef4444;
+  --blue:      #3b82f6;
+  --text:      #e2e4ec;
+  --text-dim:  #7a8099;
+  --text-muted:#424761;
+  --mono:      'IBM Plex Mono', monospace;
+  --head:      'Barlow Condensed', sans-serif;
+  --body:      'Barlow', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:13px;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* grain */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.4;
+}
+
+/* ---- HEADER ---- */
+#header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:44px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+.header-logo{
+  font-family:var(--head);
+  font-weight:900;font-size:1.3rem;
+  letter-spacing:0.12em;
+  color:var(--amber2);
+}
+.header-logo span{color:var(--text-dim);font-weight:300;}
+.header-status{
+  display:flex;align-items:center;gap:16px;
+  font-family:var(--mono);font-size:.68rem;color:var(--text-dim);
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+  animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+.header-controls{display:flex;gap:8px;}
+.ctrl-btn{
+  font-family:var(--mono);font-size:.65rem;
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--text-dim);
+  padding:4px 10px;
+  cursor:pointer;
+  letter-spacing:.06em;
+  transition:all .15s;
+}
+.ctrl-btn:hover,.ctrl-btn.active{
+  border-color:var(--amber);
+  color:var(--amber);
+  background:var(--amber-dim);
+}
+
+/* ---- BODY LAYOUT ---- */
+#layout{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  grid-template-rows:auto;
+  height:calc(100vh - 44px);
+  overflow:hidden;
+}
+
+/* ---- LEFT PANEL ---- */
+#left-panel{
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  background:var(--bg2);
+}
+.panel-header{
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.panel-title{
+  font-family:var(--head);font-weight:700;
+  font-size:.85rem;letter-spacing:.1em;
+  color:var(--text-dim);text-transform:uppercase;
+}
+.badge{
+  font-family:var(--mono);font-size:.6rem;
+  background:var(--amber-dim);
+  color:var(--amber);border:1px solid var(--amber);
+  padding:2px 6px;
+}
+.source-tabs{
+  display:flex;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.src-tab{
+  flex:1;padding:7px 4px;
+  font-family:var(--mono);font-size:.62rem;
+  text-align:center;letter-spacing:.08em;
+  color:var(--text-muted);
+  cursor:pointer;border:none;background:none;
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+}
+.src-tab:hover{color:var(--text-dim);}
+.src-tab.active{
+  color:var(--amber2);
+  border-bottom-color:var(--amber);
+  background:var(--amber-glow);
+}
+.filter-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.filter-label{font-family:var(--mono);font-size:.6rem;color:var(--text-muted);}
+#min-score{
+  flex:1;accent-color:var(--amber);cursor:pointer;
+}
+#score-display{
+  font-family:var(--mono);font-size:.65rem;color:var(--amber);
+  min-width:24px;text-align:right;
+}
+#fetch-btn{
+  font-family:var(--head);font-weight:700;font-size:.75rem;
+  letter-spacing:.1em;
+  background:var(--amber);color:#000;
+  border:none;padding:6px 12px;cursor:pointer;
+  transition:all .15s;flex-shrink:0;
+  text-transform:uppercase;
+}
+#fetch-btn:hover{background:var(--amber2);}
+#fetch-btn:disabled{background:var(--text-muted);cursor:not-allowed;}
+#leads-list{
+  flex:1;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+}
+.lead-card{
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  transition:background .12s;
+  position:relative;
+}
+.lead-card:hover{background:var(--bg3);}
+.lead-card.selected{
+  background:var(--amber-glow);
+  border-left:2px solid var(--amber);
+}
+.lead-card.processing{
+  background:rgba(59,130,246,0.05);
+}
+.lead-card.done-ai{
+  border-left:2px solid var(--green);
+}
+.lc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.lc-addr{
+  font-family:var(--mono);font-size:.7rem;
+  color:var(--text);line-height:1.3;flex:1;
+}
+.lc-score{
+  font-family:var(--head);font-weight:900;font-size:1.4rem;
+  line-height:1;flex-shrink:0;
+}
+.grade-ap{color:#22c55e;}
+.grade-a {color:#84cc16;}
+.grade-b {color:var(--amber2);}
+.grade-c {color:#f97316;}
+.grade-d {color:var(--red);}
+.grade-raw{color:var(--text-dim);}
+.lc-meta{
+  display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;
+}
+.lc-tag{
+  font-family:var(--mono);font-size:.58rem;
+  padding:1px 5px;
+  border:1px solid var(--border2);
+  color:var(--text-muted);
+}
+.lc-tag.value{border-color:rgba(212,146,10,.3);color:rgba(212,146,10,.8);}
+.lc-run{
+  margin-top:8px;
+  font-family:var(--mono);font-size:.6rem;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text-dim);padding:4px 10px;cursor:pointer;
+  width:100%;letter-spacing:.06em;transition:all .15s;
+  text-transform:uppercase;
+}
+.lc-run:hover{border-color:var(--amber);color:var(--amber);}
+.lc-run:disabled{opacity:.4;cursor:not-allowed;}
+.lc-run.running{
+  border-color:var(--blue);color:var(--blue);
+  animation:blink-btn .8s steps(1) infinite;
+}
+@keyframes blink-btn{0%,100%{opacity:1}50%{opacity:.5}}
+.empty-state{
+  padding:40px 20px;text-align:center;
+  font-family:var(--mono);font-size:.7rem;color:var(--text-muted);
+  line-height:2;
+}
+
+/* ---- RIGHT PANEL ---- */
+#right-panel{
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  background:var(--bg);
+}
+#rp-header{
+  padding:10px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;background:var(--bg2);
+  min-height:44px;
+}
+#rp-title{
+  font-family:var(--head);font-weight:700;
+  font-size:.85rem;letter-spacing:.1em;
+  color:var(--text-dim);text-transform:uppercase;
+}
+#rp-actions{display:flex;gap:8px;}
+.action-btn{
+  font-family:var(--mono);font-size:.62rem;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text-dim);padding:4px 10px;cursor:pointer;
+  letter-spacing:.06em;transition:all .15s;text-transform:uppercase;
+}
+.action-btn:hover{border-color:var(--amber);color:var(--amber);}
+.action-btn.primary{
+  background:var(--amber);border-color:var(--amber);
+  color:#000;font-weight:600;
+}
+.action-btn.primary:hover{background:var(--amber2);}
+#rp-body{
+  flex:1;overflow-y:auto;padding:20px;
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+}
+
+/* ---- WELCOME STATE ---- */
+#welcome{text-align:center;padding:60px 40px;}
+.welcome-logo{
+  font-family:var(--head);font-weight:900;
+  font-size:3rem;letter-spacing:.15em;
+  color:var(--amber);
+  margin-bottom:8px;
+}
+.welcome-sub{
+  font-family:var(--mono);font-size:.75rem;
+  color:var(--text-muted);letter-spacing:.1em;
+  margin-bottom:40px;
+}
+.welcome-steps{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  max-width:600px;margin:0 auto;
+}
+.ws{
+  background:var(--bg2);border:1px solid var(--border);
+  padding:16px;text-align:left;
+}
+.ws-num{
+  font-family:var(--head);font-weight:900;font-size:2rem;
+  color:var(--border2);margin-bottom:8px;
+}
+.ws-title{
+  font-family:var(--head);font-weight:700;font-size:.9rem;
+  color:var(--text);margin-bottom:4px;
+}
+.ws-text{
+  font-family:var(--mono);font-size:.62rem;color:var(--text-dim);line-height:1.6;
+}
+
+/* ---- PIPELINE VIEW ---- */
+#pipeline-view{display:none;}
+.pipe-title{
+  font-family:var(--head);font-weight:700;font-size:1.1rem;
+  letter-spacing:.08em;color:var(--text);
+  margin-bottom:4px;
+}
+.pipe-addr{
+  font-family:var(--mono);font-size:.7rem;color:var(--text-dim);
+  margin-bottom:20px;
+}
+.agents-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  margin-bottom:24px;
+}
+.agent-card{
+  background:var(--bg2);border:1px solid var(--border);
+  padding:12px 10px;text-align:center;
+  transition:all .2s;
+}
+.agent-card.running{
+  border-color:var(--blue);
+  background:rgba(59,130,246,0.06);
+  box-shadow:0 0 12px rgba(59,130,246,0.1);
+}
+.agent-card.done{
+  border-color:var(--green);
+  background:rgba(34,197,94,0.05);
+}
+.agent-card.skipped{
+  border-color:var(--border);opacity:.4;
+}
+.ac-icon{font-size:1.4rem;margin-bottom:4px;}
+.ac-name{
+  font-family:var(--head);font-weight:700;font-size:.72rem;
+  letter-spacing:.08em;color:var(--text-dim);
+  text-transform:uppercase;
+}
+.ac-status{
+  font-family:var(--mono);font-size:.58rem;
+  color:var(--text-muted);margin-top:3px;
+}
+.agent-card.running .ac-status{color:var(--blue);}
+.agent-card.done .ac-status{color:var(--green);}
+.ac-spinner{display:none;}
+.agent-card.running .ac-spinner{
+  display:block;
+  width:12px;height:12px;
+  border:1.5px solid var(--blue);
+  border-top-color:transparent;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin:4px auto 0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- BRIEF DOC ---- */
+#brief-doc{display:none;}
+.brief-header{
+  border:1px solid var(--border);
+  padding:16px 20px;
+  margin-bottom:16px;
+  background:var(--bg2);
+  position:relative;
+}
+.brief-grade-badge{
+  position:absolute;top:16px;right:16px;
+  font-family:var(--head);font-weight:900;font-size:2.4rem;
+  line-height:1;
+}
+.brief-headline{
+  font-family:var(--head);font-weight:900;font-size:1.5rem;
+  line-height:1.2;color:var(--amber2);
+  padding-right:60px;margin-bottom:8px;
+}
+.brief-tldr{
+  font-family:var(--body);font-size:.85rem;
+  color:var(--text-dim);line-height:1.6;
+  padding-right:60px;
+}
+.brief-meta-row{
+  display:flex;gap:16px;flex-wrap:wrap;
+  margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--border);
+}
+.bm{
+  font-family:var(--mono);font-size:.62rem;
+}
+.bm-label{color:var(--text-muted);}
+.bm-value{color:var(--amber);font-weight:500;}
+
+.section-block{
+  margin-bottom:16px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+}
+.sb-head{
+  padding:8px 16px;
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  font-family:var(--head);font-weight:700;font-size:.72rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-muted);
+  display:flex;align-items:center;gap:8px;
+}
+.sb-body{
+  padding:14px 16px;
+  font-family:var(--body);font-size:.82rem;
+  color:var(--text);line-height:1.7;
+}
+.buyers-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+  padding:14px 16px;
+}
+.buyer-card{
+  border:1px solid var(--border);padding:10px 12px;
+  background:var(--bg);
+}
+.bc-type{
+  font-family:var(--head);font-weight:700;font-size:.8rem;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:4px;
+}
+.bc-score{
+  font-family:var(--mono);font-size:.65rem;color:var(--text-muted);
+  margin-bottom:6px;
+}
+.bc-why{
+  font-family:var(--body);font-size:.75rem;
+  color:var(--text-dim);line-height:1.5;margin-bottom:4px;
+}
+.bc-pitch{
+  font-family:var(--mono);font-size:.65rem;
+  color:var(--green);line-height:1.5;
+  border-top:1px solid var(--border);padding-top:6px;margin-top:4px;
+}
+.subjects-list{list-style:none;}
+.subjects-list li{
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;
+}
+.subjects-list li:last-child{border-bottom:none;}
+.subj-text{
+  font-family:var(--mono);font-size:.72rem;
+  color:var(--text);flex:1;
+}
+.copy-subj{
+  font-family:var(--mono);font-size:.58rem;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text-muted);padding:2px 7px;
+  cursor:pointer;flex-shrink:0;transition:all .12s;
+  text-transform:uppercase;
+}
+.copy-subj:hover{border-color:var(--amber);color:var(--amber);}
+.action-items-list{
+  padding:14px 16px;
+  list-style:none;
+}
+.action-items-list li{
+  display:flex;gap:10px;
+  padding:6px 0;
+  border-bottom:1px solid var(--border);
+  font-family:var(--body);font-size:.8rem;color:var(--text);
+  line-height:1.5;
+}
+.action-items-list li:last-child{border-bottom:none;}
+.ai-bullet{
+  font-family:var(--head);font-weight:700;font-size:.72rem;
+  color:var(--amber);flex-shrink:0;margin-top:2px;
+}
+
+.score-breakdown{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+  margin-bottom:16px;
+}
+.sb-item{
+  background:var(--bg2);padding:10px 8px;text-align:center;
+}
+.sbi-label{
+  font-family:var(--mono);font-size:.55rem;
+  color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;
+}
+.sbi-value{
+  font-family:var(--head);font-weight:900;font-size:1.3rem;
+}
+.sbi-max{
+  font-family:var(--mono);font-size:.55rem;color:var(--text-muted);
+}
+.sbi-bar{
+  height:2px;background:var(--border2);margin-top:4px;
+}
+.sbi-fill{height:100%;background:var(--amber);transition:width .5s;}
+
+/* ---- RAW PANEL ---- */
+.raw-toggle{
+  font-family:var(--mono);font-size:.62rem;
+  color:var(--text-muted);cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;border-top:1px solid var(--border);
+}
+.raw-toggle:hover{color:var(--text-dim);}
+.raw-data{
+  display:none;background:var(--bg);
+  border:1px solid var(--border);border-top:none;
+  padding:12px;
+  font-family:var(--mono);font-size:.62rem;color:var(--text-dim);
+  line-height:1.6;max-height:200px;overflow-y:auto;
+  white-space:pre-wrap;word-break:break-all;
+}
+
+/* ---- STATUS BAR ---- */
+#statusbar{
+  height:24px;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:16px;
+  font-family:var(--mono);font-size:.6rem;color:var(--text-muted);
+  flex-shrink:0;
+}
+#status-msg{flex:1;}
+.sb-divider{color:var(--border2);}
+
+/* ---- SCROLLBARS ---- */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:var(--border);}
+
+/* ---- TOAST ---- */
+#toast{
+  position:fixed;bottom:32px;right:24px;
+  background:var(--bg2);border:1px solid var(--amber);
+  color:var(--amber);
+  font-family:var(--mono);font-size:.68rem;
+  padding:8px 16px;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
+  z-index:9999;letter-spacing:.06em;
+}
+#toast.show{opacity:1;}
+</style>
 </head>
 <body>
-<header>
-  <div class="row">
-    <div class="brand">Permit Intelligence Engine</div>
-    <span id="workerPill" class="pill warn">Worker: checking…</span>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="header-logo">PERMIT<span> // </span>INTEL</div>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    <span id="connection-status">CONNECTED</span>
+    <span class="sb-divider">|</span>
+    <span id="model-label">GROQ LLAMA-3.3-70B</span>
+    <span class="sb-divider">|</span>
+    <span id="lead-count-label">0 LEADS</span>
   </div>
-  <div class="row">
-    <select id="source">
-      <option value="chicago">Chicago — Building Permits</option>
-      <option value="seattle">Seattle — Permits</option>
-      <option value="cincinnati">Cincinnati — Building Permits</option>
-    </select>
-    <select id="limit">
-      <option value="50">50</option>
-      <option value="100" selected>100</option>
-      <option value="250">250</option>
-    </select>
-    <input id="q" placeholder="Search address / type / contact" />
-    <button class="primary" id="runBtn">RUN ENGINE</button>
-    <button class="ghost" id="clearBtn">CLEAR CACHE</button>
-    <span class="status" id="status">Ready</span>
+  <div class="header-controls">
+    <button class="ctrl-btn" id="btn-health" onclick="checkHealth()">HEALTH</button>
+    <button class="ctrl-btn active" id="btn-auto">AUTO-SCORE</button>
   </div>
-</header>
+</div>
 
-<main>
-  <div class="col">
-    <div class="panel">
-      <div class="title">Ranked Signals</div>
+<!-- LAYOUT -->
+<div id="layout">
 
-      <div class="minrow">
-        <label for="minScore">Min score:</label>
-        <input id="minScore" type="number" min="0" max="100" value="70" />
-        <span class="status" id="modeText">—</span>
-      </div>
-
-      <div class="kpis">
-        <div class="kpi"><div class="n" id="kSignals">0</div><div class="l">Signals</div></div>
-        <div class="kpi"><div class="n" id="kSellable">0</div><div class="l">Sellable (>= min)</div></div>
-        <div class="kpi"><div class="n" id="kValue">$0</div><div class="l">Total Est. Value</div></div>
-      </div>
+  <!-- LEFT: LEAD LIST -->
+  <div id="left-panel">
+    <div class="panel-header">
+      <div class="panel-title">ACTIVE LEADS</div>
+      <div class="badge" id="leads-badge">0</div>
     </div>
 
-    <div class="list" id="list"></div>
-  </div>
-
-  <div class="col">
-    <div class="panel">
-      <div class="title">Deal Panel</div>
-      <div class="btnrow">
-        <button id="copyBrief" class="ghost">COPY BRIEF</button>
-        <button id="copyPitch" class="ghost">COPY PITCH</button>
-        <button id="aiRewrite" class="ghost" title="Rewrite brief using Workers AI">AI REWRITE BRIEF</button>
-      </div>
-      <div style="margin-top:10px">
-        <textarea id="brief" readonly placeholder="Select a signal…"></textarea>
-      </div>
+    <div class="source-tabs">
+      <button class="src-tab active" data-src="chicago" onclick="selectSource('chicago',this)">CHI</button>
+      <button class="src-tab" data-src="seattle" onclick="selectSource('seattle',this)">SEA</button>
+      <button class="src-tab" data-src="cincinnati" onclick="selectSource('cincinnati',this)">CIN</button>
     </div>
 
-    <div class="panel">
-      <div class="title">Debug (last fetch + error)</div>
-      <pre id="debug">No debug yet.</pre>
+    <div class="filter-row">
+      <span class="filter-label">MIN</span>
+      <input type="range" id="min-score" min="0" max="90" value="50"
+             oninput="document.getElementById('score-display').textContent=this.value;filterLeads()"/>
+      <span id="score-display">50</span>
+      <button id="fetch-btn" onclick="fetchLeads()">FETCH</button>
+    </div>
+
+    <div id="leads-list">
+      <div class="empty-state">
+        SELECT A CITY<br/>THEN FETCH PERMITS<br/><br/>
+        RUN PIPELINE ON TOP LEADS<br/>TO GENERATE AI BRIEFS
+      </div>
     </div>
   </div>
-</main>
+
+  <!-- RIGHT: PIPELINE + BRIEF -->
+  <div id="right-panel">
+    <div id="rp-header">
+      <div id="rp-title">INTELLIGENCE BRIEF</div>
+      <div id="rp-actions" style="display:none">
+        <button class="action-btn" id="btn-copy-brief" onclick="copyBrief()">COPY BRIEF</button>
+        <button class="action-btn primary" id="btn-export" onclick="exportBrief()">EXPORT</button>
+      </div>
+    </div>
+    <div id="rp-body">
+
+      <!-- WELCOME -->
+      <div id="welcome">
+        <div class="welcome-logo">// INTEL</div>
+        <div class="welcome-sub">COMMERCIAL PERMIT INTELLIGENCE ENGINE v2.0</div>
+        <div class="welcome-steps">
+          <div class="ws">
+            <div class="ws-num">01</div>
+            <div class="ws-title">FETCH</div>
+            <div class="ws-text">Pull latest permits from Chicago, Seattle, or Cincinnati Socrata feeds</div>
+          </div>
+          <div class="ws">
+            <div class="ws-num">02</div>
+            <div class="ws-title">PIPELINE</div>
+            <div class="ws-text">5 AI agents: Triage → Extract → Score → Match → Brief</div>
+          </div>
+          <div class="ws">
+            <div class="ws-num">03</div>
+            <div class="ws-title">SELL</div>
+            <div class="ws-text">Export brief + subject lines to targeted vendors, contractors, lenders</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PIPELINE RUNNING VIEW -->
+      <div id="pipeline-view">
+        <div class="pipe-title" id="pipe-title">RUNNING PIPELINE</div>
+        <div class="pipe-addr" id="pipe-addr"></div>
+        <div class="agents-grid">
+          <div class="agent-card" id="ag-triage">
+            <div class="ac-icon">🔍</div>
+            <div class="ac-name">TRIAGE</div>
+            <div class="ac-status" id="ag-triage-status">WAITING</div>
+            <div class="ac-spinner"></div>
+          </div>
+          <div class="agent-card" id="ag-extract">
+            <div class="ac-icon">⚙️</div>
+            <div class="ac-name">EXTRACT</div>
+            <div class="ac-status" id="ag-extract-status">WAITING</div>
+            <div class="ac-spinner"></div>
+          </div>
+          <div class="agent-card" id="ag-score">
+            <div class="ac-icon">📊</div>
+            <div class="ac-name">SCORE</div>
+            <div class="ac-status" id="ag-score-status">WAITING</div>
+            <div class="ac-spinner"></div>
+          </div>
+          <div class="agent-card" id="ag-buyer">
+            <div class="ac-icon">🎯</div>
+            <div class="ac-name">MATCH</div>
+            <div class="ac-status" id="ag-buyer-status">WAITING</div>
+            <div class="ac-spinner"></div>
+          </div>
+          <div class="agent-card" id="ag-brief">
+            <div class="ac-icon">📄</div>
+            <div class="ac-name">BRIEF</div>
+            <div class="ac-status" id="ag-brief-status">WAITING</div>
+            <div class="ac-spinner"></div>
+          </div>
+        </div>
+        <div id="pipe-log" style="font-family:var(--mono);font-size:.65rem;color:var(--text-dim);line-height:2;"></div>
+      </div>
+
+      <!-- BRIEF DOC -->
+      <div id="brief-doc"></div>
+
+    </div>
+    <!-- Status bar inside right panel -->
+    <div id="statusbar">
+      <span id="status-msg">READY — SELECT A LEAD AND RUN PIPELINE</span>
+      <span class="sb-divider">|</span>
+      <span id="pipeline-timer"></span>
+      <span class="sb-divider">|</span>
+      <span>WORKER: <span id="worker-url-label" style="color:var(--amber)">—</span></span>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
 
 <script>
-  // Worker base
-  const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
+// ============================================================
+const WORKER_URL = 'https://permit-intel-proxy.trev-tce.workers.dev';
+let currentSource = 'chicago';
+let allLeads = [];
+let selectedLead = null;
+let pipelineResults = {};
+let pipelineRunning = false;
+let timerInterval = null;
 
-  const $ = (id) => document.getElementById(id);
+document.getElementById('worker-url-label').textContent = WORKER_URL.replace('https://','');
 
-  const state = {
-    raw: [],
-    signals: [],
-    selected: null,
-    lastDebug: "",
-    aiAvailable: false
-  };
+// ---- FETCH LEADS ----------------------------------------
 
-  function setStatus(msg){ $("status").textContent = msg; }
+async function fetchLeads() {
+  const btn = document.getElementById('fetch-btn');
+  btn.disabled = true;
+  btn.textContent = 'LOADING…';
+  setStatus(`FETCHING ${currentSource.toUpperCase()} PERMITS…`);
 
-  function setWorkerPill(kind, text){
-    const el = $("workerPill");
-    el.className = "pill " + kind;
-    el.textContent = text;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/permits?source=${currentSource}&limit=30`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'fetch failed');
+
+    allLeads = data.permits || [];
+    document.getElementById('lead-count-label').textContent = `${allLeads.length} LEADS`;
+    setStatus(`LOADED ${allLeads.length} PERMITS FROM ${currentSource.toUpperCase()}`);
+    renderLeads();
+    toast(`${allLeads.length} permits loaded`);
+
+    // cache fallback
+    try { localStorage.setItem(`pi:cache:${currentSource}`, JSON.stringify(allLeads)); } catch(e){}
+  } catch (e) {
+    setStatus(`ERROR: ${e.message}`);
+    // try cache
+    try {
+      const cached = JSON.parse(localStorage.getItem(`pi:cache:${currentSource}`) || 'null');
+      if (cached) { allLeads = cached; renderLeads(); toast('Loaded from cache'); }
+    } catch(ce){}
+    toast(`Fetch error: ${e.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'FETCH';
+  }
+}
+
+// ---- RENDER LEADS ----------------------------------------
+
+function renderLeads() {
+  const list = document.getElementById('leads-list');
+  const min  = parseInt(document.getElementById('min-score').value);
+  const filtered = allLeads.filter(l => l.raw_score >= min);
+
+  document.getElementById('leads-badge').textContent = filtered.length;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state">NO LEADS ABOVE<br/>CURRENT FILTER</div>';
+    return;
   }
 
-  function dbg(line){
-    const t = new Date().toISOString();
-    state.lastDebug = `[${t}] ${line}`;
-    $("debug").textContent = state.lastDebug;
+  list.innerHTML = filtered.map(lead => {
+    const ai = pipelineResults[lead.id];
+    const grade = ai?.pipeline?.scored?.grade || '';
+    const gradeClass = gradeColor(grade);
+    const scoreDisplay = grade
+      ? `<span class="lc-score ${gradeClass}">${grade}</span>`
+      : `<span class="lc-score grade-raw">${lead.raw_score}</span>`;
+
+    const valTag = lead.value ? `<span class="lc-tag value">${fmtVal(lead.value)}</span>` : '';
+    const typeTag = lead.permit_type ? `<span class="lc-tag">${lead.permit_type.slice(0,20)}</span>` : '';
+    const srcTag = `<span class="lc-tag">${lead.source.toUpperCase()}</span>`;
+
+    const isRunning = pipelineRunning && selectedLead?.id === lead.id;
+    const isDone    = !!ai;
+    const cardClass = `lead-card${selectedLead?.id===lead.id?' selected':''}${isDone?' done-ai':''}${isRunning?' processing':''}`;
+    const btnText   = isRunning ? '● RUNNING…' : isDone ? '✓ VIEW BRIEF' : '▶ RUN PIPELINE';
+    const btnClass  = `lc-run${isRunning?' running':''}`;
+
+    return `<div class="${cardClass}" id="card-${lead.id}" onclick="selectLead('${lead.id}')">
+  <div class="lc-top">
+    <div class="lc-addr">${lead.address || '(no address)'}</div>
+    ${scoreDisplay}
+  </div>
+  <div class="lc-meta">${srcTag}${typeTag}${valTag}</div>
+  <button class="${btnClass}" onclick="event.stopPropagation();runPipeline('${lead.id}')" 
+    ${isRunning?'disabled':''}>
+    ${btnText}
+  </button>
+</div>`;
+  }).join('');
+}
+
+function filterLeads() { renderLeads(); }
+
+function selectSource(src, el) {
+  currentSource = src;
+  document.querySelectorAll('.src-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  allLeads = [];
+  pipelineResults = {};
+  document.getElementById('leads-list').innerHTML = '<div class="empty-state">PRESS FETCH</div>';
+  document.getElementById('leads-badge').textContent = '0';
+  showWelcome();
+}
+
+// ---- SELECT LEAD ----------------------------------------
+
+function selectLead(id) {
+  selectedLead = allLeads.find(l => l.id === id);
+  renderLeads();
+  const ai = pipelineResults[id];
+  if (ai) {
+    renderBrief(ai, selectedLead);
+  } else {
+    showWelcome();
   }
+}
 
-  function money(n){
-    const x = Number(n||0);
-    if(!Number.isFinite(x)) return "$0";
-    return "$" + Math.round(x).toLocaleString();
-  }
+// ---- RUN PIPELINE ---------------------------------------
 
-  function parseMoneyLike(v){
-    if(v === null || v === undefined) return 0;
-    if(typeof v === "number") return Number.isFinite(v) ? v : 0;
-    const s = String(v).trim();
-    if(!s) return 0;
-    const cleaned = s.replace(/[$,\s]/g,"");
-    const n = Number(cleaned);
-    return Number.isFinite(n) ? n : 0;
-  }
+async function runPipeline(id) {
+  if (pipelineRunning) { toast('Pipeline already running'); return; }
+  const lead = allLeads.find(l => l.id === id);
+  if (!lead) return;
 
-  function cacheKey(source){ return `permitintel:lastgood:${source}`; }
-  function saveLastGood(source, raw){
-    try{ localStorage.setItem(cacheKey(source), JSON.stringify({t:Date.now(), raw})); }catch{}
-  }
-  function loadLastGood(source){
-    try{
-      const v = localStorage.getItem(cacheKey(source));
-      if(!v) return null;
-      return JSON.parse(v);
-    }catch{return null}
-  }
-  function clearCacheAll(){
-    try{
-      Object.keys(localStorage).forEach(k=>{
-        if(k.startsWith("permitintel:lastgood:")) localStorage.removeItem(k);
-      });
-    }catch{}
-  }
+  selectedLead = lead;
+  pipelineRunning = true;
+  const t0 = Date.now();
+  timerInterval = setInterval(() => {
+    const s = ((Date.now()-t0)/1000).toFixed(1);
+    document.getElementById('pipeline-timer').textContent = `${s}s`;
+  }, 100);
 
-  async function workerHealth(){
-    const url = `${WORKER_BASE}/api/health?cb=${Date.now()}`;
-    try{
-      const r = await fetch(url, { cache: "no-store" });
-      const j = await r.json().catch(()=> ({}));
-      if(r.ok && j && j.ok){
-        setWorkerPill("good","Worker: OK");
-        state.aiAvailable = !!j.ai;
-      } else {
-        setWorkerPill("warn","Worker: maybe");
-        state.aiAvailable = false;
-      }
-      $("aiRewrite").disabled = !state.aiAvailable;
-      dbg(`Health OK via ${url} :: ai=${state.aiAvailable}`);
-      return true;
-    }catch(e){
-      setWorkerPill("bad","Worker: failed");
-      state.aiAvailable = false;
-      $("aiRewrite").disabled = true;
-      dbg(`Health FAIL via ${url} :: ${String(e && e.message || e)}`);
-      return false;
-    }
-  }
+  renderLeads();
+  showPipelineView(lead);
+  setStatus(`RUNNING PIPELINE ON: ${lead.address || lead.id}`);
 
-  async function fetchPermits(source, limit){
-    const url = `${WORKER_BASE}/api/permits?source=${encodeURIComponent(source)}&limit=${encodeURIComponent(limit)}&cb=${Date.now()}`;
-    dbg(`Fetching: ${url}`);
-    const ctrl = new AbortController();
-    const to = setTimeout(()=>ctrl.abort(), 20000);
-    try{
-      const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
-      const text = await r.text();
-      dbg(`HTTP ${r.status} from Worker. bytes=${text.length}`);
-      if(!r.ok){
-        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 220)}`);
-      }
-      const data = JSON.parse(text);
-      if(!Array.isArray(data)) throw new Error("Worker did not return an array");
-      return data;
-    } finally {
-      clearTimeout(to);
-    }
-  }
-
-  // Seattle value extraction:
-  // - use common numeric fields when present (estprojectcost is common)
-  // - fallback: parse $ amounts inside description
-  function extractSeattleValue(row){
-    const candidates = [
-      row.estprojectcost,
-      row.estimatedcost,
-      row.projectcost,
-      row.valuation,
-      row.value,
-      row.cost
-    ];
-    for(const c of candidates){
-      const n = parseMoneyLike(c);
-      if(n > 0) return n;
-    }
-    const desc = String(row.description || "");
-    const m = desc.match(/\$\s*([0-9][0-9,]*)(\.[0-9]{1,2})?/);
-    if(m && m[0]){
-      const n = parseMoneyLike(m[0]);
-      if(n > 0) return n;
-    }
-    return 0;
-  }
-
-  function normalize(source, row){
-    if(source === "chicago"){
-      const addr = [row.street_number, row.street_direction, row.street_name].filter(Boolean).join(" ");
-      return {
-        id: row.id || row.permit_ || "unknown",
-        address: addr || "Unknown address",
-        type: row.permit_type || "Permit",
-        date: row.issue_date || row.application_start_date || "",
-        value: parseMoneyLike(row.reported_cost || 0),
-        desc: row.work_description || "",
-        contact: row.contact_3_name || row.contact_1_name || row.contact_2_name || ""
-      };
-    }
-
-    if(source === "seattle"){
-      return {
-        id: row.permitnum || row.id || "unknown",
-        address: row.originaladdress1 || row.address || "Unknown address",
-        type: row.permittypedesc || row.permittypemapped || row.permittype || "Permit",
-        date: row.applieddate || row.issueddate || row.issue_date || "",
-        value: extractSeattleValue(row),
-        desc: row.description || "",
-        contact: row.applicant || row.contractor || row.owner || ""
-      };
-    }
-
-    // Cincinnati (your dataset already returns est_value + number_key etc)
-    const addr = row.address || row.site_address || row.location || row.street_address || "Unknown address";
-    const desc = row.description || row.work_description || row.permit_description || "";
-    const date = row.issued_date || row.issue_date || row.applied_date || row.date || "";
-    const value = parseMoneyLike(row.est_value || row.estimated_cost || row.est_cost || row.value || row.cost || 0);
-
-    return {
-      id: row.number_key || row.permit_id || row.permit_number || row.id || "unknown",
-      address: addr,
-      type: row.work_type || row.permit_type || row.type || "Permit",
-      date,
-      value,
-      desc,
-      contact: row.contractor || row.applicant || row.owner || ""
-    };
-  }
-
-  function scoreSig(x){
-    let s = 50;
-    const t = (x.type||"").toLowerCase();
-    if(t.includes("new")) s += 15;
-    if(t.includes("demol")) s += 10;
-    if(x.value >= 500000) s += 15;
-    if(x.value >= 1000000) s += 10;
-    if((x.desc||"").length > 80) s += 5;
-    if((x.contact||"").length > 2) s += 5;
-    return Math.max(0, Math.min(100, s));
-  }
-
-  function buildSignals(source, raw){
-    const norm = raw.map(r=>normalize(source, r));
-    return norm.map(n=>({ ...n, score: scoreSig(n) }))
-      .sort((a,b)=>b.score-a.score);
-  }
-
-  function escapeHtml(str){
-    return String(str||"")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
-  }
-
-  function makeBrief(s){
-    const today = new Date().toISOString().slice(0,10);
-    return [
-      `CLIENT BRIEF — PERMIT SIGNAL`,
-      `DATE: ${today}`,
-      ``,
-      `Address: ${s.address}`,
-      `Permit Type: ${s.type}`,
-      `Issued/Applied: ${s.date || "N/A"}`,
-      `Est. Value: ${money(s.value)}`,
-      `Score: ${s.score}/100`,
-      s.contact ? `Contact/Entity: ${s.contact}` : `Contact/Entity: N/A`,
-      ``,
-      `Why this matters:`,
-      `This record indicates active work. Higher score typically means clearer intent, bigger scope, or easier buyer fit.`,
-      ``,
-      `Description:`,
-      `${s.desc || "N/A"}`,
-      ``,
-      `Source: ${$("source").value} via Worker ${WORKER_BASE}`
-    ].join("\n");
-  }
-
-  function makePitch(s){
-    return `Quick heads up — I spotted a permit at ${s.address}. It looks like real work (type: ${s.type}, est. ${money(s.value)}). Want the 1-page brief + key details so you can act on it fast?`;
-  }
-
-  function selectSignal(s){
-    state.selected = s;
-    $("brief").value = makeBrief(s);
-    render();
-  }
-
-  async function copyText(t){
-    try{
-      await navigator.clipboard.writeText(t);
-      setStatus("Copied");
-      setTimeout(()=>setStatus("Ready"),800);
-    }catch{
-      alert("Copy failed — copy manually.");
-    }
-  }
-
-  async function aiRewriteBrief(){
-    if(!state.selected) return alert("Select a signal first.");
-    if(!state.aiAvailable) return alert("Workers AI is not available on the Worker.");
-
-    setStatus("AI rewriting…");
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/ai/rewrite?cb=${Date.now()}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ mode: "rewrite", text: $("brief").value })
-      });
-
-      const j = await r.json().catch(()=> ({}));
-      if(!r.ok || !j || j.ok === false){
-        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : `HTTP ${r.status}`);
-      }
-
-      $("brief").value = String(j.text || "").trim() || $("brief").value;
-      setStatus("AI rewrite complete");
-      dbg(`AI rewrite OK model=${j.model || "unknown"}`);
-    }catch(e){
-      setStatus("AI rewrite failed");
-      dbg(`AI rewrite FAIL: ${String(e && e.message || e)}`);
-      alert("AI rewrite failed. Open Debug for details.");
-    } finally {
-      setTimeout(()=>setStatus("Ready"), 800);
-    }
-  }
-
-  function render(){
-    const q = ($("q").value||"").trim().toLowerCase();
-    const min = Math.max(0, Math.min(100, Number($("minScore").value||70)));
-
-    const items = state.signals.filter(s=>{
-      if(s.score < min) return false;
-      if(!q) return true;
-      return (s.address||"").toLowerCase().includes(q)
-        || (s.type||"").toLowerCase().includes(q)
-        || (s.contact||"").toLowerCase().includes(q)
-        || (s.desc||"").toLowerCase().includes(q);
+  try {
+    const res = await fetch(`${WORKER_URL}/api/pipeline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ permit: lead._raw || lead, source: lead.source }),
     });
+    const data = await res.json();
 
-    $("kSignals").textContent = items.length;
-    $("kSellable").textContent = items.length;
+    if (data.skipped) {
+      logPipe(`⚠️ TRIAGE: ${data.triage?.reason || 'Not worth processing'}`);
+      agentDone('triage');
+      agentSkip(['extract','score','buyer','brief']);
+      setStatus('TRIAGE: LEAD SKIPPED — BELOW COMMERCIAL THRESHOLD');
+      toast('Lead skipped by triage agent');
+    } else if (data.ok) {
+      const p = data.pipeline;
+      agentDone('triage');   logPipe(`✓ TRIAGE: ${p.triage?.permit_category} — ${p.triage?.value_tier} value`);
+      agentDone('extract');  logPipe(`✓ EXTRACT: ${p.extracted?.business_name || p.extracted?.applicant_name || 'unnamed'} @ ${p.extracted?.address_clean}`);
+      agentDone('score');    logPipe(`✓ SCORE: ${p.scored?.total_score}/100 — Grade ${p.scored?.grade} — ${p.scored?.urgency?.toUpperCase()} urgency`);
+      agentDone('buyer');    logPipe(`✓ MATCH: Primary buyer → ${p.buyers?.primary_buyer}`);
+      agentDone('brief');    logPipe(`✓ BRIEF: "${p.brief?.headline}"`);
 
-    const totalValue = items.reduce((a,x)=>a+(Number(x.value)||0),0);
-    $("kValue").textContent = money(totalValue);
-
-    const list = $("list");
-    list.innerHTML = "";
-
-    if(!items.length){
-      list.innerHTML = `<div class="item"><div class="addr">No data loaded yet.</div><div class="meta">Click RUN ENGINE. If it fails, check Debug.</div></div>`;
-      return;
+      pipelineResults[id] = data;
+      renderLeads();
+      renderBrief(data, lead);
+      setStatus(`PIPELINE COMPLETE — GRADE ${data.grade} — SCORE ${data.score}/100`);
+      toast(`Grade ${data.grade} brief ready`);
+      document.getElementById('rp-actions').style.display = 'flex';
+    } else {
+      throw new Error(data.error || 'pipeline failed');
     }
-
-    for(const s of items){
-      const div = document.createElement("div");
-      div.className = "item" + (state.selected && state.selected.id === s.id ? " sel" : "");
-      div.onclick = ()=>selectSignal(s);
-      div.innerHTML = `
-        <div class="addr">${escapeHtml(s.address)}</div>
-        <div class="meta">${escapeHtml(s.type)} • score ${s.score}/100 • ${escapeHtml(s.date||"")}</div>
-        <div class="meta">value: ${money(s.value)}${s.contact ? " • contact: "+escapeHtml(s.contact) : ""}</div>
-      `;
-      list.appendChild(div);
-    }
+  } catch(e) {
+    setStatus(`PIPELINE ERROR: ${e.message}`);
+    logPipe(`ERROR: ${e.message}`);
+    toast(`Error: ${e.message}`);
+  } finally {
+    pipelineRunning = false;
+    clearInterval(timerInterval);
+    renderLeads();
   }
+}
 
-  async function run(){
-    const source = $("source").value;
-    const limit = Number($("limit").value||100);
+// ---- AGENT STATE HELPERS ---------------------------------
 
-    $("modeText").textContent = `${source} • limit ${limit}`;
-    setStatus("Fetching live data…");
+function agentRun(name) {
+  const el = document.getElementById(`ag-${name}`);
+  if (!el) return;
+  el.classList.remove('done','skipped');
+  el.classList.add('running');
+  el.querySelector('.ac-status').textContent = 'RUNNING…';
+}
+function agentDone(name) {
+  const el = document.getElementById(`ag-${name}`);
+  if (!el) return;
+  el.classList.remove('running');
+  el.classList.add('done');
+  el.querySelector('.ac-status').textContent = 'DONE';
+}
+function agentSkip(names) {
+  names.forEach(n => {
+    const el = document.getElementById(`ag-${n}`);
+    if (el) { el.classList.add('skipped'); el.querySelector('.ac-status').textContent = 'SKIPPED'; }
+  });
+}
+function logPipe(msg) {
+  const log = document.getElementById('pipe-log');
+  log.innerHTML += `<div>> ${msg}</div>`;
+}
 
-    try{
-      const raw = await fetchPermits(source, limit);
-      state.raw = raw;
-      saveLastGood(source, raw);
-      state.signals = buildSignals(source, raw);
-      setStatus("Live data loaded");
-      render();
-      if(state.signals[0]) selectSignal(state.signals[0]);
-    }catch(e){
-      const msg = String(e && e.message || e);
-      setStatus("Live fetch failed — using cached last-good");
-      dbg(`Live fetch failed: ${msg}`);
+// ---- VIEWS -----------------------------------------------
 
-      const cached = loadLastGood(source);
-      if(cached && Array.isArray(cached.raw)){
-        state.raw = cached.raw;
-        state.signals = buildSignals(source, cached.raw);
-        setStatus("Loaded cached last-good");
-        render();
-      }else{
-        state.raw = [];
-        state.signals = [];
-        setStatus("Live fetch failed — no cache");
-        dbg(`Live fetch failed. Error: ${msg}. No cached last-good data found.`);
-        render();
-      }
-    }
+function showWelcome() {
+  document.getElementById('welcome').style.display = '';
+  document.getElementById('pipeline-view').style.display = 'none';
+  document.getElementById('brief-doc').style.display = 'none';
+  document.getElementById('rp-actions').style.display = 'none';
+  document.getElementById('rp-title').textContent = 'INTELLIGENCE BRIEF';
+}
+
+function showPipelineView(lead) {
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('brief-doc').style.display = 'none';
+  document.getElementById('pipeline-view').style.display = '';
+  document.getElementById('pipe-title').textContent = `RUNNING PIPELINE — ${(lead.permit_type||'PERMIT').toUpperCase()}`;
+  document.getElementById('pipe-addr').textContent = lead.address || '';
+  document.getElementById('pipe-log').innerHTML = '';
+  document.getElementById('rp-title').textContent = 'PIPELINE ACTIVE';
+
+  // Reset agents
+  ['triage','extract','score','buyer','brief'].forEach(n => {
+    const el = document.getElementById(`ag-${n}`);
+    el.className = 'agent-card running';
+    el.querySelector('.ac-status').textContent = 'RUNNING…';
+  });
+}
+
+// ---- RENDER BRIEF ----------------------------------------
+
+function renderBrief(data, lead) {
+  const p = data.pipeline;
+  const { triage, extracted: ex, scored: sc, buyers: by, brief: br } = p;
+
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('pipeline-view').style.display = 'none';
+  document.getElementById('brief-doc').style.display = '';
+  document.getElementById('rp-title').textContent = `BRIEF // ${sc?.grade || '?'} GRADE`;
+  document.getElementById('rp-actions').style.display = 'flex';
+
+  const gradeClass = gradeColor(sc?.grade);
+  const bkdn = sc?.breakdown || {};
+
+  const sbItems = [
+    { label:'IDENTITY',  val: bkdn.identity||0,  max:25 },
+    { label:'SCALE',     val: bkdn.scale||0,      max:25 },
+    { label:'INTENT',    val: bkdn.commercial_intent||0, max:25 },
+    { label:'CONTACT',   val: bkdn.contact_richness||0,  max:15 },
+    { label:'TIMING',    val: bkdn.timing||0,     max:10 },
+  ];
+
+  const sbHtml = sbItems.map(i => `
+    <div class="sb-item">
+      <div class="sbi-label">${i.label}</div>
+      <div class="sbi-value ${gradeClass}">${i.val}</div>
+      <div class="sbi-max">/${i.max}</div>
+      <div class="sbi-bar"><div class="sbi-fill" style="width:${Math.round(i.val/i.max*100)}%"></div></div>
+    </div>`).join('');
+
+  const topBuyers = (by?.buyers || []).slice(0,4);
+  const buyersHtml = topBuyers.map(b => `
+    <div class="buyer-card">
+      <div class="bc-type">${b.type}</div>
+      <div class="bc-score">FIT: ${b.fit_score}/100 · ${b.time_window||''}</div>
+      <div class="bc-why">${b.why||''}</div>
+      <div class="bc-pitch">→ ${b.pitch_angle||''}</div>
+    </div>`).join('');
+
+  const subjects = (br?.subject_lines || []).slice(0,5);
+  const subjHtml = subjects.map((s,i) => `
+    <li>
+      <span class="subj-text">${s}</span>
+      <button class="copy-subj" onclick="copyText('${escHtml(s)}')">COPY</button>
+    </li>`).join('');
+
+  const flags = (ex?.special_flags || []).map(f =>
+    `<span class="lc-tag" style="margin-right:4px">${f.toUpperCase()}</span>`).join('');
+
+  const redFlags = sc?.red_flags?.length
+    ? `<div style="margin-top:10px;font-family:var(--mono);font-size:.65rem;color:var(--red);">
+        ⚠ ${sc.red_flags.join(' · ')}</div>` : '';
+
+  document.getElementById('brief-doc').innerHTML = `
+    <div class="brief-header">
+      <div class="brief-grade-badge ${gradeClass}">${sc?.grade || '?'}</div>
+      <div class="brief-headline">${br?.headline || 'UNTITLED BRIEF'}</div>
+      <div class="brief-tldr">${br?.tldr || ''}</div>
+      <div class="brief-meta-row">
+        <div class="bm"><span class="bm-label">PERMIT </span><span class="bm-value">${ex?.permit_number||lead.permit_number||'—'}</span></div>
+        <div class="bm"><span class="bm-label">ADDR </span><span class="bm-value">${ex?.address_clean||lead.address||'—'}</span></div>
+        <div class="bm"><span class="bm-label">VALUE </span><span class="bm-value">${ex?.estimated_value ? fmtVal(ex.estimated_value) : '—'}</span></div>
+        <div class="bm"><span class="bm-label">SCORE </span><span class="bm-value">${sc?.total_score||'—'}/100</span></div>
+        <div class="bm"><span class="bm-label">URGENCY </span><span class="bm-value">${(sc?.urgency||'—').toUpperCase()}</span></div>
+        <div class="bm"><span class="bm-label">PRIMARY BUYER </span><span class="bm-value">${by?.primary_buyer||'—'}</span></div>
+      </div>
+      ${flags ? `<div style="margin-top:8px">${flags}</div>` : ''}
+    </div>
+
+    <div class="score-breakdown">${sbHtml}</div>
+
+    <div class="section-block">
+      <div class="sb-head">📋 PROJECT OVERVIEW</div>
+      <div class="sb-body">${br?.project_overview||ex?.project_description||'—'}</div>
+    </div>
+
+    <div class="section-block">
+      <div class="sb-head">💡 OPPORTUNITY ANALYSIS</div>
+      <div class="sb-body">${br?.opportunity_analysis||''}</div>
+    </div>
+
+    <div class="section-block">
+      <div class="sb-head">🎯 KEY INSIGHT</div>
+      <div class="sb-body" style="color:var(--amber)">${by?.key_insight||''}</div>
+    </div>
+
+    <div class="section-block">
+      <div class="sb-head">🏢 BUYER TARGETS (${topBuyers.length})</div>
+      <div class="buyers-grid">${buyersHtml||'<div style="padding:14px 16px;font-size:.75rem;color:var(--text-muted)">No buyer data</div>'}</div>
+    </div>
+
+    <div class="section-block">
+      <div class="sb-head">✉️ EMAIL SUBJECT LINES</div>
+      <ul class="subjects-list">${subjHtml}</ul>
+    </div>
+
+    <div class="section-block">
+      <div class="sb-head">⚡ BUYER ACTION</div>
+      <div class="sb-body">${br?.buyer_action||''}</div>
+    </div>
+
+    <div class="section-block">
+      <div class="sb-head">💰 REVENUE OPPORTUNITY · ⏱ EXPIRATION</div>
+      <div class="sb-body">
+        <strong style="color:var(--amber)">${br?.estimated_revenue_opportunity||'—'}</strong><br/>
+        ${br?.expiration_note||''}
+        ${redFlags}
+      </div>
+    </div>
+
+    <div class="section-block" style="margin-bottom:0">
+      <div class="sb-head">🔎 AI REASONING</div>
+      <div class="sb-body" style="font-size:.75rem;color:var(--text-dim)">${sc?.reasoning||''}</div>
+      <div class="raw-toggle" onclick="toggleRaw(this)">▸ RAW PERMIT DATA</div>
+      <div class="raw-data">${JSON.stringify(lead._raw||lead, null, 2)}</div>
+    </div>`;
+}
+
+// ---- EXPORT / COPY ---------------------------------------
+
+function copyBrief() {
+  if (!selectedLead) return;
+  const ai = pipelineResults[selectedLead.id];
+  if (!ai) return;
+  const p = ai.pipeline;
+  const br = p.brief;
+  const sc = p.scored;
+  const ex = p.extracted;
+  const by = p.buyers;
+
+  const text = [
+    `PERMIT INTEL BRIEF // GRADE ${sc?.grade}`,
+    `${'='.repeat(50)}`,
+    `${br?.headline}`,
+    '',
+    `TLDR: ${br?.tldr}`,
+    '',
+    `ADDRESS: ${ex?.address_clean}`,
+    `PERMIT: ${ex?.permit_number}`,
+    `VALUE: ${ex?.estimated_value ? fmtVal(ex.estimated_value) : '—'}`,
+    `SCORE: ${sc?.total_score}/100 // URGENCY: ${sc?.urgency?.toUpperCase()}`,
+    '',
+    `PROJECT OVERVIEW`,
+    br?.project_overview,
+    '',
+    `OPPORTUNITY`,
+    br?.opportunity_analysis,
+    '',
+    `KEY INSIGHT: ${by?.key_insight}`,
+    '',
+    `PRIMARY BUYER: ${by?.primary_buyer}`,
+    `BUYER ACTION: ${br?.buyer_action}`,
+    '',
+    `REVENUE OPPORTUNITY: ${br?.estimated_revenue_opportunity}`,
+    `EXPIRATION: ${br?.expiration_note}`,
+    '',
+    `EMAIL SUBJECT LINES:`,
+    ...(br?.subject_lines||[]).map((s,i) => `${i+1}. ${s}`),
+    '',
+    `Generated by PERMIT INTEL // ${new Date().toLocaleDateString()}`,
+  ].join('\n');
+
+  copyText(text);
+  toast('Brief copied to clipboard');
+}
+
+function exportBrief() {
+  if (!selectedLead) return;
+  const ai = pipelineResults[selectedLead.id];
+  if (!ai) return;
+  copyBrief();
+  // also download as txt
+  const p = ai.pipeline;
+  const blob = new Blob([buildPlainBrief(p)], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `permit-brief-${selectedLead.id}.txt`;
+  a.click();
+  toast('Brief exported');
+}
+
+function buildPlainBrief(p) {
+  const br = p.brief; const sc = p.scored; const ex = p.extracted; const by = p.buyers;
+  return [
+    `PERMIT INTEL // COMMERCIAL INTELLIGENCE BRIEF`,
+    `Grade: ${sc?.grade} // Score: ${sc?.total_score}/100 // Urgency: ${sc?.urgency?.toUpperCase()}`,
+    `Generated: ${new Date().toISOString()}`,
+    '',
+    br?.headline,
+    '',
+    br?.tldr,
+    '',
+    'PROJECT DETAILS',
+    '-'.repeat(40),
+    `Address: ${ex?.address_clean}`,
+    `Permit #: ${ex?.permit_number}`,
+    `Work Type: ${ex?.work_type_clean}`,
+    `Value: ${ex?.estimated_value ? fmtVal(ex.estimated_value) : 'N/A'}`,
+    `Business: ${ex?.business_name||ex?.applicant_name||'—'}`,
+    `Contractor: ${ex?.contractor_name||'—'}`,
+    '',
+    'PROJECT OVERVIEW',
+    '-'.repeat(40),
+    br?.project_overview,
+    '',
+    'OPPORTUNITY ANALYSIS',
+    '-'.repeat(40),
+    br?.opportunity_analysis,
+    '',
+    `KEY INSIGHT: ${by?.key_insight}`,
+    '',
+    'BUYER TARGETS',
+    '-'.repeat(40),
+    `Primary: ${by?.primary_buyer}`,
+    ...(by?.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100): ${b.pitch_angle}`),
+    '',
+    'BUYER ACTION',
+    '-'.repeat(40),
+    br?.buyer_action,
+    '',
+    `Revenue Opportunity: ${br?.estimated_revenue_opportunity}`,
+    `Expiration: ${br?.expiration_note}`,
+    '',
+    'EMAIL SUBJECT LINES',
+    '-'.repeat(40),
+    ...(br?.subject_lines||[]).map((s,i)=>`${i+1}. ${s}`),
+    '',
+    'AI REASONING',
+    '-'.repeat(40),
+    sc?.reasoning,
+  ].join('\n');
+}
+
+// ---- HEALTH CHECK ----------------------------------------
+
+async function checkHealth() {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/health`);
+    const d = await res.json();
+    const lines = [
+      `STATUS: ${d.ok ? 'ONLINE' : 'OFFLINE'}`,
+      `GROQ: ${d.ai_groq ? '✓' : '✗'}`,
+      `WORKERS AI: ${d.ai_worker ? '✓' : '✗'}`,
+      `MODEL: ${d.model}`,
+      `SOURCES: ${(d.sources||[]).join(', ')}`,
+      `VERSION: ${d.version}`,
+    ].join(' // ');
+    setStatus(lines);
+    toast(`Worker ${d.ok?'ONLINE':'OFFLINE'}`);
+  } catch(e) {
+    setStatus(`HEALTH CHECK FAILED: ${e.message}`);
   }
+}
 
-  $("runBtn").addEventListener("click", run);
-  $("clearBtn").addEventListener("click", ()=>{
-    clearCacheAll();
-    state.raw = [];
-    state.signals = [];
-    state.selected = null;
-    $("brief").value = "";
-    setStatus("Cache cleared");
-    dbg("Cache cleared manually.");
-    render();
+// ---- UTILS -----------------------------------------------
+
+function setStatus(msg) {
+  document.getElementById('status-msg').textContent = msg;
+}
+
+function fmtVal(v) {
+  if (!v || v === 0) return '—';
+  if (v >= 1000000) return `$${(v/1000000).toFixed(1)}M`;
+  if (v >= 1000)    return `$${Math.round(v/1000)}K`;
+  return `$${v.toLocaleString()}`;
+}
+
+function gradeColor(g) {
+  if (g === 'A+') return 'grade-ap';
+  if (g === 'A')  return 'grade-a';
+  if (g === 'B')  return 'grade-b';
+  if (g === 'C')  return 'grade-c';
+  return 'grade-d';
+}
+
+function escHtml(s) {
+  return (s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
   });
+}
 
-  $("source").addEventListener("change", ()=>{
-    state.selected = null;
-    $("brief").value = "";
-    run();
-  });
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg.toUpperCase();
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
 
-  $("q").addEventListener("input", render);
-  $("minScore").addEventListener("input", render);
+function toggleRaw(el) {
+  const raw = el.nextElementSibling;
+  const shown = raw.style.display === 'block';
+  raw.style.display = shown ? 'none' : 'block';
+  el.textContent = shown ? '▸ RAW PERMIT DATA' : '▾ RAW PERMIT DATA';
+}
 
-  $("copyBrief").addEventListener("click", ()=>{
-    if(!state.selected) return alert("Select a signal first.");
-    copyText($("brief").value);
-  });
-
-  $("copyPitch").addEventListener("click", ()=>{
-    if(!state.selected) return alert("Select a signal first.");
-    copyText(makePitch(state.selected));
-  });
-
-  $("aiRewrite").addEventListener("click", aiRewriteBrief);
-
-  (async function boot(){
-    setStatus("Checking Worker…");
-    await workerHealth();
-    setStatus("Ready");
-    render();
-    run();
-  })();
+// ---- INIT ------------------------------------------------
+window.addEventListener('load', () => {
+  checkHealth();
+  setStatus('SYSTEM READY // SELECT CITY AND FETCH PERMITS');
+});
 </script>
 </body>
 </html>
