@@ -28,32 +28,32 @@
       background:var(--panel);color:var(--text);border:1px solid var(--border);
       padding:9px 10px;border-radius:10px;font-size:14px;
     }
-    input{width:240px}
+    input{width:220px}
     button{cursor:pointer}
-    button.primary{background:var(--accent);border-color:var(--accent);font-weight:800}
+    button.primary{background:var(--accent);border-color:var(--accent);font-weight:700}
     button.ghost:hover{border-color:var(--accent)}
     .status{font-size:13px;color:var(--muted)}
     .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
     .pill.good{color:var(--good);border-color:rgba(16,185,129,.4)}
     .pill.warn{color:var(--warn);border-color:rgba(245,158,11,.4)}
     .pill.bad{color:var(--bad);border-color:rgba(239,68,68,.4)}
-    main{display:grid;grid-template-columns:460px 1fr;min-height:calc(100vh - 64px)}
+    main{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 64px)}
     .col{border-right:1px solid var(--border)}
     .col:last-child{border-right:none}
     .panel{padding:12px 14px;border-bottom:1px solid var(--border)}
-    .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:800}
-    .list{height:calc(100vh - 64px - 86px);overflow:auto}
-    .item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+    .title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+    .list{height:calc(100vh - 64px - 68px);overflow:auto}
+    .item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
     .item:hover{background:rgba(255,255,255,.03)}
     .item.sel{background:rgba(59,130,246,.12);border-left:3px solid var(--accent)}
-    .addr{font-weight:900}
+    .addr{font-weight:800}
     .meta{margin-top:4px;color:var(--muted);font-size:13px;line-height:1.35;word-break:break-word}
     .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
     .kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:10px}
-    .kpi .n{font-size:18px;font-weight:950}
+    .kpi .n{font-size:18px;font-weight:900}
     .kpi .l{font-size:12px;color:var(--muted);margin-top:3px}
     textarea{
-      width:100%;min-height:260px;resize:vertical;
+      width:100%;min-height:240px;resize:vertical;
       background:var(--panel);border:1px solid var(--border);
       color:var(--text);border-radius:var(--r);padding:12px;
       font-family:var(--mono);font-size:12px;line-height:1.4;
@@ -64,14 +64,13 @@
       font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word
     }
     .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .minrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
-    .minrow label{color:var(--muted);font-size:13px}
+    .minrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .minrow label{font-size:13px;color:var(--muted)}
     .minrow input{width:90px}
     @media (max-width: 980px){
       main{grid-template-columns:1fr}
       .col{border-right:none;border-bottom:1px solid var(--border)}
       .list{height:auto;max-height:45vh}
-      input{width:100%}
     }
   </style>
 </head>
@@ -85,18 +84,16 @@
     <select id="source">
       <option value="chicago">Chicago — Building Permits</option>
       <option value="seattle">Seattle — Permits</option>
+      <option value="cincinnati">Cincinnati — Building Permits</option>
     </select>
-
     <select id="limit">
       <option value="50">50</option>
       <option value="100" selected>100</option>
       <option value="250">250</option>
     </select>
-
     <input id="q" placeholder="Search address / type / contact" />
     <button class="primary" id="runBtn">RUN ENGINE</button>
     <button class="ghost" id="clearBtn">CLEAR CACHE</button>
-    <button class="ghost" id="aiBtn" title="Uses /api/ai/rewrite on your Worker">AI REWRITE BRIEF</button>
     <span class="status" id="status">Ready</span>
   </div>
 </header>
@@ -118,6 +115,7 @@
         <div class="kpi"><div class="n" id="kValue">$0</div><div class="l">Total Est. Value</div></div>
       </div>
     </div>
+
     <div class="list" id="list"></div>
   </div>
 
@@ -127,6 +125,7 @@
       <div class="btnrow">
         <button id="copyBrief" class="ghost">COPY BRIEF</button>
         <button id="copyPitch" class="ghost">COPY PITCH</button>
+        <button id="aiRewrite" class="ghost" title="Rewrite brief using Workers AI">AI REWRITE BRIEF</button>
       </div>
       <div style="margin-top:10px">
         <textarea id="brief" readonly placeholder="Select a signal…"></textarea>
@@ -141,12 +140,12 @@
 </main>
 
 <script>
-  // Only your Worker is used
   const WORKER_BASE = "https://permit-intel-proxy.trev-tce.workers.dev";
 
   const SOURCES = {
-    chicago: { label: "chicago" },
-    seattle: { label: "seattle" }
+    chicago: { label: "Chicago — Building Permits" },
+    seattle: { label: "Seattle — Permits" },
+    cincinnati: { label: "Cincinnati — Building Permits" }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -156,10 +155,10 @@
     signals: [],
     selected: null,
     lastDebug: "",
+    aiAvailable: false
   };
 
   function setStatus(msg){ $("status").textContent = msg; }
-  function setMode(){ $("modeText").textContent = `${$("source").value} • limit ${$("limit").value}`; }
 
   function setWorkerPill(kind, text){
     const el = $("workerPill");
@@ -179,11 +178,15 @@
     return "$" + Math.round(x).toLocaleString();
   }
 
-  function escapeHtml(str){
-    return String(str||"")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
+  function parseMoneyLike(v){
+    if(v === null || v === undefined) return 0;
+    if(typeof v === "number") return Number.isFinite(v) ? v : 0;
+    const s = String(v).trim();
+    if(!s) return 0;
+    // remove $, commas, spaces
+    const cleaned = s.replace(/[$,\s]/g,"");
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
   }
 
   function cacheKey(source){ return `permitintel:lastgood:${source}`; }
@@ -209,14 +212,21 @@
     const url = `${WORKER_BASE}/api/health`;
     try{
       const r = await fetch(url, { cache: "no-store" });
-      if(!r.ok) throw new Error(`HTTP ${r.status}`);
       const j = await r.json();
-      if(j && j.ok) setWorkerPill("good","Worker: OK");
-      else setWorkerPill("warn","Worker: maybe");
-      dbg(`Health OK via ${url}`);
+      if(r.ok && j && j.ok){
+        setWorkerPill("good","Worker: OK");
+        state.aiAvailable = !!j.ai;
+      } else {
+        setWorkerPill("warn","Worker: maybe");
+        state.aiAvailable = false;
+      }
+      $("aiRewrite").disabled = !state.aiAvailable;
+      dbg(`Health OK via ${url} :: ai=${state.aiAvailable}`);
       return true;
     }catch(e){
       setWorkerPill("bad","Worker: failed");
+      state.aiAvailable = false;
+      $("aiRewrite").disabled = true;
       dbg(`Health FAIL via ${url} :: ${String(e && e.message || e)}`);
       return false;
     }
@@ -232,25 +242,43 @@
       const text = await r.text();
       dbg(`HTTP ${r.status} from Worker. bytes=${text.length}`);
       if(!r.ok){
-        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 260)}`);
+        throw new Error(`Worker HTTP ${r.status}: ${text.slice(0, 220)}`);
       }
       const data = JSON.parse(text);
       if(!Array.isArray(data)) throw new Error("Worker did not return an array");
       return data;
-    }finally{
+    } finally {
       clearTimeout(to);
     }
   }
 
-  // ---- Seattle value extraction (clean) ----
-  function parseMoneyFromText(s){
-    const t = String(s||"");
-    // Matches: $310,000 or 310000 or 310000.00
-    const m = t.match(/\$?\s*([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})(?:\.\d{1,2})?/);
-    if(!m) return 0;
-    const raw = m[1].replaceAll(",","");
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : 0;
+  // BEST Seattle value extraction:
+  // - primary: estprojectcost / estimatedcost / value-like fields if present
+  // - fallback: parse numbers from description when it includes “$###,###” (rare)
+  function extractSeattleValue(row){
+    // common cost fields (varies by dataset)
+    const candidates = [
+      row.estprojectcost,
+      row.estimatedcost,
+      row.projectcost,
+      row.valuation,
+      row.value,
+      row.cost
+    ];
+    for(const c of candidates){
+      const n = parseMoneyLike(c);
+      if(n > 0) return n;
+    }
+
+    // fallback: find $ amounts inside description
+    const desc = String(row.description || "");
+    const m = desc.match(/\$\s*([0-9][0-9,]*)(\.[0-9]{1,2})?/);
+    if(m && m[1]){
+      const n = parseMoneyLike(m[0]);
+      if(n > 0) return n;
+    }
+
+    return 0;
   }
 
   function normalize(source, row){
@@ -261,38 +289,47 @@
         address: addr || "Unknown address",
         type: row.permit_type || "Permit",
         date: row.issue_date || row.application_start_date || "",
-        value: Number(row.reported_cost || 0),
+        value: parseMoneyLike(row.reported_cost || 0),
         desc: row.work_description || "",
         contact: row.contact_3_name || row.contact_1_name || row.contact_2_name || ""
       };
     }
 
-    // Seattle (your Worker is returning fields like: permitnum, permittypedesc, description, estprojectcost, applieddate/issueddate, originaladdress1)
-    const est = Number(String(row.estprojectcost || "").replaceAll(",",""));
-    const estVal = Number.isFinite(est) ? est : 0;
+    if(source === "seattle"){
+      return {
+        id: row.permitnum || row.id || "unknown",
+        address: row.originaladdress1 || row.address || "Unknown address",
+        type: row.permittypedesc || row.permittypemapped || row.permittype || "Permit",
+        date: row.issueddate || row.applieddate || row.issue_date || "",
+        value: extractSeattleValue(row),
+        desc: row.description || "",
+        contact: row.applicant || row.contractor || row.owner || "" // if present
+      };
+    }
 
-    // fallback: try to parse from description text if estprojectcost missing/0
-    const descVal = estVal > 0 ? 0 : parseMoneyFromText(row.description);
+    // cincinnati (timeline dataset fields vary)
+    const addr = row.address || row.site_address || row.location || row.street_address || "Unknown address";
+    const desc = row.description || row.work_description || row.permit_description || "";
+    const date = row.issue_date || row.issuedate || row.date || row.permit_date || "";
+    const value = parseMoneyLike(row.estimated_cost || row.est_cost || row.value || row.cost || 0);
 
     return {
-      id: row.permitnum || "unknown",
-      address: row.originaladdress1 || "Unknown address",
-      type: row.permittypedesc || row.permittypemapped || "Permit",
-      date: row.issueddate || row.applieddate || "",
-      value: estVal > 0 ? estVal : descVal,
-      desc: row.description || "",
-      contact: "" // Seattle feed often doesn’t include a named firm/person
+      id: row.permit_id || row.id || row.permit_number || "unknown",
+      address: addr,
+      type: row.permit_type || row.type || "Permit",
+      date,
+      value,
+      desc,
+      contact: row.contractor || row.applicant || row.owner || ""
     };
   }
 
   function scoreSig(x){
     let s = 50;
     const t = (x.type||"").toLowerCase();
-    if(t.includes("new")) s += 18;
+    if(t.includes("new")) s += 15;
     if(t.includes("demol")) s += 10;
-    if(t.includes("addition") || t.includes("alteration")) s += 6;
-    if(x.value >= 250000) s += 10;
-    if(x.value >= 500000) s += 12;
+    if(x.value >= 500000) s += 15;
     if(x.value >= 1000000) s += 10;
     if((x.desc||"").length > 80) s += 5;
     if((x.contact||"").length > 2) s += 5;
@@ -300,48 +337,16 @@
   }
 
   function buildSignals(source, raw){
-    return raw
-      .map(r=>normalize(source, r))
-      .map(n=>({ ...n, score: scoreSig(n) }))
+    const norm = raw.map(r=>normalize(source, r));
+    return norm.map(n=>({ ...n, score: scoreSig(n) }))
       .sort((a,b)=>b.score-a.score);
   }
 
-  function render(){
-    const q = ($("q").value||"").trim().toLowerCase();
-    const min = Math.max(0, Math.min(100, Number($("minScore").value||70)));
-
-    const items = state.signals.filter(s=>{
-      if(s.score < min) return false;
-      if(!q) return true;
-      return (s.address||"").toLowerCase().includes(q)
-        || (s.type||"").toLowerCase().includes(q)
-        || (s.contact||"").toLowerCase().includes(q)
-        || (s.desc||"").toLowerCase().includes(q);
-    });
-
-    $("kSignals").textContent = items.length;
-    $("kSellable").textContent = items.length; // because we already filtered by min
-    const totalValue = items.reduce((a,x)=>a+(Number(x.value)||0),0);
-    $("kValue").textContent = money(totalValue);
-
-    const list = $("list");
-    list.innerHTML = "";
-    if(!items.length){
-      list.innerHTML = `<div class="item"><div class="addr">No data loaded yet.</div><div class="meta">Click RUN ENGINE. If it fails, check Debug.</div></div>`;
-      return;
-    }
-
-    for(const s of items){
-      const div = document.createElement("div");
-      div.className = "item" + (state.selected && state.selected.id === s.id ? " sel" : "");
-      div.onclick = ()=>selectSignal(s);
-      div.innerHTML = `
-        <div class="addr">${escapeHtml(s.address)}</div>
-        <div class="meta">${escapeHtml(s.type)} • score ${s.score}/100 • ${escapeHtml(s.date||"")}</div>
-        <div class="meta">value: ${money(s.value)}${s.contact ? " • contact: "+escapeHtml(s.contact) : ""}</div>
-      `;
-      list.appendChild(div);
-    }
+  function escapeHtml(str){
+    return String(str||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
   }
 
   function makeBrief(s){
@@ -389,31 +394,83 @@
 
   async function aiRewriteBrief(){
     if(!state.selected) return alert("Select a signal first.");
+    if(!state.aiAvailable) return alert("Workers AI is not available on the Worker.");
+
     setStatus("AI rewriting…");
     try{
       const r = await fetch(`${WORKER_BASE}/api/ai/rewrite`, {
         method: "POST",
-        headers: { "content-type":"application/json" },
-        body: JSON.stringify({ mode:"rewrite", text: $("brief").value })
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "rewrite", text: $("brief").value })
       });
-      const text = await r.text();
-      if(!r.ok) throw new Error(`AI HTTP ${r.status}: ${text.slice(0,200)}`);
-      const j = JSON.parse(text);
-      if(j && j.text) $("brief").value = String(j.text);
-      setStatus("AI rewrite done");
-      dbg(`AI rewrite OK. bytes=${text.length}`);
+
+      const j = await r.json();
+      if(!r.ok || !j || j.ok === false){
+        throw new Error(j && (j.details || j.error) ? (j.details || j.error) : `HTTP ${r.status}`);
+      }
+
+      $("brief").value = String(j.text || "").trim() || $("brief").value;
+      setStatus("AI rewrite complete");
+      dbg(`AI rewrite OK model=${j.model || "unknown"}`);
     }catch(e){
       setStatus("AI rewrite failed");
-      dbg(`AI rewrite failed: ${String(e && e.message || e)}`);
-      alert("AI rewrite failed. Open Debug panel for details.");
+      dbg(`AI rewrite FAIL: ${String(e && e.message || e)}`);
+      alert("AI rewrite failed. Open Debug for details.");
+    } finally {
+      setTimeout(()=>setStatus("Ready"), 800);
+    }
+  }
+
+  function render(){
+    const q = ($("q").value||"").trim().toLowerCase();
+    const min = Math.max(0, Math.min(100, Number($("minScore").value||70)));
+
+    const items = state.signals.filter(s=>{
+      if(s.score < min) return false;
+      if(!q) return true;
+      return (s.address||"").toLowerCase().includes(q)
+        || (s.type||"").toLowerCase().includes(q)
+        || (s.contact||"").toLowerCase().includes(q)
+        || (s.desc||"").toLowerCase().includes(q);
+    });
+
+    $("kSignals").textContent = items.length;
+
+    const sellable = items.filter(x=>x.score >= min);
+    $("kSellable").textContent = sellable.length;
+
+    const totalValue = items.reduce((a,x)=>a+(Number(x.value)||0),0);
+    $("kValue").textContent = money(totalValue);
+
+    const list = $("list");
+    list.innerHTML = "";
+
+    if(!items.length){
+      list.innerHTML = `<div class="item"><div class="addr">No data loaded yet.</div><div class="meta">Click RUN ENGINE. If it fails, check Debug.</div></div>`;
+      return;
+    }
+
+    for(const s of items){
+      const div = document.createElement("div");
+      div.className = "item" + (state.selected && state.selected.id === s.id ? " sel" : "");
+      div.onclick = ()=>selectSignal(s);
+
+      div.innerHTML = `
+        <div class="addr">${escapeHtml(s.address)}</div>
+        <div class="meta">${escapeHtml(s.type)} • score ${s.score}/100 • ${escapeHtml(s.date||"")}</div>
+        <div class="meta">value: ${money(s.value)}${s.contact ? " • contact: "+escapeHtml(s.contact) : ""}</div>
+      `;
+      list.appendChild(div);
     }
   }
 
   async function run(){
     const source = $("source").value;
     const limit = Number($("limit").value||100);
-    setMode();
+
+    $("modeText").textContent = `${source} • limit ${limit}`;
     setStatus("Fetching live data…");
+
     try{
       const raw = await fetchPermits(source, limit);
       state.raw = raw;
@@ -426,6 +483,7 @@
       const msg = String(e && e.message || e);
       setStatus("Live fetch failed — using cached last-good");
       dbg(`Live fetch failed: ${msg}`);
+
       const cached = loadLastGood(source);
       if(cached && Array.isArray(cached.raw)){
         state.raw = cached.raw;
@@ -453,26 +511,29 @@
     dbg("Cache cleared manually.");
     render();
   });
+
   $("source").addEventListener("change", ()=>{
     state.selected = null;
     $("brief").value = "";
     run();
   });
-  $("limit").addEventListener("change", setMode);
+
   $("q").addEventListener("input", render);
   $("minScore").addEventListener("input", render);
+
   $("copyBrief").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText($("brief").value);
   });
+
   $("copyPitch").addEventListener("click", ()=>{
     if(!state.selected) return alert("Select a signal first.");
     copyText(makePitch(state.selected));
   });
-  $("aiBtn").addEventListener("click", aiRewriteBrief);
+
+  $("aiRewrite").addEventListener("click", aiRewriteBrief);
 
   (async function boot(){
-    setMode();
     setStatus("Checking Worker…");
     await workerHealth();
     setStatus("Ready");
