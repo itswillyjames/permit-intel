@@ -1,1238 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PERMIT INTEL // INTELLIGENCE SYSTEM</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permit Intelligence Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:        #07080d;
-  --bg2:       #0d0f17;
-  --bg3:       #121520;
-  --border:    #1e2235;
-  --border2:   #2a2f45;
-  --amber:     #d4920a;
-  --amber2:    #f0a820;
-  --amber-dim: rgba(212,146,10,0.12);
-  --amber-glow:rgba(212,146,10,0.06);
-  --green:     #22c55e;
-  --red:       #ef4444;
-  --blue:      #3b82f6;
-  --text:      #e2e4ec;
-  --text-dim:  #7a8099;
-  --text-muted:#424761;
-  --mono:      'IBM Plex Mono', monospace;
-  --head:      'Barlow Condensed', sans-serif;
-  --body:      'Barlow', sans-serif;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{font-size:13px;}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--body);
-  min-height:100vh;
-  overflow-x:hidden;
-}
-
-/* grain */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events:none;z-index:0;opacity:.4;
-}
-
-/* ---- HEADER ---- */
-#header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;height:44px;
-  background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:100;
-}
-.header-logo{
-  font-family:var(--head);
-  font-weight:900;font-size:1.3rem;
-  letter-spacing:0.12em;
-  color:var(--amber2);
-}
-.header-logo span{color:var(--text-dim);font-weight:300;}
-.header-status{
-  display:flex;align-items:center;gap:16px;
-  font-family:var(--mono);font-size:.68rem;color:var(--text-dim);
-}
-.status-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:var(--green);
-  box-shadow:0 0 6px var(--green);
-  animation:pulse-dot 2s infinite;
-}
-@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
-.header-controls{display:flex;gap:8px;}
-.ctrl-btn{
-  font-family:var(--mono);font-size:.65rem;
-  background:transparent;
-  border:1px solid var(--border2);
-  color:var(--text-dim);
-  padding:4px 10px;
-  cursor:pointer;
-  letter-spacing:.06em;
-  transition:all .15s;
-}
-.ctrl-btn:hover,.ctrl-btn.active{
-  border-color:var(--amber);
-  color:var(--amber);
-  background:var(--amber-dim);
-}
-
-/* ---- BODY LAYOUT ---- */
-#layout{
-  display:grid;
-  grid-template-columns:320px 1fr;
-  grid-template-rows:auto;
-  height:calc(100vh - 44px);
-  overflow:hidden;
-}
-
-/* ---- LEFT PANEL ---- */
-#left-panel{
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  overflow:hidden;
-  background:var(--bg2);
-}
-.panel-header{
-  padding:10px 14px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;
-}
-.panel-title{
-  font-family:var(--head);font-weight:700;
-  font-size:.85rem;letter-spacing:.1em;
-  color:var(--text-dim);text-transform:uppercase;
-}
-.badge{
-  font-family:var(--mono);font-size:.6rem;
-  background:var(--amber-dim);
-  color:var(--amber);border:1px solid var(--amber);
-  padding:2px 6px;
-}
-.source-tabs{
-  display:flex;border-bottom:1px solid var(--border);flex-shrink:0;
-}
-.src-tab{
-  flex:1;padding:7px 4px;
-  font-family:var(--mono);font-size:.62rem;
-  text-align:center;letter-spacing:.08em;
-  color:var(--text-muted);
-  cursor:pointer;border:none;background:none;
-  border-bottom:2px solid transparent;
-  transition:all .15s;
-}
-.src-tab:hover{color:var(--text-dim);}
-.src-tab.active{
-  color:var(--amber2);
-  border-bottom-color:var(--amber);
-  background:var(--amber-glow);
-}
-.filter-row{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 14px;border-bottom:1px solid var(--border);
-  flex-shrink:0;
-}
-.filter-label{font-family:var(--mono);font-size:.6rem;color:var(--text-muted);}
-#min-score{
-  flex:1;accent-color:var(--amber);cursor:pointer;
-}
-#score-display{
-  font-family:var(--mono);font-size:.65rem;color:var(--amber);
-  min-width:24px;text-align:right;
-}
-#fetch-btn{
-  font-family:var(--head);font-weight:700;font-size:.75rem;
-  letter-spacing:.1em;
-  background:var(--amber);color:#000;
-  border:none;padding:6px 12px;cursor:pointer;
-  transition:all .15s;flex-shrink:0;
-  text-transform:uppercase;
-}
-#fetch-btn:hover{background:var(--amber2);}
-#fetch-btn:disabled{background:var(--text-muted);cursor:not-allowed;}
-#leads-list{
-  flex:1;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
-}
-.lead-card{
-  padding:10px 14px;
-  border-bottom:1px solid var(--border);
-  cursor:pointer;
-  transition:background .12s;
-  position:relative;
-}
-.lead-card:hover{background:var(--bg3);}
-.lead-card.selected{
-  background:var(--amber-glow);
-  border-left:2px solid var(--amber);
-}
-.lead-card.processing{
-  background:rgba(59,130,246,0.05);
-}
-.lead-card.done-ai{
-  border-left:2px solid var(--green);
-}
-.lc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
-.lc-addr{
-  font-family:var(--mono);font-size:.7rem;
-  color:var(--text);line-height:1.3;flex:1;
-}
-.lc-score{
-  font-family:var(--head);font-weight:900;font-size:1.4rem;
-  line-height:1;flex-shrink:0;
-}
-.grade-ap{color:#22c55e;}
-.grade-a {color:#84cc16;}
-.grade-b {color:var(--amber2);}
-.grade-c {color:#f97316;}
-.grade-d {color:var(--red);}
-.grade-raw{color:var(--text-dim);}
-.lc-meta{
-  display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;
-}
-.lc-tag{
-  font-family:var(--mono);font-size:.58rem;
-  padding:1px 5px;
-  border:1px solid var(--border2);
-  color:var(--text-muted);
-}
-.lc-tag.value{border-color:rgba(212,146,10,.3);color:rgba(212,146,10,.8);}
-.lc-run{
-  margin-top:8px;
-  font-family:var(--mono);font-size:.6rem;
-  background:transparent;border:1px solid var(--border2);
-  color:var(--text-dim);padding:4px 10px;cursor:pointer;
-  width:100%;letter-spacing:.06em;transition:all .15s;
-  text-transform:uppercase;
-}
-.lc-run:hover{border-color:var(--amber);color:var(--amber);}
-.lc-run:disabled{opacity:.4;cursor:not-allowed;}
-.lc-run.running{
-  border-color:var(--blue);color:var(--blue);
-  animation:blink-btn .8s steps(1) infinite;
-}
-@keyframes blink-btn{0%,100%{opacity:1}50%{opacity:.5}}
-.empty-state{
-  padding:40px 20px;text-align:center;
-  font-family:var(--mono);font-size:.7rem;color:var(--text-muted);
-  line-height:2;
-}
-
-/* ---- RIGHT PANEL ---- */
-#right-panel{
-  display:flex;flex-direction:column;
-  overflow:hidden;
-  background:var(--bg);
-}
-#rp-header{
-  padding:10px 20px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;background:var(--bg2);
-  min-height:44px;
-}
-#rp-title{
-  font-family:var(--head);font-weight:700;
-  font-size:.85rem;letter-spacing:.1em;
-  color:var(--text-dim);text-transform:uppercase;
-}
-#rp-actions{display:flex;gap:8px;}
-.action-btn{
-  font-family:var(--mono);font-size:.62rem;
-  background:transparent;border:1px solid var(--border2);
-  color:var(--text-dim);padding:4px 10px;cursor:pointer;
-  letter-spacing:.06em;transition:all .15s;text-transform:uppercase;
-}
-.action-btn:hover{border-color:var(--amber);color:var(--amber);}
-.action-btn.primary{
-  background:var(--amber);border-color:var(--amber);
-  color:#000;font-weight:600;
-}
-.action-btn.primary:hover{background:var(--amber2);}
-#rp-body{
-  flex:1;overflow-y:auto;padding:20px;
-  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
-}
-
-/* ---- WELCOME STATE ---- */
-#welcome{text-align:center;padding:60px 40px;}
-.welcome-logo{
-  font-family:var(--head);font-weight:900;
-  font-size:3rem;letter-spacing:.15em;
-  color:var(--amber);
-  margin-bottom:8px;
-}
-.welcome-sub{
-  font-family:var(--mono);font-size:.75rem;
-  color:var(--text-muted);letter-spacing:.1em;
-  margin-bottom:40px;
-}
-.welcome-steps{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
-  max-width:600px;margin:0 auto;
-}
-.ws{
-  background:var(--bg2);border:1px solid var(--border);
-  padding:16px;text-align:left;
-}
-.ws-num{
-  font-family:var(--head);font-weight:900;font-size:2rem;
-  color:var(--border2);margin-bottom:8px;
-}
-.ws-title{
-  font-family:var(--head);font-weight:700;font-size:.9rem;
-  color:var(--text);margin-bottom:4px;
-}
-.ws-text{
-  font-family:var(--mono);font-size:.62rem;color:var(--text-dim);line-height:1.6;
-}
-
-/* ---- PIPELINE VIEW ---- */
-#pipeline-view{display:none;}
-.pipe-title{
-  font-family:var(--head);font-weight:700;font-size:1.1rem;
-  letter-spacing:.08em;color:var(--text);
-  margin-bottom:4px;
-}
-.pipe-addr{
-  font-family:var(--mono);font-size:.7rem;color:var(--text-dim);
-  margin-bottom:20px;
-}
-.agents-grid{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:8px;
-  margin-bottom:24px;
-}
-.agent-card{
-  background:var(--bg2);border:1px solid var(--border);
-  padding:12px 10px;text-align:center;
-  transition:all .2s;
-}
-.agent-card.running{
-  border-color:var(--blue);
-  background:rgba(59,130,246,0.06);
-  box-shadow:0 0 12px rgba(59,130,246,0.1);
-}
-.agent-card.done{
-  border-color:var(--green);
-  background:rgba(34,197,94,0.05);
-}
-.agent-card.skipped{
-  border-color:var(--border);opacity:.4;
-}
-.ac-icon{font-size:1.4rem;margin-bottom:4px;}
-.ac-name{
-  font-family:var(--head);font-weight:700;font-size:.72rem;
-  letter-spacing:.08em;color:var(--text-dim);
-  text-transform:uppercase;
-}
-.ac-status{
-  font-family:var(--mono);font-size:.58rem;
-  color:var(--text-muted);margin-top:3px;
-}
-.agent-card.running .ac-status{color:var(--blue);}
-.agent-card.done .ac-status{color:var(--green);}
-.ac-spinner{display:none;}
-.agent-card.running .ac-spinner{
-  display:block;
-  width:12px;height:12px;
-  border:1.5px solid var(--blue);
-  border-top-color:transparent;
-  border-radius:50%;
-  animation:spin .7s linear infinite;
-  margin:4px auto 0;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ---- BRIEF DOC ---- */
-#brief-doc{display:none;}
-.brief-header{
-  border:1px solid var(--border);
-  padding:16px 20px;
-  margin-bottom:16px;
-  background:var(--bg2);
-  position:relative;
-}
-.brief-grade-badge{
-  position:absolute;top:16px;right:16px;
-  font-family:var(--head);font-weight:900;font-size:2.4rem;
-  line-height:1;
-}
-.brief-headline{
-  font-family:var(--head);font-weight:900;font-size:1.5rem;
-  line-height:1.2;color:var(--amber2);
-  padding-right:60px;margin-bottom:8px;
-}
-.brief-tldr{
-  font-family:var(--body);font-size:.85rem;
-  color:var(--text-dim);line-height:1.6;
-  padding-right:60px;
-}
-.brief-meta-row{
-  display:flex;gap:16px;flex-wrap:wrap;
-  margin-top:12px;padding-top:12px;
-  border-top:1px solid var(--border);
-}
-.bm{
-  font-family:var(--mono);font-size:.62rem;
-}
-.bm-label{color:var(--text-muted);}
-.bm-value{color:var(--amber);font-weight:500;}
-
-.section-block{
-  margin-bottom:16px;
-  border:1px solid var(--border);
-  background:var(--bg2);
-}
-.sb-head{
-  padding:8px 16px;
-  background:var(--bg3);
-  border-bottom:1px solid var(--border);
-  font-family:var(--head);font-weight:700;font-size:.72rem;
-  letter-spacing:.12em;text-transform:uppercase;
-  color:var(--text-muted);
-  display:flex;align-items:center;gap:8px;
-}
-.sb-body{
-  padding:14px 16px;
-  font-family:var(--body);font-size:.82rem;
-  color:var(--text);line-height:1.7;
-}
-.buyers-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
-  padding:14px 16px;
-}
-.buyer-card{
-  border:1px solid var(--border);padding:10px 12px;
-  background:var(--bg);
-}
-.bc-type{
-  font-family:var(--head);font-weight:700;font-size:.8rem;
-  letter-spacing:.08em;text-transform:uppercase;
-  color:var(--amber);margin-bottom:4px;
-}
-.bc-score{
-  font-family:var(--mono);font-size:.65rem;color:var(--text-muted);
-  margin-bottom:6px;
-}
-.bc-why{
-  font-family:var(--body);font-size:.75rem;
-  color:var(--text-dim);line-height:1.5;margin-bottom:4px;
-}
-.bc-pitch{
-  font-family:var(--mono);font-size:.65rem;
-  color:var(--green);line-height:1.5;
-  border-top:1px solid var(--border);padding-top:6px;margin-top:4px;
-}
-.subjects-list{list-style:none;}
-.subjects-list li{
-  padding:8px 12px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  gap:8px;
-}
-.subjects-list li:last-child{border-bottom:none;}
-.subj-text{
-  font-family:var(--mono);font-size:.72rem;
-  color:var(--text);flex:1;
-}
-.copy-subj{
-  font-family:var(--mono);font-size:.58rem;
-  background:transparent;border:1px solid var(--border2);
-  color:var(--text-muted);padding:2px 7px;
-  cursor:pointer;flex-shrink:0;transition:all .12s;
-  text-transform:uppercase;
-}
-.copy-subj:hover{border-color:var(--amber);color:var(--amber);}
-.action-items-list{
-  padding:14px 16px;
-  list-style:none;
-}
-.action-items-list li{
-  display:flex;gap:10px;
-  padding:6px 0;
-  border-bottom:1px solid var(--border);
-  font-family:var(--body);font-size:.8rem;color:var(--text);
-  line-height:1.5;
-}
-.action-items-list li:last-child{border-bottom:none;}
-.ai-bullet{
-  font-family:var(--head);font-weight:700;font-size:.72rem;
-  color:var(--amber);flex-shrink:0;margin-top:2px;
-}
-
-.score-breakdown{
-  display:grid;grid-template-columns:repeat(5,1fr);
-  gap:1px;background:var(--border);
-  border:1px solid var(--border);
-  margin-bottom:16px;
-}
-.sb-item{
-  background:var(--bg2);padding:10px 8px;text-align:center;
-}
-.sbi-label{
-  font-family:var(--mono);font-size:.55rem;
-  color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;
-}
-.sbi-value{
-  font-family:var(--head);font-weight:900;font-size:1.3rem;
-}
-.sbi-max{
-  font-family:var(--mono);font-size:.55rem;color:var(--text-muted);
-}
-.sbi-bar{
-  height:2px;background:var(--border2);margin-top:4px;
-}
-.sbi-fill{height:100%;background:var(--amber);transition:width .5s;}
-
-/* ---- RAW PANEL ---- */
-.raw-toggle{
-  font-family:var(--mono);font-size:.62rem;
-  color:var(--text-muted);cursor:pointer;
-  display:flex;align-items:center;gap:6px;
-  padding:8px 16px;border-top:1px solid var(--border);
-}
-.raw-toggle:hover{color:var(--text-dim);}
-.raw-data{
-  display:none;background:var(--bg);
-  border:1px solid var(--border);border-top:none;
-  padding:12px;
-  font-family:var(--mono);font-size:.62rem;color:var(--text-dim);
-  line-height:1.6;max-height:200px;overflow-y:auto;
-  white-space:pre-wrap;word-break:break-all;
-}
-
-/* ---- STATUS BAR ---- */
-#statusbar{
-  height:24px;
-  background:var(--bg2);
-  border-top:1px solid var(--border);
-  display:flex;align-items:center;
-  padding:0 16px;gap:16px;
-  font-family:var(--mono);font-size:.6rem;color:var(--text-muted);
-  flex-shrink:0;
-}
-#status-msg{flex:1;}
-.sb-divider{color:var(--border2);}
-
-/* ---- SCROLLBARS ---- */
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-::-webkit-scrollbar-thumb:hover{background:var(--border);}
-
-/* ---- TOAST ---- */
-#toast{
-  position:fixed;bottom:32px;right:24px;
-  background:var(--bg2);border:1px solid var(--amber);
-  color:var(--amber);
-  font-family:var(--mono);font-size:.68rem;
-  padding:8px 16px;
-  opacity:0;pointer-events:none;
-  transition:opacity .2s;
-  z-index:9999;letter-spacing:.06em;
-}
-#toast.show{opacity:1;}
+  body { background:#0a0a0a; color:#ffa500; font-family:'IBM Plex Mono', monospace; margin:0; padding:0; }
+  header { padding:1rem; text-align:center; border-bottom:1px solid #444; }
+  h1 { margin:0; font-size:1.8rem; }
+  main { display:flex; flex-direction:column; padding:1rem; }
+  .controls { display:flex; gap:1rem; margin-bottom:1rem; }
+  button { background:#222; color:#ffa500; border:1px solid #444; padding:0.5rem 1rem; cursor:pointer; }
+  button:hover { background:#333; }
+  .kpi { display:flex; gap:1rem; margin-bottom:1rem; }
+  .kpi div { border:1px solid #444; padding:0.5rem 1rem; flex:1; text-align:center; }
+  pre { white-space:pre-wrap; word-wrap:break-word; background:#111; padding:1rem; border-radius:4px; }
+  .panel { margin-bottom:1rem; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div id="header">
-  <div class="header-logo">PERMIT<span> // </span>INTEL</div>
-  <div class="header-status">
-    <div class="status-dot"></div>
-    <span id="connection-status">CONNECTED</span>
-    <span class="sb-divider">|</span>
-    <span id="model-label">GROQ LLAMA-3.3-70B</span>
-    <span class="sb-divider">|</span>
-    <span id="lead-count-label">0 LEADS</span>
-  </div>
-  <div class="header-controls">
-    <button class="ctrl-btn" id="btn-health" onclick="checkHealth()">HEALTH</button>
-    <button class="ctrl-btn active" id="btn-auto">AUTO-SCORE</button>
-  </div>
-</div>
+<header>
+  <h1>Permit Intelligence Engine</h1>
+  <button id="healthCheck">HEALTH</button>
+  <span id="healthStatus">Checking...</span>
+</header>
 
-<!-- LAYOUT -->
-<div id="layout">
-
-  <!-- LEFT: LEAD LIST -->
-  <div id="left-panel">
-    <div class="panel-header">
-      <div class="panel-title">ACTIVE LEADS</div>
-      <div class="badge" id="leads-badge">0</div>
-    </div>
-
-    <div class="source-tabs">
-      <button class="src-tab active" data-src="chicago" onclick="selectSource('chicago',this)">CHI</button>
-      <button class="src-tab" data-src="seattle" onclick="selectSource('seattle',this)">SEA</button>
-      <button class="src-tab" data-src="cincinnati" onclick="selectSource('cincinnati',this)">CIN</button>
-    </div>
-
-    <div class="filter-row">
-      <span class="filter-label">MIN</span>
-      <input type="range" id="min-score" min="0" max="90" value="50"
-             oninput="document.getElementById('score-display').textContent=this.value;filterLeads()"/>
-      <span id="score-display">50</span>
-      <button id="fetch-btn" onclick="fetchLeads()">FETCH</button>
-    </div>
-
-    <div id="leads-list">
-      <div class="empty-state">
-        SELECT A CITY<br/>THEN FETCH PERMITS<br/><br/>
-        RUN PIPELINE ON TOP LEADS<br/>TO GENERATE AI BRIEFS
-      </div>
-    </div>
+<main>
+  <div class="controls">
+    <select id="sourceSelect">
+      <option value="chicago">Chicago – Building Permits</option>
+      <option value="seattle">Seattle – Permits</option>
+      <option value="cincinnati">Cincinnati – Building Permits</option>
+    </select>
+    <input type="number" id="limit" placeholder="Max rows" value="50" min="1">
+    <button id="runEngine">RUN ENGINE</button>
+    <button id="clearCache">CLEAR CACHE</button>
+    <button id="downloadPdf">DOWNLOAD PDF</button>
   </div>
 
-  <!-- RIGHT: PIPELINE + BRIEF -->
-  <div id="right-panel">
-    <div id="rp-header">
-      <div id="rp-title">INTELLIGENCE BRIEF</div>
-      <div id="rp-actions" style="display:none">
-        <button class="action-btn" id="btn-copy-brief" onclick="copyBrief()">COPY BRIEF</button>
-        <button class="action-btn primary" id="btn-export" onclick="exportBrief()">EXPORT</button>
-      </div>
-    </div>
-    <div id="rp-body">
-
-      <!-- WELCOME -->
-      <div id="welcome">
-        <div class="welcome-logo">// INTEL</div>
-        <div class="welcome-sub">COMMERCIAL PERMIT INTELLIGENCE ENGINE v2.0</div>
-        <div class="welcome-steps">
-          <div class="ws">
-            <div class="ws-num">01</div>
-            <div class="ws-title">FETCH</div>
-            <div class="ws-text">Pull latest permits from Chicago, Seattle, or Cincinnati Socrata feeds</div>
-          </div>
-          <div class="ws">
-            <div class="ws-num">02</div>
-            <div class="ws-title">PIPELINE</div>
-            <div class="ws-text">5 AI agents: Triage → Extract → Score → Match → Brief</div>
-          </div>
-          <div class="ws">
-            <div class="ws-num">03</div>
-            <div class="ws-title">SELL</div>
-            <div class="ws-text">Export brief + subject lines to targeted vendors, contractors, lenders</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PIPELINE RUNNING VIEW -->
-      <div id="pipeline-view">
-        <div class="pipe-title" id="pipe-title">RUNNING PIPELINE</div>
-        <div class="pipe-addr" id="pipe-addr"></div>
-        <div class="agents-grid">
-          <div class="agent-card" id="ag-triage">
-            <div class="ac-icon">🔍</div>
-            <div class="ac-name">TRIAGE</div>
-            <div class="ac-status" id="ag-triage-status">WAITING</div>
-            <div class="ac-spinner"></div>
-          </div>
-          <div class="agent-card" id="ag-extract">
-            <div class="ac-icon">⚙️</div>
-            <div class="ac-name">EXTRACT</div>
-            <div class="ac-status" id="ag-extract-status">WAITING</div>
-            <div class="ac-spinner"></div>
-          </div>
-          <div class="agent-card" id="ag-score">
-            <div class="ac-icon">📊</div>
-            <div class="ac-name">SCORE</div>
-            <div class="ac-status" id="ag-score-status">WAITING</div>
-            <div class="ac-spinner"></div>
-          </div>
-          <div class="agent-card" id="ag-buyer">
-            <div class="ac-icon">🎯</div>
-            <div class="ac-name">MATCH</div>
-            <div class="ac-status" id="ag-buyer-status">WAITING</div>
-            <div class="ac-spinner"></div>
-          </div>
-          <div class="agent-card" id="ag-brief">
-            <div class="ac-icon">📄</div>
-            <div class="ac-name">BRIEF</div>
-            <div class="ac-status" id="ag-brief-status">WAITING</div>
-            <div class="ac-spinner"></div>
-          </div>
-        </div>
-        <div id="pipe-log" style="font-family:var(--mono);font-size:.65rem;color:var(--text-dim);line-height:2;"></div>
-      </div>
-
-      <!-- BRIEF DOC -->
-      <div id="brief-doc"></div>
-
-    </div>
-    <!-- Status bar inside right panel -->
-    <div id="statusbar">
-      <span id="status-msg">READY — SELECT A LEAD AND RUN PIPELINE</span>
-      <span class="sb-divider">|</span>
-      <span id="pipeline-timer"></span>
-      <span class="sb-divider">|</span>
-      <span>WORKER: <span id="worker-url-label" style="color:var(--amber)">—</span></span>
-    </div>
+  <div class="kpi">
+    <div>Signals <span id="signals">0</span></div>
+    <div>Sellable <span id="sellable">0</span></div>
+    <div>Total Est. Value <span id="totalValue">$0</span></div>
   </div>
 
-</div>
+  <div class="panel">
+    <h3>Redacted Snippet Preview</h3>
+    <pre id="redactedSnippet">No data loaded yet.</pre>
+  </div>
 
-<div id="toast"></div>
+  <div class="panel">
+    <h3>Deal Recommendations</h3>
+    <pre id="deals">No deals yet.</pre>
+  </div>
 
+  <div class="panel">
+    <h3>Brief Output (PDF/Email-ready)</h3>
+    <pre id="brief">No brief generated.</pre>
+  </div>
+
+  <div id="debug" class="panel">
+    <h3>Debug Output</h3>
+    <pre id="debugOutput">No debug yet.</pre>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.1/jspdf.umd.min.js"></script>
 <script>
-// ============================================================
-const WORKER_URL = 'https://permit-intel-proxy.trev-tce.workers.dev';
-let currentSource = 'chicago';
-let allLeads = [];
-let selectedLead = null;
-let pipelineResults = {};
-let pipelineRunning = false;
-let timerInterval = null;
+const workerUrl = 'https://permit-intel-proxy.trev-tce.workers.dev/api/enrich';
 
-document.getElementById('worker-url-label').textContent = WORKER_URL.replace('https://','');
+async function healthCheck() {
+  document.getElementById('healthStatus').textContent = 'Checking...';
+  try {
+    const res = await fetch(workerUrl, { method:'POST', body: JSON.stringify({ test:'health' }), headers:{'Content-Type':'application/json'} });
+    const json = await res.json();
+    document.getElementById('healthStatus').textContent = json.ok ? 'GROQ: ✓' : '❌';
+  } catch(e) {
+    document.getElementById('healthStatus').textContent = '❌';
+  }
+}
 
-// ---- FETCH LEADS ----------------------------------------
-
-async function fetchLeads() {
-  const btn = document.getElementById('fetch-btn');
-  btn.disabled = true;
-  btn.textContent = 'LOADING…';
-  setStatus(`FETCHING ${currentSource.toUpperCase()} PERMITS…`);
+async function runEngine() {
+  const source = document.getElementById('sourceSelect').value;
+  const limit = parseInt(document.getElementById('limit').value,10);
+  document.getElementById('debugOutput').textContent = 'Fetching data...';
 
   try {
-    const res = await fetch(`${WORKER_URL}/api/permits?source=${currentSource}&limit=30`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'fetch failed');
+    const permits = await fetch(`https://api.mock.permits/${source}?limit=${limit}`).then(r=>r.json()); // replace with live Socrata fetch
+    let totalSignals = permits.length;
+    let sellableCount = 0;
+    let totalValue = 0;
+    let redactedSnippets = [];
+    let deals = [];
+    let briefText = '';
 
-    allLeads = data.permits || [];
-    document.getElementById('lead-count-label').textContent = `${allLeads.length} LEADS`;
-    setStatus(`LOADED ${allLeads.length} PERMITS FROM ${currentSource.toUpperCase()}`);
-    renderLeads();
-    toast(`${allLeads.length} permits loaded`);
-
-    // cache fallback
-    try { localStorage.setItem(`pi:cache:${currentSource}`, JSON.stringify(allLeads)); } catch(e){}
-  } catch (e) {
-    setStatus(`ERROR: ${e.message}`);
-    // try cache
-    try {
-      const cached = JSON.parse(localStorage.getItem(`pi:cache:${currentSource}`) || 'null');
-      if (cached) { allLeads = cached; renderLeads(); toast('Loaded from cache'); }
-    } catch(ce){}
-    toast(`Fetch error: ${e.message}`);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'FETCH';
-  }
-}
-
-// ---- RENDER LEADS ----------------------------------------
-
-function renderLeads() {
-  const list = document.getElementById('leads-list');
-  const min  = parseInt(document.getElementById('min-score').value);
-  const filtered = allLeads.filter(l => l.raw_score >= min);
-
-  document.getElementById('leads-badge').textContent = filtered.length;
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty-state">NO LEADS ABOVE<br/>CURRENT FILTER</div>';
-    return;
-  }
-
-  list.innerHTML = filtered.map(lead => {
-    const ai = pipelineResults[lead.id];
-    const grade = ai?.pipeline?.scored?.grade || '';
-    const gradeClass = gradeColor(grade);
-    const scoreDisplay = grade
-      ? `<span class="lc-score ${gradeClass}">${grade}</span>`
-      : `<span class="lc-score grade-raw">${lead.raw_score}</span>`;
-
-    const valTag = lead.value ? `<span class="lc-tag value">${fmtVal(lead.value)}</span>` : '';
-    const typeTag = lead.permit_type ? `<span class="lc-tag">${lead.permit_type.slice(0,20)}</span>` : '';
-    const srcTag = `<span class="lc-tag">${lead.source.toUpperCase()}</span>`;
-
-    const isRunning = pipelineRunning && selectedLead?.id === lead.id;
-    const isDone    = !!ai;
-    const cardClass = `lead-card${selectedLead?.id===lead.id?' selected':''}${isDone?' done-ai':''}${isRunning?' processing':''}`;
-    const btnText   = isRunning ? '● RUNNING…' : isDone ? '✓ VIEW BRIEF' : '▶ RUN PIPELINE';
-    const btnClass  = `lc-run${isRunning?' running':''}`;
-
-    return `<div class="${cardClass}" id="card-${lead.id}" onclick="selectLead('${lead.id}')">
-  <div class="lc-top">
-    <div class="lc-addr">${lead.address || '(no address)'}</div>
-    ${scoreDisplay}
-  </div>
-  <div class="lc-meta">${srcTag}${typeTag}${valTag}</div>
-  <button class="${btnClass}" onclick="event.stopPropagation();runPipeline('${lead.id}')" 
-    ${isRunning?'disabled':''}>
-    ${btnText}
-  </button>
-</div>`;
-  }).join('');
-}
-
-function filterLeads() { renderLeads(); }
-
-function selectSource(src, el) {
-  currentSource = src;
-  document.querySelectorAll('.src-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  allLeads = [];
-  pipelineResults = {};
-  document.getElementById('leads-list').innerHTML = '<div class="empty-state">PRESS FETCH</div>';
-  document.getElementById('leads-badge').textContent = '0';
-  showWelcome();
-}
-
-// ---- SELECT LEAD ----------------------------------------
-
-function selectLead(id) {
-  selectedLead = allLeads.find(l => l.id === id);
-  renderLeads();
-  const ai = pipelineResults[id];
-  if (ai) {
-    renderBrief(ai, selectedLead);
-  } else {
-    showWelcome();
-  }
-}
-
-// ---- RUN PIPELINE ---------------------------------------
-
-async function runPipeline(id) {
-  if (pipelineRunning) { toast('Pipeline already running'); return; }
-  const lead = allLeads.find(l => l.id === id);
-  if (!lead) return;
-
-  selectedLead = lead;
-  pipelineRunning = true;
-  const t0 = Date.now();
-  timerInterval = setInterval(() => {
-    const s = ((Date.now()-t0)/1000).toFixed(1);
-    document.getElementById('pipeline-timer').textContent = `${s}s`;
-  }, 100);
-
-  renderLeads();
-  showPipelineView(lead);
-  setStatus(`RUNNING PIPELINE ON: ${lead.address || lead.id}`);
-
-  try {
-    const res = await fetch(`${WORKER_URL}/api/pipeline`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ permit: lead._raw || lead, source: lead.source }),
-    });
-    const data = await res.json();
-
-    if (data.skipped) {
-      logPipe(`⚠️ TRIAGE: ${data.triage?.reason || 'Not worth processing'}`);
-      agentDone('triage');
-      agentSkip(['extract','score','buyer','brief']);
-      setStatus('TRIAGE: LEAD SKIPPED — BELOW COMMERCIAL THRESHOLD');
-      toast('Lead skipped by triage agent');
-    } else if (data.ok) {
-      const p = data.pipeline;
-      agentDone('triage');   logPipe(`✓ TRIAGE: ${p.triage?.permit_category} — ${p.triage?.value_tier} value`);
-      agentDone('extract');  logPipe(`✓ EXTRACT: ${p.extracted?.business_name || p.extracted?.applicant_name || 'unnamed'} @ ${p.extracted?.address_clean}`);
-      agentDone('score');    logPipe(`✓ SCORE: ${p.scored?.total_score}/100 — Grade ${p.scored?.grade} — ${p.scored?.urgency?.toUpperCase()} urgency`);
-      agentDone('buyer');    logPipe(`✓ MATCH: Primary buyer → ${p.buyers?.primary_buyer}`);
-      agentDone('brief');    logPipe(`✓ BRIEF: "${p.brief?.headline}"`);
-
-      pipelineResults[id] = data;
-      renderLeads();
-      renderBrief(data, lead);
-      setStatus(`PIPELINE COMPLETE — GRADE ${data.grade} — SCORE ${data.score}/100`);
-      toast(`Grade ${data.grade} brief ready`);
-      document.getElementById('rp-actions').style.display = 'flex';
-    } else {
-      throw new Error(data.error || 'pipeline failed');
+    for(const permit of permits) {
+      const res = await fetch(workerUrl, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(permit)
+      });
+      const data = await res.json();
+      if(data.ok) {
+        sellableCount++;
+        totalValue += permit.value || 0;
+        redactedSnippets.push(data.pipeline.redactedSnippet.map(r=>r.teaser).join('\n'));
+        deals.push(data.pipeline.deals.map(d=>`${d.buyerType}: ${d.suggestedDeal}`).join('\n'));
+        briefText += data.pipeline.brief.text + '\n\n---\n\n';
+      }
     }
+
+    document.getElementById('signals').textContent = totalSignals;
+    document.getElementById('sellable').textContent = sellableCount;
+    document.getElementById('totalValue').textContent = '$'+totalValue.toLocaleString();
+    document.getElementById('redactedSnippet').textContent = redactedSnippets.join('\n\n');
+    document.getElementById('deals').textContent = deals.join('\n\n');
+    document.getElementById('brief').textContent = briefText;
+    document.getElementById('debugOutput').textContent = 'Pipeline completed successfully.';
+
   } catch(e) {
-    setStatus(`PIPELINE ERROR: ${e.message}`);
-    logPipe(`ERROR: ${e.message}`);
-    toast(`Error: ${e.message}`);
-  } finally {
-    pipelineRunning = false;
-    clearInterval(timerInterval);
-    renderLeads();
+    document.getElementById('debugOutput').textContent = 'Error: '+e.message;
   }
 }
 
-// ---- AGENT STATE HELPERS ---------------------------------
+function clearCache() { alert('Cache cleared (simulated)'); }
 
-function agentRun(name) {
-  const el = document.getElementById(`ag-${name}`);
-  if (!el) return;
-  el.classList.remove('done','skipped');
-  el.classList.add('running');
-  el.querySelector('.ac-status').textContent = 'RUNNING…';
-}
-function agentDone(name) {
-  const el = document.getElementById(`ag-${name}`);
-  if (!el) return;
-  el.classList.remove('running');
-  el.classList.add('done');
-  el.querySelector('.ac-status').textContent = 'DONE';
-}
-function agentSkip(names) {
-  names.forEach(n => {
-    const el = document.getElementById(`ag-${n}`);
-    if (el) { el.classList.add('skipped'); el.querySelector('.ac-status').textContent = 'SKIPPED'; }
-  });
-}
-function logPipe(msg) {
-  const log = document.getElementById('pipe-log');
-  log.innerHTML += `<div>> ${msg}</div>`;
+function downloadPdf() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const brief = document.getElementById('brief').textContent;
+  doc.setFont('Courier','');
+  doc.setFontSize(10);
+  const lines = doc.splitTextToSize(brief, 180);
+  doc.text(lines, 10, 10);
+  doc.save('permit_brief.pdf');
 }
 
-// ---- VIEWS -----------------------------------------------
-
-function showWelcome() {
-  document.getElementById('welcome').style.display = '';
-  document.getElementById('pipeline-view').style.display = 'none';
-  document.getElementById('brief-doc').style.display = 'none';
-  document.getElementById('rp-actions').style.display = 'none';
-  document.getElementById('rp-title').textContent = 'INTELLIGENCE BRIEF';
-}
-
-function showPipelineView(lead) {
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('brief-doc').style.display = 'none';
-  document.getElementById('pipeline-view').style.display = '';
-  document.getElementById('pipe-title').textContent = `RUNNING PIPELINE — ${(lead.permit_type||'PERMIT').toUpperCase()}`;
-  document.getElementById('pipe-addr').textContent = lead.address || '';
-  document.getElementById('pipe-log').innerHTML = '';
-  document.getElementById('rp-title').textContent = 'PIPELINE ACTIVE';
-
-  // Reset agents
-  ['triage','extract','score','buyer','brief'].forEach(n => {
-    const el = document.getElementById(`ag-${n}`);
-    el.className = 'agent-card running';
-    el.querySelector('.ac-status').textContent = 'RUNNING…';
-  });
-}
-
-// ---- RENDER BRIEF ----------------------------------------
-
-function renderBrief(data, lead) {
-  const p = data.pipeline;
-  const { triage, extracted: ex, scored: sc, buyers: by, brief: br } = p;
-
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('pipeline-view').style.display = 'none';
-  document.getElementById('brief-doc').style.display = '';
-  document.getElementById('rp-title').textContent = `BRIEF // ${sc?.grade || '?'} GRADE`;
-  document.getElementById('rp-actions').style.display = 'flex';
-
-  const gradeClass = gradeColor(sc?.grade);
-  const bkdn = sc?.breakdown || {};
-
-  const sbItems = [
-    { label:'IDENTITY',  val: bkdn.identity||0,  max:25 },
-    { label:'SCALE',     val: bkdn.scale||0,      max:25 },
-    { label:'INTENT',    val: bkdn.commercial_intent||0, max:25 },
-    { label:'CONTACT',   val: bkdn.contact_richness||0,  max:15 },
-    { label:'TIMING',    val: bkdn.timing||0,     max:10 },
-  ];
-
-  const sbHtml = sbItems.map(i => `
-    <div class="sb-item">
-      <div class="sbi-label">${i.label}</div>
-      <div class="sbi-value ${gradeClass}">${i.val}</div>
-      <div class="sbi-max">/${i.max}</div>
-      <div class="sbi-bar"><div class="sbi-fill" style="width:${Math.round(i.val/i.max*100)}%"></div></div>
-    </div>`).join('');
-
-  const topBuyers = (by?.buyers || []).slice(0,4);
-  const buyersHtml = topBuyers.map(b => `
-    <div class="buyer-card">
-      <div class="bc-type">${b.type}</div>
-      <div class="bc-score">FIT: ${b.fit_score}/100 · ${b.time_window||''}</div>
-      <div class="bc-why">${b.why||''}</div>
-      <div class="bc-pitch">→ ${b.pitch_angle||''}</div>
-    </div>`).join('');
-
-  const subjects = (br?.subject_lines || []).slice(0,5);
-  const subjHtml = subjects.map((s,i) => `
-    <li>
-      <span class="subj-text">${s}</span>
-      <button class="copy-subj" onclick="copyText('${escHtml(s)}')">COPY</button>
-    </li>`).join('');
-
-  const flags = (ex?.special_flags || []).map(f =>
-    `<span class="lc-tag" style="margin-right:4px">${f.toUpperCase()}</span>`).join('');
-
-  const redFlags = sc?.red_flags?.length
-    ? `<div style="margin-top:10px;font-family:var(--mono);font-size:.65rem;color:var(--red);">
-        ⚠ ${sc.red_flags.join(' · ')}</div>` : '';
-
-  document.getElementById('brief-doc').innerHTML = `
-    <div class="brief-header">
-      <div class="brief-grade-badge ${gradeClass}">${sc?.grade || '?'}</div>
-      <div class="brief-headline">${br?.headline || 'UNTITLED BRIEF'}</div>
-      <div class="brief-tldr">${br?.tldr || ''}</div>
-      <div class="brief-meta-row">
-        <div class="bm"><span class="bm-label">PERMIT </span><span class="bm-value">${ex?.permit_number||lead.permit_number||'—'}</span></div>
-        <div class="bm"><span class="bm-label">ADDR </span><span class="bm-value">${ex?.address_clean||lead.address||'—'}</span></div>
-        <div class="bm"><span class="bm-label">VALUE </span><span class="bm-value">${ex?.estimated_value ? fmtVal(ex.estimated_value) : '—'}</span></div>
-        <div class="bm"><span class="bm-label">SCORE </span><span class="bm-value">${sc?.total_score||'—'}/100</span></div>
-        <div class="bm"><span class="bm-label">URGENCY </span><span class="bm-value">${(sc?.urgency||'—').toUpperCase()}</span></div>
-        <div class="bm"><span class="bm-label">PRIMARY BUYER </span><span class="bm-value">${by?.primary_buyer||'—'}</span></div>
-      </div>
-      ${flags ? `<div style="margin-top:8px">${flags}</div>` : ''}
-    </div>
-
-    <div class="score-breakdown">${sbHtml}</div>
-
-    <div class="section-block">
-      <div class="sb-head">📋 PROJECT OVERVIEW</div>
-      <div class="sb-body">${br?.project_overview||ex?.project_description||'—'}</div>
-    </div>
-
-    <div class="section-block">
-      <div class="sb-head">💡 OPPORTUNITY ANALYSIS</div>
-      <div class="sb-body">${br?.opportunity_analysis||''}</div>
-    </div>
-
-    <div class="section-block">
-      <div class="sb-head">🎯 KEY INSIGHT</div>
-      <div class="sb-body" style="color:var(--amber)">${by?.key_insight||''}</div>
-    </div>
-
-    <div class="section-block">
-      <div class="sb-head">🏢 BUYER TARGETS (${topBuyers.length})</div>
-      <div class="buyers-grid">${buyersHtml||'<div style="padding:14px 16px;font-size:.75rem;color:var(--text-muted)">No buyer data</div>'}</div>
-    </div>
-
-    <div class="section-block">
-      <div class="sb-head">✉️ EMAIL SUBJECT LINES</div>
-      <ul class="subjects-list">${subjHtml}</ul>
-    </div>
-
-    <div class="section-block">
-      <div class="sb-head">⚡ BUYER ACTION</div>
-      <div class="sb-body">${br?.buyer_action||''}</div>
-    </div>
-
-    <div class="section-block">
-      <div class="sb-head">💰 REVENUE OPPORTUNITY · ⏱ EXPIRATION</div>
-      <div class="sb-body">
-        <strong style="color:var(--amber)">${br?.estimated_revenue_opportunity||'—'}</strong><br/>
-        ${br?.expiration_note||''}
-        ${redFlags}
-      </div>
-    </div>
-
-    <div class="section-block" style="margin-bottom:0">
-      <div class="sb-head">🔎 AI REASONING</div>
-      <div class="sb-body" style="font-size:.75rem;color:var(--text-dim)">${sc?.reasoning||''}</div>
-      <div class="raw-toggle" onclick="toggleRaw(this)">▸ RAW PERMIT DATA</div>
-      <div class="raw-data">${JSON.stringify(lead._raw||lead, null, 2)}</div>
-    </div>`;
-}
-
-// ---- EXPORT / COPY ---------------------------------------
-
-function copyBrief() {
-  if (!selectedLead) return;
-  const ai = pipelineResults[selectedLead.id];
-  if (!ai) return;
-  const p = ai.pipeline;
-  const br = p.brief;
-  const sc = p.scored;
-  const ex = p.extracted;
-  const by = p.buyers;
-
-  const text = [
-    `PERMIT INTEL BRIEF // GRADE ${sc?.grade}`,
-    `${'='.repeat(50)}`,
-    `${br?.headline}`,
-    '',
-    `TLDR: ${br?.tldr}`,
-    '',
-    `ADDRESS: ${ex?.address_clean}`,
-    `PERMIT: ${ex?.permit_number}`,
-    `VALUE: ${ex?.estimated_value ? fmtVal(ex.estimated_value) : '—'}`,
-    `SCORE: ${sc?.total_score}/100 // URGENCY: ${sc?.urgency?.toUpperCase()}`,
-    '',
-    `PROJECT OVERVIEW`,
-    br?.project_overview,
-    '',
-    `OPPORTUNITY`,
-    br?.opportunity_analysis,
-    '',
-    `KEY INSIGHT: ${by?.key_insight}`,
-    '',
-    `PRIMARY BUYER: ${by?.primary_buyer}`,
-    `BUYER ACTION: ${br?.buyer_action}`,
-    '',
-    `REVENUE OPPORTUNITY: ${br?.estimated_revenue_opportunity}`,
-    `EXPIRATION: ${br?.expiration_note}`,
-    '',
-    `EMAIL SUBJECT LINES:`,
-    ...(br?.subject_lines||[]).map((s,i) => `${i+1}. ${s}`),
-    '',
-    `Generated by PERMIT INTEL // ${new Date().toLocaleDateString()}`,
-  ].join('\n');
-
-  copyText(text);
-  toast('Brief copied to clipboard');
-}
-
-function exportBrief() {
-  if (!selectedLead) return;
-  const ai = pipelineResults[selectedLead.id];
-  if (!ai) return;
-  copyBrief();
-  // also download as txt
-  const p = ai.pipeline;
-  const blob = new Blob([buildPlainBrief(p)], {type:'text/plain'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `permit-brief-${selectedLead.id}.txt`;
-  a.click();
-  toast('Brief exported');
-}
-
-function buildPlainBrief(p) {
-  const br = p.brief; const sc = p.scored; const ex = p.extracted; const by = p.buyers;
-  return [
-    `PERMIT INTEL // COMMERCIAL INTELLIGENCE BRIEF`,
-    `Grade: ${sc?.grade} // Score: ${sc?.total_score}/100 // Urgency: ${sc?.urgency?.toUpperCase()}`,
-    `Generated: ${new Date().toISOString()}`,
-    '',
-    br?.headline,
-    '',
-    br?.tldr,
-    '',
-    'PROJECT DETAILS',
-    '-'.repeat(40),
-    `Address: ${ex?.address_clean}`,
-    `Permit #: ${ex?.permit_number}`,
-    `Work Type: ${ex?.work_type_clean}`,
-    `Value: ${ex?.estimated_value ? fmtVal(ex.estimated_value) : 'N/A'}`,
-    `Business: ${ex?.business_name||ex?.applicant_name||'—'}`,
-    `Contractor: ${ex?.contractor_name||'—'}`,
-    '',
-    'PROJECT OVERVIEW',
-    '-'.repeat(40),
-    br?.project_overview,
-    '',
-    'OPPORTUNITY ANALYSIS',
-    '-'.repeat(40),
-    br?.opportunity_analysis,
-    '',
-    `KEY INSIGHT: ${by?.key_insight}`,
-    '',
-    'BUYER TARGETS',
-    '-'.repeat(40),
-    `Primary: ${by?.primary_buyer}`,
-    ...(by?.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100): ${b.pitch_angle}`),
-    '',
-    'BUYER ACTION',
-    '-'.repeat(40),
-    br?.buyer_action,
-    '',
-    `Revenue Opportunity: ${br?.estimated_revenue_opportunity}`,
-    `Expiration: ${br?.expiration_note}`,
-    '',
-    'EMAIL SUBJECT LINES',
-    '-'.repeat(40),
-    ...(br?.subject_lines||[]).map((s,i)=>`${i+1}. ${s}`),
-    '',
-    'AI REASONING',
-    '-'.repeat(40),
-    sc?.reasoning,
-  ].join('\n');
-}
-
-// ---- HEALTH CHECK ----------------------------------------
-
-async function checkHealth() {
-  try {
-    const res = await fetch(`${WORKER_URL}/api/health`);
-    const d = await res.json();
-    const lines = [
-      `STATUS: ${d.ok ? 'ONLINE' : 'OFFLINE'}`,
-      `GROQ: ${d.ai_groq ? '✓' : '✗'}`,
-      `WORKERS AI: ${d.ai_worker ? '✓' : '✗'}`,
-      `MODEL: ${d.model}`,
-      `SOURCES: ${(d.sources||[]).join(', ')}`,
-      `VERSION: ${d.version}`,
-    ].join(' // ');
-    setStatus(lines);
-    toast(`Worker ${d.ok?'ONLINE':'OFFLINE'}`);
-  } catch(e) {
-    setStatus(`HEALTH CHECK FAILED: ${e.message}`);
-  }
-}
-
-// ---- UTILS -----------------------------------------------
-
-function setStatus(msg) {
-  document.getElementById('status-msg').textContent = msg;
-}
-
-function fmtVal(v) {
-  if (!v || v === 0) return '—';
-  if (v >= 1000000) return `$${(v/1000000).toFixed(1)}M`;
-  if (v >= 1000)    return `$${Math.round(v/1000)}K`;
-  return `$${v.toLocaleString()}`;
-}
-
-function gradeColor(g) {
-  if (g === 'A+') return 'grade-ap';
-  if (g === 'A')  return 'grade-a';
-  if (g === 'B')  return 'grade-b';
-  if (g === 'C')  return 'grade-c';
-  return 'grade-d';
-}
-
-function escHtml(s) {
-  return (s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
-
-function copyText(text) {
-  navigator.clipboard.writeText(text).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  });
-}
-
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg.toUpperCase();
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-function toggleRaw(el) {
-  const raw = el.nextElementSibling;
-  const shown = raw.style.display === 'block';
-  raw.style.display = shown ? 'none' : 'block';
-  el.textContent = shown ? '▸ RAW PERMIT DATA' : '▾ RAW PERMIT DATA';
-}
-
-// ---- INIT ------------------------------------------------
-window.addEventListener('load', () => {
-  checkHealth();
-  setStatus('SYSTEM READY // SELECT CITY AND FETCH PERMITS');
-});
+document.getElementById('healthCheck').addEventListener('click',healthCheck);
+document.getElementById('runEngine').addEventListener('click',runEngine);
+document.getElementById('clearCache').addEventListener('click',clearCache);
+document.getElementById('downloadPdf').addEventListener('click',downloadPdf);
 </script>
 </body>
 </html>
