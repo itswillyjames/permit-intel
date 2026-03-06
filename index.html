@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PERMIT // INTEL v3.2</title>
+<title>PERMIT // INTEL v3.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2307080f'/><text x='4' y='24' font-size='20' fill='%23e8a020'>//</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -636,7 +636,7 @@ body::after {
     <div id="rpb">
 
       <div id="welcome">
-        <div class="wl-mark">// INTEL v3.2</div>
+        <div class="wl-mark">// INTEL v3.3</div>
         <div class="wl-steps">
           <div class="wl-step"><div class="wl-n">1</div>FETCH</div>
           <div class="wl-step"><div class="wl-n">2</div>PIPELINE</div>
@@ -736,6 +736,9 @@ async function checkHealth() {
     const d = await fetch(`${WORKER}/api/health`).then(r => r.json());
     if (d.ok) {
       dot.className = 'hdot live'; lbl.textContent = 'CONNECTED'; lbl.style.color = '';
+      // Update model display in header
+      const modelEl = document.getElementById('hdr-model');
+      if (modelEl && d.model) modelEl.textContent = d.model.includes('→') ? 'GROQ 70B+8B' : `GROQ ${d.model.split('-').pop().toUpperCase()}`;
       setStatus(`v${d.version} // GROQ:${d.ai_groq?'✓':'✗'} ENRICH:✓ HUNTER:${d.hunter_active?'ACTIVE':'—'} CITIES:${(d.sources||[]).map(s=>s.id.toUpperCase()).join(',')}`);
     } else {
       dot.className = 'hdot warn'; lbl.textContent = 'DEGRADED';
@@ -928,10 +931,22 @@ async function runBatch() {
   if (!allLeads.length) { toast('Fetch leads first'); return; }
   const leads = [...allLeads].filter(l => !pResults[l.id]).sort((a,b) => b.raw_score - a.raw_score).slice(0,3);
   if (!leads.length) { toast('All leads already processed'); return; }
-  toast(`⚡ Batch: ${leads.length} leads…`);
+  toast(`⚡ Batch: ${leads.length} leads — running sequentially…`);
+  let rateLimitHits = 0;
   for (const l of leads) {
     await runPipeline(l.id);
-    await sleep(600);
+    // Check if the run just completed errored (likely 429)
+    const d = pResults[l.id];
+    const wasRateLimited = !d || (typeof d.score === 'undefined' && !d.grade);
+    if (wasRateLimited) {
+      rateLimitHits++;
+      const backoff = Math.min(rateLimitHits * 25000, 60000);
+      toast(`Rate limited — waiting ${Math.round(backoff/1000)}s before next lead…`);
+      await sleep(backoff);
+    } else {
+      rateLimitHits = 0;
+      await sleep(4000); // 4s between successful runs (Groq token recovery time)
+    }
   }
   toast('Batch complete');
 }
@@ -1399,7 +1414,7 @@ function buildPlainBrief(data, lead) {
     }
   }
 
-  lines.push('', `PERMIT INTEL v3.2 · ${new Date().toLocaleDateString()}`);
+  lines.push('', `PERMIT INTEL v3.3 · ${new Date().toLocaleDateString()}`);
   return lines.join('\n');
 }
 
