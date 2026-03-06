@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PERMIT // INTEL v3.1</title>
+<title>PERMIT // INTEL v3.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -374,6 +374,55 @@ body::after {
 .bsec-body.hl { color: var(--amber); }
 .bsec-opener { color: var(--green2); border-left: 2px solid var(--green); padding-left: 12px; color: var(--green); font-style: italic; }
 
+/* ── MONETIZATION SECTION ────────────────────────────────── */
+.monetize-sec {
+  background: linear-gradient(135deg, rgba(232,160,32,.06) 0%, transparent 70%);
+  border-top: 2px solid var(--amber); border-bottom: 1px solid var(--border);
+  padding: 18px 22px;
+}
+.monetize-hd {
+  font-family: var(--cond); font-weight: 800; font-size: .8rem;
+  letter-spacing: .12em; color: var(--amber); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.monetize-summary {
+  font-family: var(--body); font-size: .82rem; color: var(--text);
+  line-height: 1.7; margin-bottom: 14px;
+  border-left: 3px solid var(--amber); padding-left: 12px;
+}
+.monetize-price {
+  display: inline-block; font-family: var(--mono); font-size: .75rem;
+  background: rgba(232,160,32,.15); border: 1px solid rgba(232,160,32,.4);
+  color: var(--amber); padding: 4px 12px; border-radius: 4px; margin-bottom: 14px;
+  letter-spacing: .04em;
+}
+.monetize-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.mtarget {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 14px;
+}
+.mt-type {
+  font-family: var(--mono); font-size: .62rem; color: var(--amber);
+  letter-spacing: .08em; margin-bottom: 4px;
+}
+.mt-why { font-family: var(--body); font-size: .76rem; color: var(--text2); line-height: 1.5; margin-bottom: 4px; }
+.mt-find { font-family: var(--mono); font-size: .6rem; color: var(--text3); }
+.mt-pitch {
+  margin-top: 6px; font-family: var(--body); font-size: .74rem; font-style: italic;
+  color: var(--green); border-left: 2px solid rgba(61,214,140,.4); padding-left: 8px;
+}
+.mt-urgency { font-family: var(--mono); font-size: .58rem; color: var(--red); margin-top: 4px; }
+.monetize-meta {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
+}
+.mm-item {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px;
+}
+.mm-label { font-family: var(--mono); font-size: .54rem; color: var(--text3); letter-spacing: .07em; margin-bottom: 3px; }
+.mm-val { font-family: var(--body); font-size: .74rem; color: var(--text2); line-height: 1.5; }
+.mm-val.amber { color: var(--amber); font-weight: 600; }
+
 /* buyers */
 .buyers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .buyer-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 5px; padding: 11px; }
@@ -586,7 +635,7 @@ body::after {
     <div id="rpb">
 
       <div id="welcome">
-        <div class="wl-mark">// INTEL v3.1</div>
+        <div class="wl-mark">// INTEL v3.2</div>
         <div class="wl-steps">
           <div class="wl-step"><div class="wl-n">1</div>FETCH</div>
           <div class="wl-step"><div class="wl-n">2</div>PIPELINE</div>
@@ -835,9 +884,10 @@ async function runPipeline(id) {
       agDone('score');   agSet('buyer','RUNNING…');
       logPipe(`✓ SCORE: ${p.scored?.total_score}/100 — Grade ${p.scored?.grade} — ${(p.scored?.urgency||'').toUpperCase()}`);
       agDone('buyer');   agSet('brief','RUNNING…');
-      logPipe(`✓ BUYER: ${p.buyers?.primary_buyer}`);
+      logPipe(`✓ BUYERS: ${p.buyers?.primary_buyer} · ${(p.buyers?.buyers||[]).length} segments`);
       agDone('brief');
       logPipe(`✓ BRIEF: "${p.brief?.headline}"`);
+      logPipe(`✓ MONETIZE: ${p.monetize?.best_channel_to_sell||'—'} · ${p.monetize?.lead_price_range||'—'}`);
 
       pResults[id] = d;
       renderLeads(); renderBrief(d, lead);
@@ -988,6 +1038,19 @@ function renderBrief(data, lead) {
   // Enrichment section (may already be loaded)
   const enr = enrichCache[lead.id];
 
+  // Build monetization targets HTML
+  const mn = p.monetize || {};
+  const mtargetHtml = (mn.target_buyers||[]).slice(0,4).map(t => {
+    const ch = t.outreach_channel ? `<span style="font-family:var(--mono);font-size:.57rem;color:var(--blue);margin-left:6px">${esc(t.outreach_channel)}</span>` : '';
+    return `<div class="mtarget">
+  <div class="mt-type">${esc(t.buyer_type||'')}${ch}</div>
+  <div class="mt-why">${esc(t.why_they_pay||'')}</div>
+  <div class="mt-find">&#x1F4CD; ${esc(t.how_to_find_them||'')}</div>
+  <div class="mt-pitch">"${esc(t.pitch_hook||'')}"</div>
+  <div class="mt-urgency">&#x23F1; ${esc(t.urgency_to_buyer||'')}</div>
+</div>`;
+  }).join('');
+
   document.getElementById('brief-doc').innerHTML = `
 <div class="bd-hero">
   <div class="bd-grade-row">
@@ -996,76 +1059,101 @@ function renderBrief(data, lead) {
   </div>
   <div class="bd-tldr">${esc(br.tldr||'')}</div>
   <div class="bd-meta">
-    <div class="bd-mi"><span class="bd-ml">PERMIT</span><span class="bd-mv">${esc(ex.permit_number||lead.permit_number||'—')}</span></div>
-    <div class="bd-mi"><span class="bd-ml">ADDRESS</span><span class="bd-mv">${esc(ex.address_clean||lead.address||'—')}</span></div>
-    <div class="bd-mi"><span class="bd-ml">VALUE</span><span class="bd-mv">${ex.estimated_value?fmt(ex.estimated_value):'—'}</span></div>
-    <div class="bd-mi"><span class="bd-ml">SCORE</span><span class="bd-mv">${sc.total_score||'—'}/100</span></div>
-    <div class="bd-mi"><span class="bd-ml">URGENCY</span><span class="bd-mv">${(sc.urgency||'—').toUpperCase()}</span></div>
-    <div class="bd-mi"><span class="bd-ml">BUYER</span><span class="bd-mv">${esc(by.primary_buyer||'—')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">PERMIT</span><span class="bd-mv">${esc(ex.permit_number||lead.permit_number||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">ADDRESS</span><span class="bd-mv">${esc(ex.address_clean||lead.address||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">VALUE</span><span class="bd-mv">${ex.estimated_value?fmt(ex.estimated_value):'&#x2014;'}</span></div>
+    <div class="bd-mi"><span class="bd-ml">SCORE</span><span class="bd-mv">${sc.total_score||'&#x2014;'}/100</span></div>
+    <div class="bd-mi"><span class="bd-ml">URGENCY</span><span class="bd-mv">${(sc.urgency||'&#x2014;').toUpperCase()}</span></div>
+    <div class="bd-mi"><span class="bd-ml">SELL TO</span><span class="bd-mv">${esc(by.primary_buyer||'&#x2014;')}</span></div>
   </div>
   ${flagsHtml?`<div class="bd-flags">${flagsHtml}</div>`:''}
 </div>
 
 <div class="score-strip">${stripHtml}</div>
 
-<div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">📋</span>PROJECT OVERVIEW</div>
-  <div class="bsec-body">${esc(br.project_overview||ex.project_description||'—')}</div>
+<div class="monetize-sec">
+  <div class="monetize-hd">&#x1F4B5; MONETIZATION PLAYBOOK &#x2014; HOW TO SELL THIS INTEL</div>
+  <div class="monetize-summary">${esc(mn.monetization_summary||'Run pipeline to generate monetization strategy.')}</div>
+  ${mn.lead_price_range ? `<div class="monetize-price">PRICE THIS LEAD AT: ${esc(mn.lead_price_range)}</div>` : ''}
+  <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.07em;margin-bottom:8px">WHO WILL BUY THIS INTEL FROM YOU</div>
+  <div class="monetize-grid">${mtargetHtml||'<div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">No monetization data &#x2014; run pipeline</div>'}</div>
+  <div class="monetize-meta">
+    <div class="mm-item">
+      <div class="mm-label">BEST CHANNEL TO SELL</div>
+      <div class="mm-val amber">${esc(mn.best_channel_to_sell||'&#x2014;')}</div>
+    </div>
+    <div class="mm-item">
+      <div class="mm-label">TIME TO MONETIZE</div>
+      <div class="mm-val">${esc(mn.time_to_monetize||'&#x2014;')}</div>
+    </div>
+    ${mn.bundle_opportunity ? `<div class="mm-item"><div class="mm-label">BUNDLE OPPORTUNITY</div><div class="mm-val">${esc(mn.bundle_opportunity)}</div></div>` : ''}
+    ${mn.recurring_revenue_angle ? `<div class="mm-item"><div class="mm-label">RECURRING REVENUE</div><div class="mm-val amber">${esc(mn.recurring_revenue_angle)}</div></div>` : ''}
+    <div class="mm-item" style="grid-column:1/-1">
+      <div class="mm-label">YOUR COMPETITIVE MOAT</div>
+      <div class="mm-val">${esc(mn.competitive_moat||'&#x2014;')}</div>
+    </div>
+  </div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">💡</span>OPPORTUNITY ANALYSIS</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4CB;</span>PROJECT OVERVIEW</div>
+  <div class="bsec-body">${esc(br.project_overview||ex.project_description||'&#x2014;')}</div>
+</div>
+
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4A1;</span>WHY THIS INTEL IS WORTH BUYING</div>
   <div class="bsec-body">${esc(br.opportunity_analysis||'')}</div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">🎯</span>KEY INSIGHT</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F3AF;</span>KEY INTEL SIGNAL</div>
   <div class="bsec-body hl">${esc(by.key_insight||'')}</div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">📞</span>OUTREACH OPENER</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4DE;</span>OUTREACH OPENER (FOR YOUR BUYER TO USE)</div>
   <div class="bsec-body bsec-opener">${esc(br.outreach_opener||'')}</div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">🏢</span>BUYER TARGETS (${Math.min((by.buyers||[]).length,4)})</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F3E2;</span>INTEL BUYER SEGMENTS (${Math.min((by.buyers||[]).length,4)})</div>
   <div class="buyers-grid">${buyerHtml||'<div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">No buyer data</div>'}</div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">✉️</span>EMAIL SUBJECT LINES</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x2709;&#xFE0F;</span>SUBJECT LINES (FOR BUYER&#x2019;S OUTREACH)</div>
   <ul class="subj-list">${subjHtml}</ul>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">⚡</span>BUYER ACTION</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x26A1;</span>BUYER ACTION BRIEF</div>
   <div class="bsec-body">${esc(br.buyer_action||'')}</div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">💰</span>REVENUE OPPORTUNITY · EXPIRATION</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4B0;</span>BUYER REVENUE POTENTIAL &#xB7; EXPIRATION</div>
   <div class="bsec-body">
-    <strong style="color:var(--amber)">${esc(br.estimated_revenue_opportunity||'—')}</strong><br/>
+    <strong style="color:var(--amber)">${esc(br.estimated_revenue_opportunity||'&#x2014;')}</strong><br/>
     ${esc(br.expiration_note||'')}${redfHtml}
   </div>
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">🔎</span>AI REASONING</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F50E;</span>AI REASONING</div>
   <div class="bsec-body" style="font-size:.76rem;color:var(--text3)">${esc(sc.reasoning||'')}</div>
-  <div class="raw-toggle" onclick="toggleRaw(this)">▸ RAW PERMIT DATA</div>
+  <div class="raw-toggle" onclick="toggleRaw(this)">&#x25B8; RAW PERMIT DATA</div>
   <div class="raw-data">${esc(JSON.stringify(lead._raw||lead,null,2))}</div>
 </div>
 
 <div class="enrich-sec" id="enrich-sec">
   ${enr ? buildEnrichHtml(enr) : `
-  <div class="bsec-hd" style="margin-bottom:8px"><span class="bsec-ico">🌐</span>OSINT ENRICHMENT
-    <span id="enrich-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">— click ⬡ ENRICH to run</span>
+  <div class="bsec-hd" style="margin-bottom:8px"><span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
+    <span id="enrich-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">&#x2014; click &#x2B21; ENRICH to run</span>
   </div>
-  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">Nominatim geocode · Census/FCC block · SEC EDGAR · Hunter.io emails</div>
+  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">Nominatim geocode &#xB7; Census/FCC block &#xB7; SEC EDGAR &#xB7; Hunter.io emails</div>
   `}
 </div>`;
+
 }
 
 // =============================================================================
@@ -1239,6 +1327,7 @@ function exportBrief() {
 function buildPlainBrief(data, lead) {
   const p  = data.pipeline;
   const ex = p.extracted || {}, sc = p.scored || {}, by = p.buyers || {}, br = p.brief || {};
+  const mn = p.monetize || {};
   const enr = enrichCache[lead.id];
   const sep = '─'.repeat(42);
   const lines = [
@@ -1254,16 +1343,35 @@ function buildPlainBrief(data, lead) {
     `Business:   ${ex.business_name||ex.applicant_name||'—'}`,
     `Contractor: ${ex.contractor_name||'—'}`,
     `Phone:      ${ex.contact_phone||'—'}`,
+    '',
+    '════════════════════════════════════════════',
+    '  MONETIZATION PLAYBOOK — HOW TO SELL THIS INTEL',
+    '════════════════════════════════════════════',
+    mn.monetization_summary||'',
+    mn.lead_price_range ? `\nPRICE THIS LEAD AT: ${mn.lead_price_range}` : '',
+    '', 'WHO WILL BUY THIS INTEL FROM YOU', sep,
+    ...(mn.target_buyers||[]).slice(0,4).map(t =>
+      `· ${t.buyer_type} [${t.outreach_channel||'—'}]\n  WHY: ${t.why_they_pay}\n  FIND THEM: ${t.how_to_find_them}\n  PITCH: "${t.pitch_hook}"\n  URGENCY: ${t.urgency_to_buyer}`
+    ),
+    mn.best_channel_to_sell ? `\nBEST CHANNEL TO SELL: ${mn.best_channel_to_sell}` : '',
+    mn.time_to_monetize ? `TIME TO MONETIZE: ${mn.time_to_monetize}` : '',
+    mn.bundle_opportunity ? `BUNDLE OPPORTUNITY: ${mn.bundle_opportunity}` : '',
+    mn.recurring_revenue_angle ? `RECURRING REVENUE ANGLE: ${mn.recurring_revenue_angle}` : '',
+    mn.competitive_moat ? `YOUR COMPETITIVE MOAT: ${mn.competitive_moat}` : '',
+    '',
+    '════════════════════════════════════════════',
+    '  INTELLIGENCE BRIEF',
+    '════════════════════════════════════════════',
     '', 'PROJECT OVERVIEW', sep, br.project_overview||'',
-    '', 'OPPORTUNITY ANALYSIS', sep, br.opportunity_analysis||'',
-    '', 'KEY INSIGHT', sep, by.key_insight||'',
-    '', 'OUTREACH OPENER', sep, br.outreach_opener||'',
-    '', 'BUYER TARGETS', sep,
-    ...(by.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100)\n  ${b.why}\n  → ${b.pitch_angle}\n  Window: ${b.time_window}`),
-    '', 'EMAIL SUBJECT LINES', sep,
+    '', 'WHY THIS INTEL IS WORTH BUYING', sep, br.opportunity_analysis||'',
+    '', 'KEY INTEL SIGNAL', sep, by.key_insight||'',
+    '', 'OUTREACH OPENER (FOR YOUR BUYER TO USE)', sep, br.outreach_opener||'',
+    '', 'INTEL BUYER SEGMENTS', sep,
+    ...(by.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100)\n  ${b.why}\n  BUYER PITCH: ${b.pitch_angle}\n  Window: ${b.time_window}`),
+    '', 'SUBJECT LINES (FOR BUYER\'S OUTREACH)', sep,
     ...(br.subject_lines||[]).map((s,i) => `${i+1}. ${s}`),
-    '', 'BUYER ACTION', sep, br.buyer_action||'',
-    '', 'REVENUE · EXPIRATION', sep,
+    '', 'BUYER ACTION BRIEF', sep, br.buyer_action||'',
+    '', 'BUYER REVENUE POTENTIAL · EXPIRATION', sep,
     br.estimated_revenue_opportunity||'—',
     br.expiration_note||'',
     ...(sc.red_flags?.length ? ['', `⚠ RED FLAGS: ${sc.red_flags.join(' · ')}`] : []),
@@ -1280,7 +1388,7 @@ function buildPlainBrief(data, lead) {
     }
   }
 
-  lines.push('', `PERMIT INTEL v3.1 · ${new Date().toLocaleDateString()}`);
+  lines.push('', `PERMIT INTEL v3.2 · ${new Date().toLocaleDateString()}`);
   return lines.join('\n');
 }
 
@@ -1308,7 +1416,13 @@ function gradeClass(g) {
 
 function esc(s) {
   if (s == null) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/`/g,'&#96;')
+    .replace(/\${/g,'&#36;{');
 }
 
 function copyTxt(text) {
