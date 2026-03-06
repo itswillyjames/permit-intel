@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>PERMIT // INTEL v3.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2307080f'/><text x='4' y='24' font-size='20' fill='%23e8a020'>//</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 /* ── DESIGN TOKENS ──────────────────────────────────────── */
@@ -842,7 +843,17 @@ function selectLead(id) {
   selLead = allLeads.find(l => l.id === id) || null;
   renderLeads();
   const ai = pResults[id];
-  ai ? renderBrief(ai, selLead) : showWelcome();
+  if (!ai) { showWelcome(); return; }
+  try {
+    renderBrief(ai, selLead);
+  } catch(e) {
+    document.getElementById('welcome').style.display = 'none';
+    document.getElementById('pipeline-view').style.display = 'none';
+    document.getElementById('brief-doc').style.display = '';
+    document.getElementById('brief-doc').innerHTML = `<div style="padding:24px;font-family:var(--mono);font-size:.7rem;color:var(--red)">⚠ RENDER ERROR: ${esc(e.message)}<br/><br/>Try re-running the pipeline for this lead.</div>`;
+    document.getElementById('rph-title').textContent = 'RENDER ERROR';
+    console.error('renderBrief failed:', e);
+  }
 }
 
 // =============================================================================
