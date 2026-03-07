@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PERMIT // INTEL v3.3</title>
+<title>PERMIT // INTEL v3.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2307080f'/><text x='4' y='24' font-size='20' fill='%23e8a020'>//</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -214,6 +214,7 @@ body::after {
 }
 .lc-tag.val { color: var(--amber); border-color: rgba(232,160,32,.3); background: var(--amber3); }
 .lc-tag.city { color: var(--blue); border-color: rgba(77,144,240,.3); background: var(--blue2); }
+.lc-tag.warn { color: var(--red); border-color: rgba(240,80,96,.3); background: rgba(240,80,96,.08); }
 
 .lc-run {
   width: 100%; height: 24px;
@@ -251,8 +252,10 @@ body::after {
 .abtn:hover { border-color: var(--text); color: var(--text); }
 .abtn.enrich { border-color: var(--purple); color: var(--purple); }
 .abtn.enrich:hover { background: var(--purple2); }
-.abtn.save   { border-color: var(--blue); color: var(--blue); }
-.abtn.save:hover { background: var(--blue2); }
+.abtn.dork { border-color: var(--blue); color: var(--blue); }
+.abtn.dork:hover { background: var(--blue2); }
+.abtn.save   { border-color: var(--border2); color: var(--text2); }
+.abtn.save:hover { background: var(--surface); }
 .abtn.export { background: var(--amber); border-color: var(--amber); color: #000; font-weight: 700; }
 .abtn.export:hover { background: var(--amber2); }
 
@@ -291,52 +294,73 @@ body::after {
 .pv-head { font-family: var(--cond); font-weight: 800; font-size: 1rem; letter-spacing: .1em; color: var(--text2); margin-bottom: 3px; }
 .pv-addr { font-family: var(--mono); font-size: .65rem; color: var(--amber); margin-bottom: 20px; }
 
-.agents-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+/* 6 agent cards in a row */
+.agents-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px; margin-bottom: 16px;
+}
 .agcard {
   background: var(--bg2); border: 1px solid var(--border); border-radius: 5px;
-  padding: 10px 8px; text-align: center;
+  padding: 8px 6px; text-align: center;
 }
 .agcard.running {
   border-color: var(--blue);
-  box-shadow: 0 0 10px rgba(77,144,240,.15);
-  animation: pulse-card 1s ease-in-out infinite;
+  animation: pulse-ag 1s ease-in-out infinite;
 }
 .agcard.done { border-color: var(--green); background: var(--green2); }
 .agcard.skip { opacity: .3; }
-.agc-icon { font-size: 1.1rem; margin-bottom: 5px; }
-.agc-name { font-family: var(--cond); font-weight: 700; font-size: .68rem; letter-spacing: .06em; color: var(--text2); margin-bottom: 3px; }
-.agc-stat { font-family: var(--mono); font-size: .54rem; color: var(--text3); }
+
+@keyframes pulse-ag {
+  0%,100% { border-color: var(--blue); }
+  50%      { border-color: rgba(77,144,240,.2); }
+}
+
+.agc-icon { font-size: .95rem; margin-bottom: 3px; }
+.agc-name {
+  font-family: var(--cond); font-weight: 700; font-size: .62rem;
+  color: var(--text3); letter-spacing: .06em; margin-bottom: 3px;
+}
+.agc-stat { font-family: var(--mono); font-size: .5rem; color: var(--text3); }
 .agcard.running .agc-stat { color: var(--blue); }
 .agcard.done    .agc-stat { color: var(--green); }
 
-#pipe-log { font-family: var(--mono); font-size: .6rem; color: var(--text3); line-height: 1.9; max-height: 160px; overflow-y: auto; }
+#pipe-log {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 12px; font-family: var(--mono); font-size: .57rem;
+  color: var(--text3); line-height: 1.9; max-height: 160px; overflow-y: auto;
+}
+#pipe-log div { color: var(--text2); }
+#pipe-log div:first-child { color: var(--amber); }
 
 /* ── BRIEF DOCUMENT ──────────────────────────────────────── */
-#brief-doc { display: none; }
-
-.bd-hero {
-  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 20px 22px 18px;
+.bd-hero { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); }
+.bd-grade-row {
+  display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px;
 }
-.bd-grade-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
 .bd-grade {
-  width: 50px; height: 50px; border-radius: 5px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--cond); font-weight: 900; font-size: 1.5rem; flex-shrink: 0;
+  font-family: var(--mono); font-size: 2rem; font-weight: 700;
+  width: 58px; height: 58px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; border: 2px solid;
 }
-.bd-grade.gAp, .bd-grade.gA { background: var(--green2); color: var(--green); border: 1px solid rgba(61,214,140,.4); }
-.bd-grade.gB { background: var(--blue2); color: var(--blue); border: 1px solid rgba(77,144,240,.4); }
-.bd-grade.gC { background: var(--amber3); color: var(--amber); border: 1px solid rgba(232,160,32,.4); }
-.bd-grade.gD { background: rgba(240,80,96,.1); color: var(--red); border: 1px solid rgba(240,80,96,.4); }
+.bd-grade.gAp, .bd-grade.gA  { color: var(--green); border-color: var(--green); background: var(--green2); }
+.bd-grade.gB   { color: var(--blue); border-color: var(--blue); background: var(--blue2); }
+.bd-grade.gC   { color: var(--amber); border-color: var(--amber); background: var(--amber3); }
+.bd-grade.gD   { color: var(--red); border-color: var(--red); background: rgba(240,80,96,.08); }
 
 .bd-headline {
-  font-family: var(--cond); font-weight: 800; font-size: 1.2rem;
-  color: var(--text); line-height: 1.2; flex: 1;
+  font-family: var(--cond); font-weight: 800; font-size: 1.22rem;
+  color: var(--text); line-height: 1.2; letter-spacing: .02em;
 }
-.bd-tldr { font-family: var(--body); font-size: .8rem; color: var(--text2); line-height: 1.65; margin-bottom: 14px; }
-.bd-meta { display: flex; flex-wrap: wrap; gap: 10px 18px; }
-.bd-mi { display: flex; align-items: center; gap: 5px; }
+.bd-tldr {
+  font-family: var(--body); font-size: .82rem; color: var(--text2);
+  line-height: 1.7; margin-bottom: 12px;
+}
+.bd-meta {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.bd-mi { display: flex; flex-direction: column; gap: 2px; }
 .bd-ml { font-family: var(--mono); font-size: .53rem; color: var(--text3); letter-spacing: .05em; }
 .bd-mv { font-family: var(--mono); font-size: .62rem; color: var(--amber); }
 .bd-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
@@ -373,7 +397,7 @@ body::after {
 .bsec-ico { font-size: .85rem; }
 .bsec-body { font-family: var(--body); font-size: .8rem; color: var(--text2); line-height: 1.7; }
 .bsec-body.hl { color: var(--amber); }
-.bsec-opener { color: var(--green2); border-left: 2px solid var(--green); padding-left: 12px; color: var(--green); font-style: italic; }
+.bsec-opener { border-left: 2px solid var(--green); padding-left: 12px; color: var(--green); font-style: italic; }
 
 /* ── MONETIZATION SECTION ────────────────────────────────── */
 .monetize-sec {
@@ -465,6 +489,48 @@ body::after {
   white-space: pre-wrap; word-break: break-all;
 }
 
+/* ── DORK PANEL ──────────────────────────────────────────── */
+.dork-sec {
+  padding: 14px 22px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--blue2) 0%, transparent 80%);
+}
+.dork-stage {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: .57rem; letter-spacing: .06em;
+  padding: 3px 8px; border-radius: 3px; margin-bottom: 10px;
+}
+.dork-stage.confirmed { color: var(--green); background: var(--green2); border: 1px solid rgba(61,214,140,.3); }
+.dork-stage.unconfirmed { color: var(--text3); background: var(--bg3); border: 1px solid var(--border); }
+.dork-stage.escalated { color: var(--amber); background: var(--amber3); border: 1px solid rgba(232,160,32,.3); }
+.dork-domain {
+  font-family: var(--mono); font-size: .68rem; color: var(--blue);
+  background: var(--blue2); border: 1px solid rgba(77,144,240,.3);
+  padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px;
+}
+.dork-queries { display: flex; flex-direction: column; gap: 4px; }
+.dq-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 6px 10px;
+}
+.dq-lbl { font-family: var(--mono); font-size: .53rem; color: var(--text3); min-width: 110px; flex-shrink: 0; }
+.dq-q { font-family: var(--mono); font-size: .57rem; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dq-copy {
+  height: 18px; padding: 0 6px; flex-shrink: 0;
+  background: transparent; border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: .5rem;
+  cursor: pointer; transition: all .15s;
+}
+.dq-copy:hover { border-color: var(--blue); color: var(--blue); }
+.dq-open {
+  height: 18px; padding: 0 6px; flex-shrink: 0;
+  background: transparent; border: 1px solid rgba(77,144,240,.4); border-radius: 3px;
+  color: var(--blue); font-family: var(--mono); font-size: .5rem;
+  cursor: pointer; transition: all .15s; text-decoration: none;
+  display: flex; align-items: center;
+}
+.dq-open:hover { background: var(--blue2); }
+
 /* ── ENRICH PANEL ────────────────────────────────────────── */
 .enrich-sec {
   padding: 14px 22px; border-bottom: 1px solid var(--border);
@@ -494,11 +560,10 @@ body::after {
 .er-v.pub { color: var(--amber); }
 .er-v.nil { color: var(--text3); }
 
-.hunter-emails { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
 .hemail {
   display: flex; align-items: center; gap: 7px;
   background: var(--bg2); border: 1px solid var(--border); border-radius: 3px;
-  padding: 5px 8px;
+  padding: 5px 8px; margin-top: 3px;
 }
 .he-addr { font-family: var(--mono); font-size: .62rem; color: var(--green); flex: 1; }
 .he-meta { font-family: var(--mono); font-size: .53rem; color: var(--text3); }
@@ -568,13 +633,15 @@ body::after {
   pointer-events: none; z-index: 9000;
 }
 .toast-item {
-  background: var(--surface); border: 1px solid var(--border2); border-radius: 4px;
-  padding: 7px 12px;
-  font-family: var(--mono); font-size: .62rem; color: var(--text);
-  opacity: 0; transform: translateY(6px); transition: all .2s;
-  pointer-events: none;
+  font-family: var(--mono); font-size: .62rem;
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); padding: 7px 13px; border-radius: 5px;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .2s, transform .2s;
+  max-width: 280px;
 }
 .toast-item.show { opacity: 1; transform: translateY(0); }
+
 </style>
 </head>
 <body>
@@ -583,18 +650,20 @@ body::after {
 <div id="hdr">
   <div id="logo">PERMIT <em>//</em> INTEL</div>
   <div class="hsep"></div>
-  <div class="hstat"><div class="hdot" id="conn-dot"></div><span id="conn-label">CONNECTING</span></div>
+  <div class="hstat">
+    <div class="hdot" id="conn-dot"></div>
+    <span id="conn-label">CONNECTING…</span>
+  </div>
   <div class="hsep"></div>
-  <div class="hstat" id="hdr-model">GROQ LLAMA-3.3-70B</div>
+  <div class="hstat" id="hdr-model">GROQ 70B+8B</div>
   <div class="hsep"></div>
-  <div class="hstat" id="hdr-leads">0 LEADS</div>
+  <div class="hstat" id="hdr-leads">—</div>
   <div class="hsp"></div>
-  <button class="hbtn" onclick="checkHealth()">HEALTH</button>
+  <button class="hbtn" onclick="checkHealth()" title="H">HEALTH</button>
   <button class="hbtn" id="btn-saved" onclick="toggleDrawer()">SAVED (0)</button>
-  <button class="hbtn on" id="btn-auto" onclick="toggleAuto()">AUTO-SCORE</button>
+  <button class="hbtn on" id="btn-auto" onclick="toggleAuto()" title="Auto-pipeline top lead on fetch">AUTO-SCORE</button>
 </div>
 
-<!-- LAYOUT -->
 <div id="layout">
 
   <!-- LEFT: LEAD LIST -->
@@ -615,7 +684,7 @@ body::after {
     </div>
     <div id="lmeta">
       <span id="lmeta-label" class="hstat">0 LEADS</span>
-      <button id="batch-btn" onclick="runBatch()" title="Auto-score top 3 leads">⚡ BATCH TOP 3</button>
+      <button id="batch-btn" onclick="runBatch()" title="Auto-score top 3 leads">&#x26A1; BATCH TOP 3</button>
     </div>
     <div id="leads-list">
       <div class="empty-msg">SELECT A CITY<br/>THEN FETCH PERMITS<br/><br/>RUN PIPELINE ON ANY<br/>LEAD TO GENERATE A BRIEF</div>
@@ -629,24 +698,27 @@ body::after {
       <div id="rph-actions">
         <button class="abtn save"   onclick="saveBrief()">SAVE</button>
         <button class="abtn"        onclick="copyBrief()">COPY</button>
-        <button class="abtn enrich" id="btn-enrich" onclick="runEnrich()">⬡ ENRICH</button>
+        <button class="abtn dork"   id="btn-dork"   onclick="runDork()">&#x1F50E; DORK</button>
+        <button class="abtn enrich" id="btn-enrich" onclick="runEnrich()">&#x2B21; ENRICH</button>
         <button class="abtn export" onclick="exportBrief()">EXPORT</button>
       </div>
     </div>
     <div id="rpb">
 
       <div id="welcome">
-        <div class="wl-mark">// INTEL v3.3</div>
+        <div class="wl-mark">// INTEL v3.4</div>
         <div class="wl-steps">
           <div class="wl-step"><div class="wl-n">1</div>FETCH</div>
           <div class="wl-step"><div class="wl-n">2</div>PIPELINE</div>
-          <div class="wl-step"><div class="wl-n">3</div>ENRICH</div>
-          <div class="wl-step"><div class="wl-n">4</div>SELL</div>
+          <div class="wl-step"><div class="wl-n">3</div>DORK</div>
+          <div class="wl-step"><div class="wl-n">4</div>ENRICH</div>
+          <div class="wl-step"><div class="wl-n">5</div>SELL</div>
         </div>
         <div style="margin-top:24px;font-family:var(--mono);font-size:.57rem;color:var(--text3);line-height:2">
           <span style="color:var(--border2)">KEYS:</span>&nbsp;
-          <span style="color:var(--text3)">E</span> ENRICH &nbsp;·&nbsp;
-          <span style="color:var(--text3)">S</span> SAVE &nbsp;·&nbsp;
+          <span style="color:var(--text3)">E</span> ENRICH &nbsp;&#xB7;&nbsp;
+          <span style="color:var(--text3)">D</span> DORK &nbsp;&#xB7;&nbsp;
+          <span style="color:var(--text3)">S</span> SAVE &nbsp;&#xB7;&nbsp;
           <span style="color:var(--text3)">C</span> COPY
         </div>
       </div>
@@ -656,11 +728,12 @@ body::after {
         <div class="pv-head">RUNNING PIPELINE</div>
         <div class="pv-addr" id="pv-addr"></div>
         <div class="agents-row">
-          <div class="agcard" id="ag-triage"><div class="agc-icon">🔍</div><div class="agc-name">TRIAGE</div><div class="agc-stat" id="ags-triage">WAITING</div></div>
-          <div class="agcard" id="ag-extract"><div class="agc-icon">⚙️</div><div class="agc-name">EXTRACT</div><div class="agc-stat" id="ags-extract">WAITING</div></div>
-          <div class="agcard" id="ag-score"><div class="agc-icon">📊</div><div class="agc-name">SCORE</div><div class="agc-stat" id="ags-score">WAITING</div></div>
-          <div class="agcard" id="ag-buyer"><div class="agc-icon">🎯</div><div class="agc-name">BUYER</div><div class="agc-stat" id="ags-buyer">WAITING</div></div>
-          <div class="agcard" id="ag-brief"><div class="agc-icon">📄</div><div class="agc-name">BRIEF</div><div class="agc-stat" id="ags-brief">WAITING</div></div>
+          <div class="agcard" id="ag-triage">  <div class="agc-icon">&#x1F50D;</div><div class="agc-name">TRIAGE</div>  <div class="agc-stat" id="ags-triage">WAITING</div></div>
+          <div class="agcard" id="ag-extract"> <div class="agc-icon">&#x2699;&#xFE0F;</div><div class="agc-name">EXTRACT</div> <div class="agc-stat" id="ags-extract">WAITING</div></div>
+          <div class="agcard" id="ag-score">   <div class="agc-icon">&#x1F4CA;</div><div class="agc-name">SCORE</div>   <div class="agc-stat" id="ags-score">WAITING</div></div>
+          <div class="agcard" id="ag-buyer">   <div class="agc-icon">&#x1F3AF;</div><div class="agc-name">BUYER</div>   <div class="agc-stat" id="ags-buyer">WAITING</div></div>
+          <div class="agcard" id="ag-brief">   <div class="agc-icon">&#x1F4C4;</div><div class="agc-name">BRIEF</div>   <div class="agc-stat" id="ags-brief">WAITING</div></div>
+          <div class="agcard" id="ag-monetize"><div class="agc-icon">&#x1F4B5;</div><div class="agc-name">MONETIZE</div><div class="agc-stat" id="ags-monetize">WAITING</div></div>
         </div>
         <div id="pipe-log"></div>
       </div>
@@ -683,9 +756,9 @@ body::after {
 <div id="saved-drawer">
   <div id="sd-head">
     <div id="sd-head-title">SAVED BRIEFS</div>
-    <button id="sd-close" onclick="toggleDrawer()">✕</button>
+    <button id="sd-close" onclick="toggleDrawer()">&#x2715;</button>
   </div>
-  <div id="sd-list"><div id="sd-empty">No saved briefs.<br/>Run pipeline → click SAVE.</div></div>
+  <div id="sd-list"><div id="sd-empty">No saved briefs.<br/>Run pipeline &#x2192; click SAVE.</div></div>
 </div>
 
 <!-- TOAST -->
@@ -705,7 +778,8 @@ let allLeads    = [];
 let selLead     = null;
 let pResults    = {};   // id → pipeline data
 let enrichCache = {};   // id → enrichment data
-let saved       = [];   // persisted briefs
+let dorkCache   = {};   // id → dork data
+let saved       = [];
 let running     = false;
 let autoScore   = true;
 let timerRef    = null;
@@ -721,6 +795,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'f' || e.key === 'F') fetchLeads();
   if (e.key === 'h' || e.key === 'H') checkHealth();
   if (e.key === 'Escape') document.getElementById('saved-drawer').classList.remove('open');
+  if ((e.key === 'd' || e.key === 'D') && selLead && pResults[selLead.id]) runDork();
   if ((e.key === 'e' || e.key === 'E') && selLead && pResults[selLead.id]) runEnrich();
   if ((e.key === 's' || e.key === 'S') && selLead && pResults[selLead.id]) saveBrief();
   if ((e.key === 'c' || e.key === 'C') && selLead && pResults[selLead.id] && !e.ctrlKey && !e.metaKey) copyBrief();
@@ -736,10 +811,9 @@ async function checkHealth() {
     const d = await fetch(`${WORKER}/api/health`).then(r => r.json());
     if (d.ok) {
       dot.className = 'hdot live'; lbl.textContent = 'CONNECTED'; lbl.style.color = '';
-      // Update model display in header
       const modelEl = document.getElementById('hdr-model');
-      if (modelEl && d.model) modelEl.textContent = d.model.includes('→') ? 'GROQ 70B+8B' : `GROQ ${d.model.split('-').pop().toUpperCase()}`;
-      setStatus(`v${d.version} // GROQ:${d.ai_groq?'✓':'✗'} ENRICH:✓ HUNTER:${d.hunter_active?'ACTIVE':'—'} CITIES:${(d.sources||[]).map(s=>s.id.toUpperCase()).join(',')}`);
+      if (modelEl) modelEl.textContent = d.model?.includes('→') ? 'GROQ 70B+8B' : (d.model || 'GROQ');
+      setStatus(`v${d.version} // GROQ:${d.ai_groq?'✓':'✗'} DORK:✓ ENRICH:✓ HUNTER:${d.hunter_active?'ACTIVE':'—'} CITIES:${(d.sources||[]).map(s=>s.id.toUpperCase()).join(',')}`);
     } else {
       dot.className = 'hdot warn'; lbl.textContent = 'DEGRADED';
     }
@@ -756,7 +830,7 @@ function selectCity(c, el) {
   city = c;
   document.querySelectorAll('.ctab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  allLeads = []; pResults = {}; enrichCache = {}; selLead = null;
+  allLeads = []; pResults = {}; enrichCache = {}; dorkCache = {}; selLead = null;
   renderLeads(); showWelcome();
   setStatus(`CITY: ${c.toUpperCase()} — PRESS FETCH`);
 }
@@ -772,10 +846,17 @@ async function fetchLeads() {
     const d = await fetch(`${WORKER}/api/permits?source=${city}&limit=30`).then(r => r.json());
     if (!d.ok) throw new Error(d.error || 'fetch failed');
     allLeads = d.permits || [];
-    document.getElementById('hdr-leads').textContent = `${allLeads.length} ${city.toUpperCase()} LEADS`;
-    setStatus(`${allLeads.length} PERMITS FROM ${city.toUpperCase()}`);
+    const hdrLeads = document.getElementById('hdr-leads');
+    if (hdrLeads) hdrLeads.textContent = `${allLeads.length} ${city.toUpperCase()} LEADS`;
+    // Show warning if soft-fail (e.g. Denver endpoint down)
+    if (d.warning) {
+      setStatus(`⚠ ${d.warning}`);
+      toast(`⚠ ${d.warning.slice(0, 60)}`);
+    } else {
+      setStatus(`${allLeads.length} PERMITS FROM ${city.toUpperCase()}`);
+      toast(`${allLeads.length} permits loaded`);
+    }
     renderLeads();
-    toast(`${allLeads.length} permits loaded`);
     try { localStorage.setItem(`pi:${city}`, JSON.stringify(allLeads)); } catch(_) {}
     if (autoScore && allLeads.length) {
       const top = [...allLeads].sort((a,b) => b.raw_score - a.raw_score)[0];
@@ -818,16 +899,17 @@ function renderLeads() {
       ? `<span class="lc-badge ${gc}">${grade}</span>`
       : `<span class="lc-badge raw">${lead.raw_score}</span>`;
 
-    const run     = running && selLead?.id === lead.id;
-    const done    = !!ai;
-    const cc      = `lcard${selLead?.id===lead.id?' sel':''}${done?' done':''}${run?' running':''}`;
-    const btnTxt  = run ? '● RUNNING…' : done ? '✓ VIEW BRIEF' : '▶ RUN PIPELINE';
-    const btnCls  = `lc-run${run?' running':done?' done':''}`;
+    const run    = running && selLead?.id === lead.id;
+    const done   = !!ai;
+    const cc     = `lcard${selLead?.id===lead.id?' sel':''}${done?' done':''}${run?' running':''}`;
+    const btnTxt = run ? '&#x25CF; RUNNING&#x2026;' : done ? '&#x2713; VIEW BRIEF' : '&#x25B6; RUN PIPELINE';
+    const btnCls = `lc-run${run?' running':done?' done':''}`;
 
     const valTag  = lead.value ? `<span class="lc-tag val">${fmt(lead.value)}</span>` : '';
     const typeTag = lead.permit_type ? `<span class="lc-tag">${esc(lead.permit_type.slice(0,22))}</span>` : '';
-
-    const cityTag = lead.city ? `<span class="lc-tag city">${esc(lead.city.toUpperCase())}</span>` : `<span class="lc-tag">${lead.source.toUpperCase()}</span>`;
+    const cityTag = lead.city
+      ? `<span class="lc-tag city">${esc(lead.city.toUpperCase())}</span>`
+      : `<span class="lc-tag">${lead.source.toUpperCase()}</span>`;
 
     return `<div class="${cc}" onclick="selectLead('${lead.id}')">
   <div class="lc-row1"><div class="lc-addr">${esc(lead.address)}</div>${badge}</div>
@@ -853,7 +935,7 @@ function selectLead(id) {
     document.getElementById('welcome').style.display = 'none';
     document.getElementById('pipeline-view').style.display = 'none';
     document.getElementById('brief-doc').style.display = '';
-    document.getElementById('brief-doc').innerHTML = `<div style="padding:24px;font-family:var(--mono);font-size:.7rem;color:var(--red)">⚠ RENDER ERROR: ${esc(e.message)}<br/><br/>Try re-running the pipeline for this lead.</div>`;
+    document.getElementById('brief-doc').innerHTML = `<div style="padding:24px;font-family:var(--mono);font-size:.7rem;color:var(--red)">&#x26A0; RENDER ERROR: ${esc(e.message)}<br/><br/>Try re-running the pipeline for this lead.</div>`;
     document.getElementById('rph-title').textContent = 'RENDER ERROR';
     console.error('renderBrief failed:', e);
   }
@@ -886,22 +968,23 @@ async function runPipeline(id) {
     }).then(r => r.json());
 
     if (d.skipped) {
-      agDone('triage'); agSkip(['extract','score','buyer','brief']);
-      logPipe(`⚠ TRIAGE: ${d.triage?.reason}`);
+      agDone('triage'); agSkip(['extract','score','buyer','brief','monetize']);
+      logPipe(`&#x26A0; TRIAGE: ${d.triage?.reason}`);
       setStatus('TRIAGE: SKIPPED'); toast('Lead skipped by triage');
     } else if (d.ok) {
       const p = d.pipeline;
-      agDone('triage');  agSet('extract','RUNNING…');
-      logPipe(`✓ TRIAGE: ${p.triage?.permit_category} — ${p.triage?.value_tier}`);
-      agDone('extract'); agSet('score','RUNNING…');
-      logPipe(`✓ EXTRACT: ${p.extracted?.business_name||p.extracted?.applicant_name||'unnamed'} @ ${p.extracted?.address_clean}`);
-      agDone('score');   agSet('buyer','RUNNING…');
-      logPipe(`✓ SCORE: ${p.scored?.total_score}/100 — Grade ${p.scored?.grade} — ${(p.scored?.urgency||'').toUpperCase()}`);
-      agDone('buyer');   agSet('brief','RUNNING…');
-      logPipe(`✓ BUYERS: ${p.buyers?.primary_buyer} · ${(p.buyers?.buyers||[]).length} segments`);
-      agDone('brief');
-      logPipe(`✓ BRIEF: "${p.brief?.headline}"`);
-      logPipe(`✓ MONETIZE: ${p.monetize?.best_channel_to_sell||'—'} · ${p.monetize?.lead_price_range||'—'}`);
+      agDone('triage');    agSet('extract','RUNNING…');
+      logPipe(`&#x2713; TRIAGE: ${p.triage?.permit_category} — ${p.triage?.value_tier}`);
+      agDone('extract');   agSet('score','RUNNING…');
+      logPipe(`&#x2713; EXTRACT: ${p.extracted?.business_name||p.extracted?.applicant_name||'unnamed'} @ ${p.extracted?.address_clean}`);
+      agDone('score');     agSet('buyer','RUNNING…');
+      logPipe(`&#x2713; SCORE: ${p.scored?.total_score}/100 — Grade ${p.scored?.grade} — ${(p.scored?.urgency||'').toUpperCase()}`);
+      agDone('buyer');     agSet('brief','RUNNING…');
+      logPipe(`&#x2713; BUYERS: ${p.buyers?.primary_buyer} · ${(p.buyers?.buyers||[]).length} segments`);
+      agDone('brief');     agSet('monetize','RUNNING…');
+      logPipe(`&#x2713; BRIEF: "${p.brief?.headline}"`);
+      agDone('monetize');
+      logPipe(`&#x2713; MONETIZE: ${p.monetize?.best_channel_to_sell||'—'} · ${p.monetize?.lead_price_range||'—'}`);
 
       pResults[id] = d;
       renderLeads(); renderBrief(d, lead);
@@ -913,7 +996,7 @@ async function runPipeline(id) {
     }
   } catch(e) {
     setStatus(`ERROR: ${e.message}`);
-    logPipe(`✗ ${e.message}`);
+    logPipe(`&#x2717; ${e.message}`);
     toast(`Error: ${e.message}`);
   } finally {
     running = false;
@@ -931,21 +1014,20 @@ async function runBatch() {
   if (!allLeads.length) { toast('Fetch leads first'); return; }
   const leads = [...allLeads].filter(l => !pResults[l.id]).sort((a,b) => b.raw_score - a.raw_score).slice(0,3);
   if (!leads.length) { toast('All leads already processed'); return; }
-  toast(`⚡ Batch: ${leads.length} leads — running sequentially…`);
+  toast(`&#x26A1; Batch: ${leads.length} leads — running sequentially…`);
   let rateLimitHits = 0;
   for (const l of leads) {
     await runPipeline(l.id);
-    // Check if the run just completed errored (likely 429)
     const d = pResults[l.id];
     const wasRateLimited = !d || (typeof d.score === 'undefined' && !d.grade);
     if (wasRateLimited) {
       rateLimitHits++;
       const backoff = Math.min(rateLimitHits * 25000, 60000);
-      toast(`Rate limited — waiting ${Math.round(backoff/1000)}s before next lead…`);
+      toast(`Rate limited — waiting ${Math.round(backoff/1000)}s before next…`);
       await sleep(backoff);
     } else {
       rateLimitHits = 0;
-      await sleep(4000); // 4s between successful runs (Groq token recovery time)
+      await sleep(4000);
     }
   }
   toast('Batch complete');
@@ -970,7 +1052,7 @@ function showPipelineView(lead) {
   document.getElementById('rph-title').textContent = 'RUNNING PIPELINE…';
   document.getElementById('pv-addr').textContent = lead.address;
   document.getElementById('pipe-log').innerHTML = '';
-  ['triage','extract','score','buyer','brief'].forEach(n => {
+  ['triage','extract','score','buyer','brief','monetize'].forEach(n => {
     document.getElementById(`ag-${n}`).className = 'agcard';
     document.getElementById(`ags-${n}`).textContent = 'WAITING';
   });
@@ -995,7 +1077,7 @@ function agSkip(ns) {
 }
 function logPipe(msg) {
   const el = document.getElementById('pipe-log');
-  el.innerHTML += `<div>${esc(msg)}</div>`;
+  el.innerHTML += `<div>${msg}</div>`;
   el.scrollTop = el.scrollHeight;
 }
 
@@ -1009,6 +1091,7 @@ function renderBrief(data, lead) {
   const by = p.buyers    || {};
   const br = p.brief     || {};
   const bk = sc.breakdown || {};
+  const mn = p.monetize  || {};
 
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('pipeline-view').style.display = 'none';
@@ -1037,11 +1120,11 @@ function renderBrief(data, lead) {
 </div>`;
   }).join('');
 
-  // Buyers
+  // Buyers grid
   const buyerHtml = (by.buyers||[]).slice(0,4).map(b => `
 <div class="buyer-card">
   <div class="bc-type">${esc(b.type||'')}</div>
-  <div class="bc-meta">FIT: ${b.fit_score||'—'}/100 · ${esc(b.time_window||'')}</div>
+  <div class="bc-meta">FIT: ${b.fit_score||'—'}/100 &middot; ${esc(b.time_window||'')}</div>
   <div class="bc-why">${esc(b.why||'')}</div>
   <div class="bc-pitch">${esc(b.pitch_angle||'')}</div>
 </div>`).join('');
@@ -1054,18 +1137,12 @@ function renderBrief(data, lead) {
   <button class="subj-copy" onclick="copyTxt(${JSON.stringify(s)})">COPY</button>
 </li>`).join('');
 
-  // Flags
-  const flagsHtml = (ex.special_flags||[]).map(f =>
-    `<span class="bd-flag">${esc(f)}</span>`).join('');
+  // Flags + red flags
+  const flagsHtml = (ex.special_flags||[]).map(f => `<span class="bd-flag">${esc(f)}</span>`).join('');
+  const redfHtml  = (sc.red_flags||[]).length
+    ? `<div style="margin-top:8px;font-family:var(--mono);font-size:.6rem;color:var(--red)">&#x26A0; ${esc((sc.red_flags||[]).join(' · '))}</div>` : '';
 
-  const redfHtml = (sc.red_flags||[]).length
-    ? `<div style="margin-top:8px;font-family:var(--mono);font-size:.6rem;color:var(--red)">⚠ ${esc((sc.red_flags||[]).join(' · '))}</div>` : '';
-
-  // Enrichment section (may already be loaded)
-  const enr = enrichCache[lead.id];
-
-  // Build monetization targets HTML
-  const mn = p.monetize || {};
+  // Monetization targets
   const mtargetHtml = (mn.target_buyers||[]).slice(0,4).map(t => {
     const ch = t.outreach_channel ? `<span style="font-family:var(--mono);font-size:.57rem;color:var(--blue);margin-left:6px">${esc(t.outreach_channel)}</span>` : '';
     return `<div class="mtarget">
@@ -1077,6 +1154,10 @@ function renderBrief(data, lead) {
 </div>`;
   }).join('');
 
+  // Enrichment / dork sections (pre-loaded if already run)
+  const enr  = enrichCache[lead.id];
+  const dork = dorkCache[lead.id];
+
   document.getElementById('brief-doc').innerHTML = `
 <div class="bd-hero">
   <div class="bd-grade-row">
@@ -1085,12 +1166,12 @@ function renderBrief(data, lead) {
   </div>
   <div class="bd-tldr">${esc(br.tldr||'')}</div>
   <div class="bd-meta">
-    <div class="bd-mi"><span class="bd-ml">PERMIT</span><span class="bd-mv">${esc(ex.permit_number||lead.permit_number||'&#x2014;')}</span></div>
-    <div class="bd-mi"><span class="bd-ml">ADDRESS</span><span class="bd-mv">${esc(ex.address_clean||lead.address||'&#x2014;')}</span></div>
-    <div class="bd-mi"><span class="bd-ml">VALUE</span><span class="bd-mv">${ex.estimated_value?fmt(ex.estimated_value):'&#x2014;'}</span></div>
-    <div class="bd-mi"><span class="bd-ml">SCORE</span><span class="bd-mv">${sc.total_score||'&#x2014;'}/100</span></div>
-    <div class="bd-mi"><span class="bd-ml">URGENCY</span><span class="bd-mv">${(sc.urgency||'&#x2014;').toUpperCase()}</span></div>
-    <div class="bd-mi"><span class="bd-ml">SELL TO</span><span class="bd-mv">${esc(by.primary_buyer||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">PERMIT</span>  <span class="bd-mv">${esc(ex.permit_number||lead.permit_number||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">ADDRESS</span> <span class="bd-mv">${esc(ex.address_clean||lead.address||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">VALUE</span>   <span class="bd-mv">${ex.estimated_value?fmt(ex.estimated_value):'&#x2014;'}</span></div>
+    <div class="bd-mi"><span class="bd-ml">SCORE</span>   <span class="bd-mv">${sc.total_score||'&#x2014;'}/100</span></div>
+    <div class="bd-mi"><span class="bd-ml">URGENCY</span> <span class="bd-mv">${(sc.urgency||'&#x2014;').toUpperCase()}</span></div>
+    <div class="bd-mi"><span class="bd-ml">SELL TO</span> <span class="bd-mv">${esc(by.primary_buyer||'&#x2014;')}</span></div>
   </div>
   ${flagsHtml?`<div class="bd-flags">${flagsHtml}</div>`:''}
 </div>
@@ -1157,7 +1238,7 @@ function renderBrief(data, lead) {
 </div>
 
 <div class="bsec">
-  <div class="bsec-hd"><span class="bsec-ico">&#x1F4B0;</span>BUYER REVENUE POTENTIAL &#xB7; EXPIRATION</div>
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4B0;</span>BUYER REVENUE POTENTIAL &middot; EXPIRATION</div>
   <div class="bsec-body">
     <strong style="color:var(--amber)">${esc(br.estimated_revenue_opportunity||'&#x2014;')}</strong><br/>
     ${esc(br.expiration_note||'')}${redfHtml}
@@ -1171,15 +1252,99 @@ function renderBrief(data, lead) {
   <div class="raw-data">${esc(JSON.stringify(lead._raw||lead,null,2))}</div>
 </div>
 
+<div class="dork-sec" id="dork-sec">
+  ${dork ? buildDorkHtml(dork) : `
+  <div class="bsec-hd" style="margin-bottom:8px">
+    <span class="bsec-ico">&#x1F50E;</span>OSINT DORK PASS
+    <span id="dork-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">&#x2014; press &#x1F50E; DORK to generate queries</span>
+  </div>
+  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">STAGE A &#x2192; Domain discovery &#xB7; LinkedIn &#xB7; Contact pages &#xB7; PDF/bid docs &#xB7; SEC signals</div>
+  `}
+</div>
+
 <div class="enrich-sec" id="enrich-sec">
   ${enr ? buildEnrichHtml(enr) : `
-  <div class="bsec-hd" style="margin-bottom:8px"><span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
-    <span id="enrich-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">&#x2014; click &#x2B21; ENRICH to run</span>
+  <div class="bsec-hd" style="margin-bottom:8px">
+    <span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
+    <span id="enrich-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">&#x2014; press &#x2B21; ENRICH to run</span>
   </div>
-  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">Nominatim geocode &#xB7; Census/FCC block &#xB7; SEC EDGAR &#xB7; Hunter.io emails</div>
+  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">STAGE B: Nominatim geocode &middot; Census/FCC block &mdash; STAGE C: SEC EDGAR &middot; Hunter.io emails</div>
   `}
 </div>`;
+}
 
+// =============================================================================
+// DORK PASS
+// =============================================================================
+async function runDork() {
+  if (!selLead) return;
+  const ai  = pResults[selLead.id];
+  if (!ai) { toast('Run pipeline first'); return; }
+
+  const ex  = ai.pipeline?.extracted || {};
+  const btn = document.getElementById('btn-dork');
+  btn.textContent = '&#x1F50E; DORKING…'; btn.disabled = true;
+
+  const sec = document.getElementById('dork-sec');
+  if (sec) sec.innerHTML = `
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F50E;</span>OSINT DORK PASS
+  <span style="font-weight:400;color:var(--blue);margin-left:8px;font-size:.58rem">RUNNING STAGE A…</span>
+</div>
+<div class="enrich-running"><div class="espin"></div>Generating query bundle &middot; Domain inference…</div>`;
+
+  try {
+    const target  = ex.business_name || ex.contractor_name || ex.applicant_name || '';
+    const address = `${ex.address_clean||selLead.address||''}, ${ex.city||selLead.city||''} ${ex.state||selLead.state||''}`.trim();
+
+    if (!target) { toast('No company name to dork — extract data first'); btn.textContent = '&#x1F50E; DORK'; btn.disabled = false; return; }
+
+    const params = new URLSearchParams({ target, address });
+    const d = await fetch(`${WORKER}/api/dork?${params}`).then(r => r.json());
+
+    if (!d.ok) throw new Error(d.error || 'Dork failed');
+
+    dorkCache[selLead.id] = d;
+    if (sec) sec.innerHTML = buildDorkHtml(d);
+    toast(`Dork pass: ${d.queries.length} queries · ${d.domain_candidates.length} domain candidates`);
+  } catch(e) {
+    if (sec) sec.innerHTML = `<div class="bsec-hd">&#x1F50E; OSINT DORK PASS <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
+    toast(`Dork error: ${e.message}`);
+  } finally {
+    btn.textContent = '&#x1F50E; DORK'; btn.disabled = false;
+  }
+}
+
+function buildDorkHtml(d) {
+  if (!d) return '';
+  const stageLabel = d.confirmed_domain
+    ? `<span class="dork-stage confirmed">&#x2713; DOMAIN CONFIRMED</span>`
+    : `<span class="dork-stage unconfirmed">DOMAIN UNCONFIRMED</span>`;
+
+  const domainHtml = d.confirmed_domain
+    ? `<div class="dork-domain">&#x2713; ${esc(d.confirmed_domain)}</div>`
+    : `<div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-bottom:10px">Candidates: ${(d.domain_candidates||[]).map(c=>`<code style="color:var(--text2)">${esc(c)}</code>`).join(' · ')}</div>`;
+
+  const rows = (d.queries||[]).map(q => {
+    const gUrl = `https://www.google.com/search?q=${encodeURIComponent(q.query)}`;
+    return `<div class="dq-row">
+  <span class="dq-lbl">${esc(q.label)}</span>
+  <span class="dq-q" title="${esc(q.query)}">${esc(q.query)}</span>
+  <button class="dq-copy" onclick="copyTxt(${JSON.stringify(q.query)})">COPY</button>
+  <a class="dq-open" href="${gUrl}" target="_blank" rel="noopener">SEARCH</a>
+</div>`;
+  }).join('');
+
+  return `
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F50E;</span>OSINT DORK PASS &#x2014; STAGE A
+  ${stageLabel}
+  <span style="font-weight:400;color:var(--text3);font-size:.58rem;margin-left:4px">TARGET: ${esc(d.target||'—')}</span>
+</div>
+${domainHtml}
+<div style="font-family:var(--mono);font-size:.57rem;color:var(--text3);margin-bottom:8px;letter-spacing:.06em">QUERY BUNDLE — COPY OR CLICK SEARCH TO RUN IN GOOGLE</div>
+<div class="dork-queries">${rows}</div>
+${d.note ? `<div style="font-family:var(--mono);font-size:.57rem;color:var(--text3);margin-top:8px">&#x2139;&#xFE0F; ${esc(d.note)}</div>` : ''}`;
 }
 
 // =============================================================================
@@ -1192,14 +1357,15 @@ async function runEnrich() {
 
   const ex  = ai.pipeline?.extracted || {};
   const btn = document.getElementById('btn-enrich');
-  btn.textContent = '⬡ ENRICHING…'; btn.disabled = true;
+  btn.textContent = '&#x2B21; ENRICHING…'; btn.disabled = true;
 
   const sec = document.getElementById('enrich-sec');
   if (sec) sec.innerHTML = `
-<div class="bsec-hd" style="margin-bottom:10px"><span class="bsec-ico">🌐</span>OSINT ENRICHMENT
-  <span style="font-weight:400;color:var(--purple);margin-left:8px;font-size:.58rem">RUNNING…</span>
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
+  <span style="font-weight:400;color:var(--purple);margin-left:8px;font-size:.58rem">STAGE B+C RUNNING…</span>
 </div>
-<div class="enrich-running"><div class="espin"></div>Nominatim → Census → EDGAR → Hunter.io</div>`;
+<div class="enrich-running"><div class="espin"></div>Nominatim &#x2192; Census &#x2192; EDGAR &#x2192; Hunter.io</div>`;
 
   try {
     const d = await fetch(`${WORKER}/api/enrich`, {
@@ -1214,57 +1380,73 @@ async function runEnrich() {
 
     enrichCache[selLead.id] = d.enrichment;
     if (sec) sec.innerHTML = buildEnrichHtml(d.enrichment);
-    toast('Enrichment complete');
+    const escalation = d.enrichment?.escalation || 'none';
+    const escalMsg = escalation === 'hunter_used' ? '&#x26A1; API ESCALATION: Hunter used' : escalation === 'edgar_only' ? 'EDGAR checked · Hunter skipped' : 'Free APIs only';
+    toast(`Enrichment complete · ${escalMsg}`);
   } catch(e) {
-    if (sec) sec.innerHTML = `<div class="bsec-hd">🌐 OSINT ENRICHMENT <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
+    if (sec) sec.innerHTML = `<div class="bsec-hd">&#x1F310; OSINT ENRICHMENT <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
     toast(`Enrich error: ${e.message}`);
   } finally {
-    btn.textContent = '⬡ ENRICH'; btn.disabled = false;
+    btn.textContent = '&#x2B21; ENRICH'; btn.disabled = false;
   }
 }
 
 function buildEnrichHtml(e) {
-  if (!e) return '<div class="bsec-hd">🌐 OSINT ENRICHMENT</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--text3);padding:6px 0">No data returned</div>';
-  const g = e.geocode, c = e.census, ed = e.edgar, h = e.hunter;
+  if (!e) return '<div class="bsec-hd">&#x1F310; OSINT ENRICHMENT</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--text3);padding:6px 0">No data returned</div>';
+  const g = e.geocode, c = e.census, ed = e.edgar, h = e.hunter, dp = e.dork_pass;
   let rows = [];
 
-  if (g) {
-    rows.push(`<div class="er"><span class="er-k">📍 GEOCODE</span><span class="er-v ok">${esc(g.display_name||'—')}</span></div>`);
-    rows.push(`<div class="er"><span class="er-k">LAT / LNG</span><span class="er-v">${g.lat}, ${g.lng}</span></div>`);
-    if (g.neighborhood||g.city) rows.push(`<div class="er"><span class="er-k">AREA</span><span class="er-v">${esc(g.neighborhood||'')} ${g.neighborhood&&g.county?'·':''} ${esc(g.county||'')} ${esc(g.postcode?`(${g.postcode})`:'')}</span></div>`);
-  } else {
-    rows.push(`<div class="er"><span class="er-k">📍 GEOCODE</span><span class="er-v nil">Not found</span></div>`);
+  // Dork pass domain result embedded in enrichment
+  if (dp) {
+    const domainTxt = dp.confirmed_domain
+      ? `<span class="er-v ok">&#x2713; ${esc(dp.confirmed_domain)} (domain confirmed)</span>`
+      : `<span class="er-v nil">Unconfirmed — candidates: ${(dp.domain_candidates||[]).slice(0,2).map(d=>esc(d)).join(', ')}</span>`;
+    rows.push(`<div class="er"><span class="er-k">&#x1F50E; DORK DOMAIN</span>${domainTxt}</div>`);
   }
 
-  if (c?.county_name) rows.push(`<div class="er"><span class="er-k">🗺 CENSUS</span><span class="er-v">${esc(c.county_name)} · FIPS ${esc(c.county_fips||'—')} · Block ${esc(c.block_fips||'—')}</span></div>`);
+  if (g) {
+    rows.push(`<div class="er"><span class="er-k">&#x1F4CD; GEOCODE</span><span class="er-v ok">${esc(g.display_name||'—')}</span></div>`);
+    rows.push(`<div class="er"><span class="er-k">LAT / LNG</span><span class="er-v">${g.lat}, ${g.lng}</span></div>`);
+    if (g.neighborhood||g.county) rows.push(`<div class="er"><span class="er-k">AREA</span><span class="er-v">${esc(g.neighborhood||'')} ${g.county?'· '+esc(g.county):''} ${g.postcode?'('+esc(g.postcode)+')':''}</span></div>`);
+  } else {
+    rows.push(`<div class="er"><span class="er-k">&#x1F4CD; GEOCODE</span><span class="er-v nil">Not found</span></div>`);
+  }
+
+  if (c?.county_name) rows.push(`<div class="er"><span class="er-k">&#x1F5FA; CENSUS</span><span class="er-v">${esc(c.county_name)} · FIPS ${esc(c.county_fips||'—')} · Block ${esc(c.block_fips||'—')}</span></div>`);
 
   if (ed) {
     if (ed.public_company) {
-      rows.push(`<div class="er"><span class="er-k">📊 EDGAR</span><span class="er-v pub">PUBLIC — ${esc(ed.entity_name||'—')} · ${ed.filings_found} filings · Latest ${esc(ed.latest_filing||'—')}</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x1F4CA; EDGAR</span><span class="er-v pub">PUBLIC — ${esc(ed.entity_name||'—')} · ${ed.filings_found} filings · Latest ${esc(ed.latest_filing||'—')}</span></div>`);
     } else {
-      rows.push(`<div class="er"><span class="er-k">📊 EDGAR</span><span class="er-v nil">No public filings found</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x1F4CA; EDGAR</span><span class="er-v nil">No public filings</span></div>`);
     }
   }
 
+  // Escalation status
+  const esc2 = e.escalation || 'none';
+  const escLabel = esc2 === 'hunter_used' ? '&#x26A1; Hunter API used' : esc2 === 'edgar_only' ? 'EDGAR only · Hunter skipped (no key)' : 'STAGE C skipped';
+  rows.push(`<div class="er"><span class="er-k">&#x1F4F6; ESCALATION</span><span class="er-v ${esc2==='hunter_used'?'pub':'nil'}">${escLabel}</span></div>`);
+
   if (h) {
     if (h.emails_found > 0) {
-      rows.push(`<div class="er"><span class="er-k">✉ HUNTER</span><span class="er-v ok">${h.emails_found} email(s) found @ ${esc(h.domain||'—')}</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x2709; HUNTER</span><span class="er-v ok">${h.emails_found} email(s) @ ${esc(h.domain||'—')} [${esc(h.domain_source||'inferred')}]</span></div>`);
       const elist = h.emails.map(em => `
 <div class="hemail">
   <span class="he-addr">${esc(em.email)}</span>
   <span class="he-meta">${esc(em.name||'')} · ${esc(em.position||em.type||'')} · ${em.confidence||'?'}%</span>
   <button class="he-copy" onclick="copyTxt(${JSON.stringify(em.email)})">COPY</button>
 </div>`).join('');
-      rows.push(`<div style="padding-top:5px">${elist}</div>`);
+      rows.push(`<div style="padding-top:4px">${elist}</div>`);
     } else {
-      rows.push(`<div class="er"><span class="er-k">✉ HUNTER</span><span class="er-v nil">No emails found @ ${esc(h.domain||'—')}</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x2709; HUNTER</span><span class="er-v nil">No emails @ ${esc(h.domain||'—')}</span></div>`);
     }
-  } else {
-    rows.push(`<div class="er"><span class="er-k">✉ HUNTER</span><span class="er-v nil">HUNTER_API_KEY not set</span></div>`);
+  } else if (!env?.HUNTER_API_KEY) {
+    rows.push(`<div class="er"><span class="er-k">&#x2709; HUNTER</span><span class="er-v nil">HUNTER_API_KEY not set</span></div>`);
   }
 
   return `
-<div class="bsec-hd" style="margin-bottom:10px"><span class="bsec-ico">🌐</span>OSINT ENRICHMENT
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
   <span style="font-weight:400;color:var(--green);margin-left:8px;font-size:.58rem">— done ${new Date().toLocaleTimeString()}</span>
 </div>
 <div class="enrich-rows">${rows.join('')}</div>`;
@@ -1276,13 +1458,14 @@ function buildEnrichHtml(e) {
 function saveBrief() {
   if (!selLead || !pResults[selLead.id]) return;
   const entry = {
-    id:        selLead.id,
-    address:   selLead.address,
-    grade:     pResults[selLead.id].grade,
-    ts:        Date.now(),
-    data:      pResults[selLead.id],
-    lead:      selLead,
-    enrich:    enrichCache[selLead.id] || null,
+    id:      selLead.id,
+    address: selLead.address,
+    grade:   pResults[selLead.id].grade,
+    ts:      Date.now(),
+    data:    pResults[selLead.id],
+    lead:    selLead,
+    enrich:  enrichCache[selLead.id] || null,
+    dork:    dorkCache[selLead.id]   || null,
   };
   saved = saved.filter(b => b.id !== entry.id);
   saved.unshift(entry);
@@ -1298,11 +1481,11 @@ function loadSaved() {
 function renderSaved() {
   document.getElementById('btn-saved').textContent = `SAVED (${saved.length})`;
   const list = document.getElementById('sd-list');
-  if (!saved.length) { list.innerHTML = '<div id="sd-empty">No saved briefs.<br/>Run pipeline → click SAVE.</div>'; return; }
+  if (!saved.length) { list.innerHTML = '<div id="sd-empty">No saved briefs.<br/>Run pipeline &#x2192; click SAVE.</div>'; return; }
   list.innerHTML = saved.map(b => {
     const gc = gradeClass(b.grade);
     return `<div class="sd-card" onclick="loadSaved2('${b.id}')">
-  <button class="sd-del" onclick="event.stopPropagation();deleteSaved('${b.id}')">✕</button>
+  <button class="sd-del" onclick="event.stopPropagation();deleteSaved('${b.id}')">&#x2715;</button>
   <span class="sd-grade ${gc}">${b.grade}</span>
   <div class="sd-addr">${esc(b.address||'—')}</div>
   <div class="sd-ts">${new Date(b.ts).toLocaleString()}</div>
@@ -1313,6 +1496,7 @@ function renderSaved() {
 function loadSaved2(id) {
   const b = saved.find(x => x.id === id); if(!b) return;
   if (b.enrich) enrichCache[id] = b.enrich;
+  if (b.dork)   dorkCache[id]   = b.dork;
   selLead = b.lead;
   renderBrief(b.data, b.lead);
   toggleDrawer(); toast('Brief loaded');
@@ -1352,17 +1536,18 @@ function exportBrief() {
 
 function buildPlainBrief(data, lead) {
   const p  = data.pipeline;
-  const ex = p.extracted || {}, sc = p.scored || {}, by = p.buyers || {}, br = p.brief || {};
-  const mn = p.monetize || {};
-  const enr = enrichCache[lead.id];
-  const sep = '─'.repeat(42);
+  const ex = p.extracted||{}, sc = p.scored||{}, by = p.buyers||{}, br = p.brief||{}, mn = p.monetize||{};
+  const enr  = enrichCache[lead.id];
+  const dork = dorkCache[lead.id];
+  const sep  = '─'.repeat(42);
+
   const lines = [
     'PERMIT INTEL // COMMERCIAL INTELLIGENCE BRIEF',
     `Grade: ${sc.grade} · Score: ${sc.total_score}/100 · Urgency: ${(sc.urgency||'').toUpperCase()}`,
     `Generated: ${new Date().toISOString()}`,
-    '', br.headline || '', br.tldr || '',
+    '', br.headline||'', br.tldr||'',
     '', 'PROJECT DETAILS', sep,
-    `Address:    ${ex.address_clean ? `${ex.address_clean}, ${ex.city || lead.city || ''} ${ex.state || lead.state || ''}`.trim() : lead.address || '—'}`,
+    `Address:    ${ex.address_clean ? `${ex.address_clean}, ${ex.city||lead.city||''} ${ex.state||lead.state||''}`.trim() : lead.address||'—'}`,
     `Permit #:   ${ex.permit_number||'—'}`,
     `Work Type:  ${ex.work_type_clean||'—'}`,
     `Value:      ${ex.estimated_value?fmt(ex.estimated_value):'—'}`,
@@ -1380,10 +1565,10 @@ function buildPlainBrief(data, lead) {
       `· ${t.buyer_type} [${t.outreach_channel||'—'}]\n  WHY: ${t.why_they_pay}\n  FIND THEM: ${t.how_to_find_them}\n  PITCH: "${t.pitch_hook}"\n  URGENCY: ${t.urgency_to_buyer}`
     ),
     mn.best_channel_to_sell ? `\nBEST CHANNEL TO SELL: ${mn.best_channel_to_sell}` : '',
-    mn.time_to_monetize ? `TIME TO MONETIZE: ${mn.time_to_monetize}` : '',
-    mn.bundle_opportunity ? `BUNDLE OPPORTUNITY: ${mn.bundle_opportunity}` : '',
-    mn.recurring_revenue_angle ? `RECURRING REVENUE ANGLE: ${mn.recurring_revenue_angle}` : '',
-    mn.competitive_moat ? `YOUR COMPETITIVE MOAT: ${mn.competitive_moat}` : '',
+    mn.time_to_monetize     ? `TIME TO MONETIZE: ${mn.time_to_monetize}` : '',
+    mn.bundle_opportunity   ? `BUNDLE OPPORTUNITY: ${mn.bundle_opportunity}` : '',
+    mn.recurring_revenue_angle ? `RECURRING REVENUE: ${mn.recurring_revenue_angle}` : '',
+    mn.competitive_moat     ? `COMPETITIVE MOAT: ${mn.competitive_moat}` : '',
     '',
     '════════════════════════════════════════════',
     '  INTELLIGENCE BRIEF',
@@ -1391,20 +1576,28 @@ function buildPlainBrief(data, lead) {
     '', 'PROJECT OVERVIEW', sep, br.project_overview||'',
     '', 'WHY THIS INTEL IS WORTH BUYING', sep, br.opportunity_analysis||'',
     '', 'KEY INTEL SIGNAL', sep, by.key_insight||'',
-    '', 'OUTREACH OPENER (FOR YOUR BUYER TO USE)', sep, br.outreach_opener||'',
+    '', 'OUTREACH OPENER (FOR YOUR BUYER)', sep, br.outreach_opener||'',
     '', 'INTEL BUYER SEGMENTS', sep,
-    ...(by.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100)\n  ${b.why}\n  BUYER PITCH: ${b.pitch_angle}\n  Window: ${b.time_window}`),
-    '', 'SUBJECT LINES (FOR BUYER\'S OUTREACH)', sep,
+    ...(by.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100)\n  ${b.why}\n  PITCH: ${b.pitch_angle}\n  Window: ${b.time_window}`),
+    '', 'SUBJECT LINES', sep,
     ...(br.subject_lines||[]).map((s,i) => `${i+1}. ${s}`),
     '', 'BUYER ACTION BRIEF', sep, br.buyer_action||'',
     '', 'BUYER REVENUE POTENTIAL · EXPIRATION', sep,
-    br.estimated_revenue_opportunity||'—',
-    br.expiration_note||'',
+    br.estimated_revenue_opportunity||'—', br.expiration_note||'',
     ...(sc.red_flags?.length ? ['', `⚠ RED FLAGS: ${sc.red_flags.join(' · ')}`] : []),
   ];
 
+  if (dork) {
+    lines.push('', 'OSINT DORK PASS — STAGE A', sep);
+    lines.push(`Target: ${dork.target}`);
+    if (dork.confirmed_domain) lines.push(`Confirmed Domain: ${dork.confirmed_domain}`);
+    else lines.push(`Domain Candidates: ${(dork.domain_candidates||[]).join(', ')}`);
+    lines.push('Query Bundle:');
+    (dork.queries||[]).forEach(q => lines.push(`  [${q.label}] ${q.query}`));
+  }
+
   if (enr) {
-    lines.push('', 'OSINT ENRICHMENT', sep);
+    lines.push('', 'OSINT ENRICHMENT — STAGE B+C', sep);
     if (enr.geocode) { lines.push(`Geocode: ${enr.geocode.display_name||'—'}`); lines.push(`Lat/Lng: ${enr.geocode.lat}, ${enr.geocode.lng}`); }
     if (enr.census?.county_name) lines.push(`County:  ${enr.census.county_name} (FIPS ${enr.census.county_fips})`);
     if (enr.edgar?.public_company) lines.push(`EDGAR:   PUBLIC — ${enr.edgar.entity_name||'—'} (${enr.edgar.filings_found} filings)`);
@@ -1412,9 +1605,10 @@ function buildPlainBrief(data, lead) {
       lines.push(`Hunter:  ${enr.hunter.emails_found} email(s) @ ${enr.hunter.domain}`);
       (enr.hunter.emails||[]).forEach(e => lines.push(`  ${e.email}  ${e.name||''} ${e.position||''} (${e.confidence}%)`));
     }
+    lines.push(`Escalation: ${enr.escalation||'none'}`);
   }
 
-  lines.push('', `PERMIT INTEL v3.3 · ${new Date().toLocaleDateString()}`);
+  lines.push('', `PERMIT INTEL v3.4 · ${new Date().toLocaleDateString()}`);
   return lines.join('\n');
 }
 
@@ -1461,9 +1655,9 @@ function copyTxt(text) {
 }
 
 function toast(msg) {
-  const c = document.getElementById('toast-container');
+  const c  = document.getElementById('toast-container');
   const el = document.createElement('div');
-  el.className = 'toast-item';
+  el.className   = 'toast-item';
   el.textContent = msg;
   c.appendChild(el);
   requestAnimationFrame(() => el.classList.add('show'));
@@ -1474,7 +1668,7 @@ function toggleRaw(el) {
   const d = el.nextElementSibling; if (!d) return;
   const open = d.style.display === 'block';
   d.style.display = open ? 'none' : 'block';
-  el.textContent = open ? '▸ RAW PERMIT DATA' : '▾ RAW PERMIT DATA';
+  el.textContent  = open ? '▸ RAW PERMIT DATA' : '▾ RAW PERMIT DATA';
 }
 </script>
 </body>
