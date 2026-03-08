@@ -8,231 +8,645 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2307080f'/><text x='4' y='24' font-size='20' fill='%23e8a020'>//</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
+/* ── DESIGN TOKENS ──────────────────────────────────────── */
 :root {
-  --bg:#07080f; --bg2:#0c0e1c; --bg3:#111326; --surface:#15172e; --border:#1c1f38; --border2:#252848;
-  --amber:#e8a020; --amber2:#ffc050; --amber3:rgba(232,160,32,.1); --green:#3dd68c; --green2:rgba(61,214,140,.1);
-  --blue:#4d90f0; --blue2:rgba(77,144,240,.1); --red:#f05060; --purple:#a06cf0; --purple2:rgba(160,108,240,.12);
-  --text:#dde0f4; --text2:#8890b8; --text3:#454a72; --mono:'Space Mono', monospace; --cond:'Barlow Condensed', sans-serif; --body:'Barlow', sans-serif;
+  --bg:       #07080f;
+  --bg2:      #0c0e1c;
+  --bg3:      #111326;
+  --surface:  #15172e;
+  --border:   #1c1f38;
+  --border2:  #252848;
+  --amber:    #e8a020;
+  --amber2:   #ffc050;
+  --amber3:   rgba(232,160,32,.1);
+  --green:    #3dd68c;
+  --green2:   rgba(61,214,140,.1);
+  --blue:     #4d90f0;
+  --blue2:    rgba(77,144,240,.1);
+  --red:      #f05060;
+  --purple:   #a06cf0;
+  --purple2:  rgba(160,108,240,.12);
+  --text:     #dde0f4;
+  --text2:    #8890b8;
+  --text3:    #454a72;
+  --mono:     'Space Mono', monospace;
+  --cond:     'Barlow Condensed', sans-serif;
+  --body:     'Barlow', sans-serif;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;display:flex;flex-direction:column}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,8,.06) 2px,rgba(0,0,8,.06) 4px)}
-#hdr{height:46px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:12px}
-#logo{font-family:var(--cond);font-weight:900;font-size:1rem;letter-spacing:.14em;color:var(--amber);white-space:nowrap}
-#logo em{color:var(--text3);font-style:normal}
-.hsep{width:1px;height:18px;background:var(--border2);flex-shrink:0}
-.hstat{font-family:var(--mono);font-size:.6rem;color:var(--text3);display:flex;align-items:center;gap:5px}
-.hdot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
-.hdot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
-.hdot.warn{background:var(--amber)}
-.hdot.dead{background:var(--red)}
-.hsp{flex:1}
-.hbtn{height:26px;padding:0 10px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-family:var(--mono);font-size:.58rem;cursor:pointer;transition:all .15s;letter-spacing:.04em}
-.hbtn:hover{border-color:var(--amber);color:var(--amber)}
-.hbtn.on{border-color:var(--amber);color:var(--amber);background:var(--amber3)}
-#layout{flex:1;overflow:hidden;display:grid;grid-template-columns:292px 1fr}
-#left{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-#city-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.ctab{flex:1;height:36px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text3);font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.08em;cursor:pointer;transition:all .15s}
-.ctab:last-child{border-right:none}
-.ctab:hover{color:var(--text2);background:rgba(255,255,255,.02)}
-.ctab.on{color:var(--amber);background:var(--amber3);border-bottom:2px solid var(--amber)}
-#frow{display:flex;align-items:center;gap:7px;padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
-#frow span{font-family:var(--mono);font-size:.57rem;color:var(--text3);white-space:nowrap}
-#score-slider{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:var(--border2);border-radius:2px;outline:none}
-#score-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 6px rgba(232,160,32,.4)}
-#score-val{font-family:var(--mono);font-size:.6rem;color:var(--amber);min-width:22px;text-align:right}
-#fetch-btn{height:26px;padding:0 12px;background:var(--amber);border:none;border-radius:4px;color:#000;font-family:var(--cond);font-weight:800;font-size:.75rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;flex-shrink:0}
-#fetch-btn:hover{background:var(--amber2)}
-#fetch-btn:disabled{opacity:.5;cursor:not-allowed}
-#lmeta{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
-#lmeta-label{font-family:var(--mono);font-size:.57rem;color:var(--text3)}
-#batch-btn{height:20px;padding:0 8px;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--text3);font-family:var(--mono);font-size:.56rem;cursor:pointer;transition:all .15s}
-#batch-btn:hover{border-color:var(--purple);color:var(--purple)}
-#leads-list{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:4px}
-#leads-list::-webkit-scrollbar{width:3px}
-#leads-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.empty-msg{padding:32px 12px;text-align:center;font-family:var(--mono);font-size:.6rem;color:var(--text3);line-height:2}
-.lcard{border:1px solid var(--border);border-radius:5px;padding:9px 10px;cursor:pointer;background:var(--bg);transition:border-color .15s, background .15s}
-.lcard:hover{border-color:var(--border2);background:var(--surface)}
-.lcard.sel{border-color:var(--amber);background:var(--amber3)}
-.lcard.done{border-left:3px solid var(--green)}
-.lcard.done.sel{border-color:var(--green)}
-.lcard.running{border-color:var(--blue);animation:pulse-card 1.2s ease-in-out infinite}
-@keyframes pulse-card{0%,100%{border-color:var(--blue)}50%{border-color:rgba(77,144,240,.2)}}
-.lc-row1{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px}
-.lc-addr{font-family:var(--cond);font-weight:600;font-size:.83rem;color:var(--text);line-height:1.2;flex:1}
-.lc-badge{font-family:var(--mono);font-size:.62rem;font-weight:700;padding:2px 5px;border-radius:3px;flex-shrink:0}
-.lc-badge.raw{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
-.lc-badge.gAp,.lc-badge.gA{background:var(--green2);color:var(--green);border:1px solid rgba(61,214,140,.3)}
-.lc-badge.gB{background:var(--blue2);color:var(--blue);border:1px solid rgba(77,144,240,.3)}
-.lc-badge.gC{background:var(--amber3);color:var(--amber);border:1px solid rgba(232,160,32,.3)}
-.lc-badge.gD{background:rgba(240,80,96,.1);color:var(--red);border:1px solid rgba(240,80,96,.3)}
-.lc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
-.lc-tag{font-family:var(--mono);font-size:.53rem;padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
-.lc-tag.val{color:var(--amber);border-color:rgba(232,160,32,.3);background:var(--amber3)}
-.lc-tag.city{color:var(--blue);border-color:rgba(77,144,240,.3);background:var(--blue2)}
-.lc-run{width:100%;height:24px;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--text3);font-family:var(--mono);font-size:.58rem;cursor:pointer;transition:all .15s;letter-spacing:.04em}
-.lc-run:hover{border-color:var(--amber);color:var(--amber)}
-.lc-run.running{border-color:var(--blue);color:var(--blue);cursor:not-allowed}
-.lc-run.done{border-color:var(--green);color:var(--green)}
-#right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-#rph{height:46px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px}
-#rph-title{font-family:var(--cond);font-weight:800;font-size:.95rem;letter-spacing:.1em;color:var(--text2);flex:1}
-#rph-actions{display:none;align-items:center;gap:7px}
-.abtn{height:26px;padding:0 10px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-family:var(--mono);font-size:.58rem;cursor:pointer;transition:all .15s;letter-spacing:.04em}
-.abtn:hover{border-color:var(--text);color:var(--text)}
-.abtn.enrich{border-color:var(--purple);color:var(--purple)}
-.abtn.enrich:hover{background:var(--purple2)}
-.abtn.dork{border-color:var(--blue);color:var(--blue)}
-.abtn.dork:hover{background:var(--blue2)}
-.abtn.save{border-color:var(--border2);color:var(--text2)}
-.abtn.save:hover{background:var(--surface)}
-.abtn.export{background:var(--amber);border-color:var(--amber);color:#000;font-weight:700}
-.abtn.export:hover{background:var(--amber2)}
-#rpb{flex:1;overflow-y:auto}
-#rpb::-webkit-scrollbar{width:3px}
-#rpb::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-#welcome{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:40px}
-.wl-mark{font-family:var(--cond);font-weight:900;font-size:5rem;letter-spacing:.2em;color:var(--border2);user-select:none}
-.wl-steps{display:flex;gap:48px}
-.wl-step{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--cond);font-size:.72rem;letter-spacing:.1em;color:var(--text3);text-align:center}
-.wl-n{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.65rem;color:var(--text3)}
-#pipeline-view{display:none;padding:20px}
-.pv-head{font-family:var(--cond);font-weight:800;font-size:1rem;letter-spacing:.1em;color:var(--text2);margin-bottom:3px}
-.pv-addr{font-family:var(--mono);font-size:.65rem;color:var(--amber);margin-bottom:20px}
-.agents-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px}
-.agcard{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:8px 6px;text-align:center}
-.agcard.running{border-color:var(--blue);animation:pulse-ag 1s ease-in-out infinite}
-.agcard.done{border-color:var(--green);background:var(--green2)}
-.agcard.skip{opacity:.3}
-@keyframes pulse-ag{0%,100%{border-color:var(--blue)}50%{border-color:rgba(77,144,240,.2)}}
-.agc-icon{font-size:.95rem;margin-bottom:3px}
-.agc-name{font-family:var(--cond);font-weight:700;font-size:.62rem;color:var(--text3);letter-spacing:.06em;margin-bottom:3px}
-.agc-stat{font-family:var(--mono);font-size:.5rem;color:var(--text3)}
-.agcard.running .agc-stat{color:var(--blue)}
-.agcard.done .agc-stat{color:var(--green)}
-#pipe-log{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 12px;font-family:var(--mono);font-size:.57rem;color:var(--text3);line-height:1.9;max-height:160px;overflow-y:auto}
-#pipe-log div{color:var(--text2)}
-#pipe-log div:first-child{color:var(--amber)}
-.bd-hero{padding:18px 22px 14px;border-bottom:1px solid var(--border)}
-.bd-grade-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:10px}
-.bd-grade{font-family:var(--mono);font-size:2rem;font-weight:700;width:58px;height:58px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid}
-.bd-grade.gAp,.bd-grade.gA{color:var(--green);border-color:var(--green);background:var(--green2)}
-.bd-grade.gB{color:var(--blue);border-color:var(--blue);background:var(--blue2)}
-.bd-grade.gC{color:var(--amber);border-color:var(--amber);background:var(--amber3)}
-.bd-grade.gD{color:var(--red);border-color:var(--red);background:rgba(240,80,96,.08)}
-.bd-headline{font-family:var(--cond);font-weight:800;font-size:1.22rem;color:var(--text);line-height:1.2;letter-spacing:.02em}
-.bd-tldr{font-family:var(--body);font-size:.82rem;color:var(--text2);line-height:1.7;margin-bottom:12px}
-.bd-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.bd-mi{display:flex;flex-direction:column;gap:2px}
-.bd-ml{font-family:var(--mono);font-size:.53rem;color:var(--text3);letter-spacing:.05em}
-.bd-mv{font-family:var(--mono);font-size:.62rem;color:var(--amber)}
-.bd-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
-.bd-flag{font-family:var(--mono);font-size:.52rem;padding:2px 6px;border-radius:3px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);text-transform:uppercase}
-.score-strip{display:flex;border-bottom:1px solid var(--border)}
-.ss-col{flex:1;padding:9px 6px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px}
-.ss-col:last-child{border-right:none}
-.ss-lbl{font-family:var(--mono);font-size:.5rem;color:var(--text3);letter-spacing:.04em}
-.ss-val{font-family:var(--cond);font-weight:900;font-size:1.05rem}
-.ss-max{font-family:var(--mono);font-size:.48rem;color:var(--text3)}
-.ss-bar{width:100%;height:2px;background:var(--border2);border-radius:2px;margin-top:3px}
-.ss-fill{height:100%;border-radius:2px;background:var(--amber)}
-.ss-col.hi .ss-val{color:var(--green)}
-.ss-col.md .ss-val{color:var(--amber)}
-.ss-col.lo .ss-val{color:var(--text2)}
-.bsec{padding:14px 22px;border-bottom:1px solid var(--border)}
-.bsec-hd{font-family:var(--cond);font-weight:700;font-size:.68rem;letter-spacing:.1em;color:var(--text3);display:flex;align-items:center;gap:7px;margin-bottom:9px}
-.bsec-ico{font-size:.85rem}
-.bsec-body{font-family:var(--body);font-size:.8rem;color:var(--text2);line-height:1.7}
-.bsec-body.hl{color:var(--amber)}
-.bsec-opener{border-left:2px solid var(--green);padding-left:12px;color:var(--green);font-style:italic}
-.monetize-sec{background:linear-gradient(135deg,rgba(232,160,32,.06) 0%,transparent 70%);border-top:2px solid var(--amber);border-bottom:1px solid var(--border);padding:18px 22px}
-.monetize-hd{font-family:var(--cond);font-weight:800;font-size:.8rem;letter-spacing:.12em;color:var(--amber);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.monetize-summary{font-family:var(--body);font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:14px;border-left:3px solid var(--amber);padding-left:12px}
-.monetize-price{display:inline-block;font-family:var(--mono);font-size:.75rem;background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--amber);padding:4px 12px;border-radius:4px;margin-bottom:14px;letter-spacing:.04em}
-.monetize-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.mtarget{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 14px}
-.mt-type{font-family:var(--mono);font-size:.62rem;color:var(--amber);letter-spacing:.08em;margin-bottom:4px}
-.mt-why{font-family:var(--body);font-size:.76rem;color:var(--text2);line-height:1.5;margin-bottom:4px}
-.mt-find{font-family:var(--mono);font-size:.6rem;color:var(--text3)}
-.mt-pitch{margin-top:6px;font-family:var(--body);font-size:.74rem;font-style:italic;color:var(--green);border-left:2px solid rgba(61,214,140,.4);padding-left:8px}
-.mt-urgency{font-family:var(--mono);font-size:.58rem;color:var(--red);margin-top:4px}
-.monetize-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.mm-item{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 10px}
-.mm-label{font-family:var(--mono);font-size:.54rem;color:var(--text3);letter-spacing:.07em;margin-bottom:3px}
-.mm-val{font-family:var(--body);font-size:.74rem;color:var(--text2);line-height:1.5}
-.mm-val.amber{color:var(--amber);font-weight:600}
-.buyers-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.buyer-card{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:11px}
-.bc-type{font-family:var(--cond);font-weight:700;font-size:.73rem;color:var(--amber);letter-spacing:.06em;margin-bottom:3px}
-.bc-meta{font-family:var(--mono);font-size:.55rem;color:var(--text3);margin-bottom:6px}
-.bc-why{font-family:var(--body);font-size:.73rem;color:var(--text2);line-height:1.5;margin-bottom:5px}
-.bc-pitch{font-family:var(--mono);font-size:.6rem;color:var(--text3);border-left:2px solid var(--border2);padding-left:7px;line-height:1.5}
-.subj-list{list-style:none;display:flex;flex-direction:column;gap:5px}
-.subj-item{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:7px 10px}
-.subj-n{font-family:var(--mono);font-size:.53rem;color:var(--text3);min-width:12px;flex-shrink:0}
-.subj-txt{font-family:var(--body);font-size:.76rem;color:var(--text);flex:1}
-.subj-copy{height:20px;padding:0 7px;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--text3);font-family:var(--mono);font-size:.53rem;cursor:pointer;transition:all .15s;flex-shrink:0}
-.subj-copy:hover{border-color:var(--amber);color:var(--amber)}
-.raw-toggle{font-family:var(--mono);font-size:.58rem;color:var(--text3);cursor:pointer;padding:8px 0 4px;display:inline-block;transition:color .15s}
-.raw-toggle:hover{color:var(--text2)}
-.raw-data{display:none;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;margin-top:6px;font-family:var(--mono);font-size:.55rem;color:var(--text3);line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-.dork-sec{padding:14px 22px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,var(--blue2) 0%,transparent 80%)}
-.dork-stage{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.57rem;letter-spacing:.06em;padding:3px 8px;border-radius:3px;margin-bottom:10px}
-.dork-stage.confirmed{color:var(--green);background:var(--green2);border:1px solid rgba(61,214,140,.3)}
-.dork-stage.unconfirmed{color:var(--text3);background:var(--bg3);border:1px solid var(--border)}
-.dork-domain{font-family:var(--mono);font-size:.68rem;color:var(--blue);background:var(--blue2);border:1px solid rgba(77,144,240,.3);padding:4px 10px;border-radius:4px;display:inline-block;margin-bottom:10px}
-.dork-queries{display:flex;flex-direction:column;gap:4px}
-.dq-row{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 10px}
-.dq-lbl{font-family:var(--mono);font-size:.53rem;color:var(--text3);min-width:110px;flex-shrink:0}
-.dq-q{font-family:var(--mono);font-size:.57rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dq-copy{height:18px;padding:0 6px;flex-shrink:0;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--text3);font-family:var(--mono);font-size:.5rem;cursor:pointer;transition:all .15s}
-.dq-copy:hover{border-color:var(--blue);color:var(--blue)}
-.dq-open{height:18px;padding:0 6px;flex-shrink:0;background:transparent;border:1px solid rgba(77,144,240,.4);border-radius:3px;color:var(--blue);font-family:var(--mono);font-size:.5rem;cursor:pointer;transition:all .15s;text-decoration:none;display:flex;align-items:center}
-.dq-open:hover{background:var(--blue2)}
-.enrich-sec{padding:14px 22px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,var(--purple2) 0%,transparent 80%)}
-.enrich-running{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.62rem;color:var(--purple)}
-.espin{width:11px;height:11px;border:1.5px solid rgba(160,108,240,.3);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.enrich-rows{display:flex;flex-direction:column;gap:0}
-.er{display:flex;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-family:var(--mono);font-size:.62rem}
-.er:last-child{border-bottom:none}
-.er-k{min-width:88px;color:var(--text3);font-size:.57rem;letter-spacing:.05em;flex-shrink:0}
-.er-v{color:var(--text);line-height:1.5}
-.er-v.ok{color:var(--green)}
-.er-v.pub{color:var(--amber)}
-.er-v.nil{color:var(--text3)}
-.hemail{display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:5px 8px;margin-top:3px}
-.he-addr{font-family:var(--mono);font-size:.62rem;color:var(--green);flex:1}
-.he-meta{font-family:var(--mono);font-size:.53rem;color:var(--text3)}
-.he-copy{height:18px;padding:0 6px;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--text3);font-family:var(--mono);font-size:.5rem;cursor:pointer;transition:all .15s}
-.he-copy:hover{border-color:var(--green);color:var(--green)}
-#saved-drawer{position:fixed;right:0;top:0;bottom:0;width:310px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;z-index:500}
-#saved-drawer.open{transform:translateX(0)}
-#sd-head{height:46px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0}
-#sd-head-title{font-family:var(--cond);font-weight:700;font-size:.88rem;letter-spacing:.1em;color:var(--text2);flex:1}
-#sd-close{width:26px;height:26px;background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--text3);font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-#sd-close:hover{color:var(--text);border-color:var(--border)}
-#sd-list{flex:1;overflow-y:auto;padding:8px}
-.sd-card{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px;margin-bottom:5px;cursor:pointer;transition:all .15s}
-.sd-card:hover{border-color:var(--border2)}
-.sd-grade{font-family:var(--mono);font-size:.58rem;font-weight:700;padding:1px 5px;border-radius:3px;margin-bottom:4px;display:inline-block}
-.sd-addr{font-family:var(--cond);font-weight:600;font-size:.78rem;color:var(--text);margin-bottom:2px}
-.sd-ts{font-family:var(--mono);font-size:.53rem;color:var(--text3)}
-.sd-del{float:right;background:transparent;border:none;color:var(--text3);font-size:.65rem;cursor:pointer;padding:0}
-.sd-del:hover{color:var(--red)}
-#sd-empty{padding:30px 14px;text-align:center;font-family:var(--mono);font-size:.6rem;color:var(--text3);line-height:2}
-#sbar{height:23px;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:14px;font-family:var(--mono);font-size:.57rem;color:var(--text3)}
-#sbar-msg{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#sbar-timer{color:var(--amber);min-width:40px;text-align:right}
-#toast-container{position:fixed;bottom:34px;right:14px;display:flex;flex-direction:column;gap:5px;pointer-events:none;z-index:9000}
-.toast-item{font-family:var(--mono);font-size:.62rem;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:7px 13px;border-radius:5px;opacity:0;transform:translateY(6px);transition:opacity .2s, transform .2s;max-width:320px}
-.toast-item.show{opacity:1;transform:translateY(0)}
+
+/* ── RESET ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── SCANLINES ───────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,8,.06) 2px, rgba(0,0,8,.06) 4px);
+}
+
+/* ── HEADER ──────────────────────────────────────────────── */
+#hdr {
+  height: 46px; flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 14px; gap: 12px;
+}
+#logo {
+  font-family: var(--cond); font-weight: 900; font-size: 1rem;
+  letter-spacing: .14em; color: var(--amber);
+  white-space: nowrap;
+}
+#logo em { color: var(--text3); font-style: normal; }
+.hsep { width: 1px; height: 18px; background: var(--border2); flex-shrink: 0; }
+.hstat {
+  font-family: var(--mono); font-size: .6rem; color: var(--text3);
+  display: flex; align-items: center; gap: 5px;
+}
+.hdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text3); flex-shrink: 0;
+}
+.hdot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.hdot.warn { background: var(--amber); }
+.hdot.dead { background: var(--red); }
+.hsp { flex: 1; }
+.hbtn {
+  height: 26px; padding: 0 10px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text2); font-family: var(--mono); font-size: .58rem;
+  cursor: pointer; transition: all .15s; letter-spacing: .04em;
+}
+.hbtn:hover { border-color: var(--amber); color: var(--amber); }
+.hbtn.on { border-color: var(--amber); color: var(--amber); background: var(--amber3); }
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+#layout {
+  flex: 1; overflow: hidden;
+  display: grid;
+  grid-template-columns: 292px 1fr;
+}
+
+/* ── LEFT PANEL ──────────────────────────────────────────── */
+#left {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* city tabs */
+#city-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.ctab {
+  flex: 1; height: 36px;
+  background: transparent; border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text3);
+  font-family: var(--cond); font-weight: 700; font-size: .78rem; letter-spacing: .08em;
+  cursor: pointer; transition: all .15s;
+}
+.ctab:last-child { border-right: none; }
+.ctab:hover { color: var(--text2); background: rgba(255,255,255,.02); }
+.ctab.on { color: var(--amber); background: var(--amber3); border-bottom: 2px solid var(--amber); }
+
+/* filter row */
+#frow {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+#frow span { font-family: var(--mono); font-size: .57rem; color: var(--text3); white-space: nowrap; }
+#score-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 3px; background: var(--border2); border-radius: 2px; outline: none;
+}
+#score-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--amber); cursor: pointer;
+  box-shadow: 0 0 6px rgba(232,160,32,.4);
+}
+#score-val { font-family: var(--mono); font-size: .6rem; color: var(--amber); min-width: 22px; text-align: right; }
+#fetch-btn {
+  height: 26px; padding: 0 12px;
+  background: var(--amber); border: none; border-radius: 4px;
+  color: #000; font-family: var(--cond); font-weight: 800; font-size: .75rem;
+  letter-spacing: .1em; cursor: pointer; transition: all .15s; flex-shrink: 0;
+}
+#fetch-btn:hover { background: var(--amber2); }
+#fetch-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* leads meta bar */
+#lmeta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+#lmeta-label { font-family: var(--mono); font-size: .57rem; color: var(--text3); }
+#batch-btn {
+  height: 20px; padding: 0 8px;
+  background: transparent; border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: .56rem;
+  cursor: pointer; transition: all .15s;
+}
+#batch-btn:hover { border-color: var(--purple); color: var(--purple); }
+
+/* leads list */
+#leads-list {
+  flex: 1; overflow-y: auto; padding: 6px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+#leads-list::-webkit-scrollbar { width: 3px; }
+#leads-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.empty-msg {
+  padding: 32px 12px; text-align: center;
+  font-family: var(--mono); font-size: .6rem;
+  color: var(--text3); line-height: 2;
+}
+
+/* lead card */
+.lcard {
+  border: 1px solid var(--border);
+  border-radius: 5px; padding: 9px 10px;
+  cursor: pointer; background: var(--bg);
+  transition: border-color .15s, background .15s;
+}
+.lcard:hover { border-color: var(--border2); background: var(--surface); }
+.lcard.sel { border-color: var(--amber); background: var(--amber3); }
+.lcard.done { border-left: 3px solid var(--green); }
+.lcard.done.sel { border-color: var(--green); }
+.lcard.running { border-color: var(--blue); animation: pulse-card 1.2s ease-in-out infinite; }
+@keyframes pulse-card {
+  0%,100% { border-color: var(--blue); }
+  50%      { border-color: rgba(77,144,240,.2); }
+}
+
+.lc-row1 { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 5px; }
+.lc-addr {
+  font-family: var(--cond); font-weight: 600; font-size: .83rem;
+  color: var(--text); line-height: 1.2; flex: 1;
+}
+.lc-badge {
+  font-family: var(--mono); font-size: .62rem; font-weight: 700;
+  padding: 2px 5px; border-radius: 3px; flex-shrink: 0;
+}
+.lc-badge.raw  { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+.lc-badge.gAp, .lc-badge.gA  { background: var(--green2); color: var(--green); border: 1px solid rgba(61,214,140,.3); }
+.lc-badge.gB   { background: var(--blue2); color: var(--blue); border: 1px solid rgba(77,144,240,.3); }
+.lc-badge.gC   { background: var(--amber3); color: var(--amber); border: 1px solid rgba(232,160,32,.3); }
+.lc-badge.gD   { background: rgba(240,80,96,.1); color: var(--red); border: 1px solid rgba(240,80,96,.3); }
+
+.lc-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
+.lc-tag {
+  font-family: var(--mono); font-size: .53rem;
+  padding: 1px 5px; border-radius: 3px;
+  background: var(--bg3); color: var(--text3); border: 1px solid var(--border);
+}
+.lc-tag.val { color: var(--amber); border-color: rgba(232,160,32,.3); background: var(--amber3); }
+.lc-tag.city { color: var(--blue); border-color: rgba(77,144,240,.3); background: var(--blue2); }
+.lc-tag.warn { color: var(--red); border-color: rgba(240,80,96,.3); background: rgba(240,80,96,.08); }
+
+.lc-run {
+  width: 100%; height: 24px;
+  background: transparent; border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: .58rem;
+  cursor: pointer; transition: all .15s; letter-spacing: .04em;
+}
+.lc-run:hover { border-color: var(--amber); color: var(--amber); }
+.lc-run.running { border-color: var(--blue); color: var(--blue); cursor: not-allowed; }
+.lc-run.done    { border-color: var(--green); color: var(--green); }
+
+/* ── RIGHT PANEL ─────────────────────────────────────────── */
+#right {
+  display: flex; flex-direction: column;
+  overflow: hidden; background: var(--bg);
+}
+
+/* right panel header */
+#rph {
+  height: 46px; flex-shrink: 0;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 10px;
+}
+#rph-title {
+  font-family: var(--cond); font-weight: 800; font-size: .95rem;
+  letter-spacing: .1em; color: var(--text2); flex: 1;
+}
+#rph-actions { display: none; align-items: center; gap: 7px; }
+.abtn {
+  height: 26px; padding: 0 10px;
+  background: transparent; border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--text2); font-family: var(--mono); font-size: .58rem;
+  cursor: pointer; transition: all .15s; letter-spacing: .04em;
+}
+.abtn:hover { border-color: var(--text); color: var(--text); }
+.abtn.enrich { border-color: var(--purple); color: var(--purple); }
+.abtn.enrich:hover { background: var(--purple2); }
+.abtn.dork { border-color: var(--blue); color: var(--blue); }
+.abtn.dork:hover { background: var(--blue2); }
+.abtn.save   { border-color: var(--border2); color: var(--text2); }
+.abtn.save:hover { background: var(--surface); }
+.abtn.export { background: var(--amber); border-color: var(--amber); color: #000; font-weight: 700; }
+.abtn.export:hover { background: var(--amber2); }
+
+/* right panel body */
+#rpb { flex: 1; overflow-y: auto; }
+#rpb::-webkit-scrollbar { width: 3px; }
+#rpb::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── WELCOME ─────────────────────────────────────────────── */
+#welcome {
+  height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 40px; padding: 40px;
+}
+.wl-mark {
+  font-family: var(--cond); font-weight: 900;
+  font-size: 5rem; letter-spacing: .2em;
+  color: var(--border2); user-select: none;
+}
+.wl-steps { display: flex; gap: 48px; }
+.wl-step {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-family: var(--cond); font-size: .72rem; letter-spacing: .1em;
+  color: var(--text3); text-align: center;
+}
+.wl-n {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: .65rem; color: var(--text3);
+}
+
+/* ── PIPELINE VIEW ───────────────────────────────────────── */
+#pipeline-view { display: none; padding: 20px; }
+.pv-head { font-family: var(--cond); font-weight: 800; font-size: 1rem; letter-spacing: .1em; color: var(--text2); margin-bottom: 3px; }
+.pv-addr { font-family: var(--mono); font-size: .65rem; color: var(--amber); margin-bottom: 20px; }
+
+/* 6 agent cards in a row */
+.agents-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px; margin-bottom: 16px;
+}
+.agcard {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 5px;
+  padding: 8px 6px; text-align: center;
+}
+.agcard.running {
+  border-color: var(--blue);
+  animation: pulse-ag 1s ease-in-out infinite;
+}
+.agcard.done { border-color: var(--green); background: var(--green2); }
+.agcard.skip { opacity: .3; }
+
+@keyframes pulse-ag {
+  0%,100% { border-color: var(--blue); }
+  50%      { border-color: rgba(77,144,240,.2); }
+}
+
+.agc-icon { font-size: .95rem; margin-bottom: 3px; }
+.agc-name {
+  font-family: var(--cond); font-weight: 700; font-size: .62rem;
+  color: var(--text3); letter-spacing: .06em; margin-bottom: 3px;
+}
+.agc-stat { font-family: var(--mono); font-size: .5rem; color: var(--text3); }
+.agcard.running .agc-stat { color: var(--blue); }
+.agcard.done    .agc-stat { color: var(--green); }
+
+#pipe-log {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 12px; font-family: var(--mono); font-size: .57rem;
+  color: var(--text3); line-height: 1.9; max-height: 160px; overflow-y: auto;
+}
+#pipe-log div { color: var(--text2); }
+#pipe-log div:first-child { color: var(--amber); }
+
+/* ── BRIEF DOCUMENT ──────────────────────────────────────── */
+.bd-hero { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); }
+.bd-grade-row {
+  display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px;
+}
+.bd-grade {
+  font-family: var(--mono); font-size: 2rem; font-weight: 700;
+  width: 58px; height: 58px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; border: 2px solid;
+}
+.bd-grade.gAp, .bd-grade.gA  { color: var(--green); border-color: var(--green); background: var(--green2); }
+.bd-grade.gB   { color: var(--blue); border-color: var(--blue); background: var(--blue2); }
+.bd-grade.gC   { color: var(--amber); border-color: var(--amber); background: var(--amber3); }
+.bd-grade.gD   { color: var(--red); border-color: var(--red); background: rgba(240,80,96,.08); }
+
+.bd-headline {
+  font-family: var(--cond); font-weight: 800; font-size: 1.22rem;
+  color: var(--text); line-height: 1.2; letter-spacing: .02em;
+}
+.bd-tldr {
+  font-family: var(--body); font-size: .82rem; color: var(--text2);
+  line-height: 1.7; margin-bottom: 12px;
+}
+.bd-meta {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.bd-mi { display: flex; flex-direction: column; gap: 2px; }
+.bd-ml { font-family: var(--mono); font-size: .53rem; color: var(--text3); letter-spacing: .05em; }
+.bd-mv { font-family: var(--mono); font-size: .62rem; color: var(--amber); }
+.bd-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+.bd-flag {
+  font-family: var(--mono); font-size: .52rem;
+  padding: 2px 6px; border-radius: 3px;
+  background: var(--bg3); color: var(--text3); border: 1px solid var(--border2);
+  text-transform: uppercase;
+}
+
+/* score strip */
+.score-strip { display: flex; border-bottom: 1px solid var(--border); }
+.ss-col {
+  flex: 1; padding: 9px 6px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.ss-col:last-child { border-right: none; }
+.ss-lbl { font-family: var(--mono); font-size: .5rem; color: var(--text3); letter-spacing: .04em; }
+.ss-val { font-family: var(--cond); font-weight: 900; font-size: 1.05rem; }
+.ss-max { font-family: var(--mono); font-size: .48rem; color: var(--text3); }
+.ss-bar { width: 100%; height: 2px; background: var(--border2); border-radius: 2px; margin-top: 3px; }
+.ss-fill { height: 100%; border-radius: 2px; background: var(--amber); }
+.ss-col.hi .ss-val { color: var(--green); }
+.ss-col.md .ss-val { color: var(--amber); }
+.ss-col.lo .ss-val { color: var(--text2); }
+
+/* brief sections */
+.bsec { padding: 14px 22px; border-bottom: 1px solid var(--border); }
+.bsec-hd {
+  font-family: var(--cond); font-weight: 700; font-size: .68rem;
+  letter-spacing: .1em; color: var(--text3);
+  display: flex; align-items: center; gap: 7px; margin-bottom: 9px;
+}
+.bsec-ico { font-size: .85rem; }
+.bsec-body { font-family: var(--body); font-size: .8rem; color: var(--text2); line-height: 1.7; }
+.bsec-body.hl { color: var(--amber); }
+.bsec-opener { border-left: 2px solid var(--green); padding-left: 12px; color: var(--green); font-style: italic; }
+
+/* ── MONETIZATION SECTION ────────────────────────────────── */
+.monetize-sec {
+  background: linear-gradient(135deg, rgba(232,160,32,.06) 0%, transparent 70%);
+  border-top: 2px solid var(--amber); border-bottom: 1px solid var(--border);
+  padding: 18px 22px;
+}
+.monetize-hd {
+  font-family: var(--cond); font-weight: 800; font-size: .8rem;
+  letter-spacing: .12em; color: var(--amber); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.monetize-summary {
+  font-family: var(--body); font-size: .82rem; color: var(--text);
+  line-height: 1.7; margin-bottom: 14px;
+  border-left: 3px solid var(--amber); padding-left: 12px;
+}
+.monetize-price {
+  display: inline-block; font-family: var(--mono); font-size: .75rem;
+  background: rgba(232,160,32,.15); border: 1px solid rgba(232,160,32,.4);
+  color: var(--amber); padding: 4px 12px; border-radius: 4px; margin-bottom: 14px;
+  letter-spacing: .04em;
+}
+.monetize-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.mtarget {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 14px;
+}
+.mt-type {
+  font-family: var(--mono); font-size: .62rem; color: var(--amber);
+  letter-spacing: .08em; margin-bottom: 4px;
+}
+.mt-why { font-family: var(--body); font-size: .76rem; color: var(--text2); line-height: 1.5; margin-bottom: 4px; }
+.mt-find { font-family: var(--mono); font-size: .6rem; color: var(--text3); }
+.mt-pitch {
+  margin-top: 6px; font-family: var(--body); font-size: .74rem; font-style: italic;
+  color: var(--green); border-left: 2px solid rgba(61,214,140,.4); padding-left: 8px;
+}
+.mt-urgency { font-family: var(--mono); font-size: .58rem; color: var(--red); margin-top: 4px; }
+.monetize-meta {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
+}
+.mm-item {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px;
+}
+.mm-label { font-family: var(--mono); font-size: .54rem; color: var(--text3); letter-spacing: .07em; margin-bottom: 3px; }
+.mm-val { font-family: var(--body); font-size: .74rem; color: var(--text2); line-height: 1.5; }
+.mm-val.amber { color: var(--amber); font-weight: 600; }
+
+/* buyers */
+.buyers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.buyer-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 5px; padding: 11px; }
+.bc-type { font-family: var(--cond); font-weight: 700; font-size: .73rem; color: var(--amber); letter-spacing: .06em; margin-bottom: 3px; }
+.bc-meta { font-family: var(--mono); font-size: .55rem; color: var(--text3); margin-bottom: 6px; }
+.bc-why { font-family: var(--body); font-size: .73rem; color: var(--text2); line-height: 1.5; margin-bottom: 5px; }
+.bc-pitch { font-family: var(--mono); font-size: .6rem; color: var(--text3); border-left: 2px solid var(--border2); padding-left: 7px; line-height: 1.5; }
+
+/* subject lines */
+.subj-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.subj-item {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 7px 10px;
+}
+.subj-n { font-family: var(--mono); font-size: .53rem; color: var(--text3); min-width: 12px; flex-shrink: 0; }
+.subj-txt { font-family: var(--body); font-size: .76rem; color: var(--text); flex: 1; }
+.subj-copy {
+  height: 20px; padding: 0 7px;
+  background: transparent; border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: .53rem;
+  cursor: pointer; transition: all .15s; flex-shrink: 0;
+}
+.subj-copy:hover { border-color: var(--amber); color: var(--amber); }
+
+/* raw toggle */
+.raw-toggle {
+  font-family: var(--mono); font-size: .58rem; color: var(--text3);
+  cursor: pointer; padding: 8px 0 4px; display: inline-block;
+  transition: color .15s;
+}
+.raw-toggle:hover { color: var(--text2); }
+.raw-data {
+  display: none;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px; margin-top: 6px;
+  font-family: var(--mono); font-size: .55rem; color: var(--text3);
+  line-height: 1.6; max-height: 180px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-all;
+}
+
+/* ── DORK PANEL ──────────────────────────────────────────── */
+.dork-sec {
+  padding: 14px 22px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--blue2) 0%, transparent 80%);
+}
+.dork-stage {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: .57rem; letter-spacing: .06em;
+  padding: 3px 8px; border-radius: 3px; margin-bottom: 10px;
+}
+.dork-stage.confirmed { color: var(--green); background: var(--green2); border: 1px solid rgba(61,214,140,.3); }
+.dork-stage.unconfirmed { color: var(--text3); background: var(--bg3); border: 1px solid var(--border); }
+.dork-stage.escalated { color: var(--amber); background: var(--amber3); border: 1px solid rgba(232,160,32,.3); }
+.dork-domain {
+  font-family: var(--mono); font-size: .68rem; color: var(--blue);
+  background: var(--blue2); border: 1px solid rgba(77,144,240,.3);
+  padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px;
+}
+.dork-queries { display: flex; flex-direction: column; gap: 4px; }
+.dq-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 6px 10px;
+}
+.dq-lbl { font-family: var(--mono); font-size: .53rem; color: var(--text3); min-width: 110px; flex-shrink: 0; }
+.dq-q { font-family: var(--mono); font-size: .57rem; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dq-copy {
+  height: 18px; padding: 0 6px; flex-shrink: 0;
+  background: transparent; border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: .5rem;
+  cursor: pointer; transition: all .15s;
+}
+.dq-copy:hover { border-color: var(--blue); color: var(--blue); }
+.dq-open {
+  height: 18px; padding: 0 6px; flex-shrink: 0;
+  background: transparent; border: 1px solid rgba(77,144,240,.4); border-radius: 3px;
+  color: var(--blue); font-family: var(--mono); font-size: .5rem;
+  cursor: pointer; transition: all .15s; text-decoration: none;
+  display: flex; align-items: center;
+}
+.dq-open:hover { background: var(--blue2); }
+
+/* ── ENRICH PANEL ────────────────────────────────────────── */
+.enrich-sec {
+  padding: 14px 22px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--purple2) 0%, transparent 80%);
+}
+.enrich-running {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: .62rem; color: var(--purple);
+}
+.espin {
+  width: 11px; height: 11px;
+  border: 1.5px solid rgba(160,108,240,.3); border-top-color: var(--purple);
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.enrich-rows { display: flex; flex-direction: column; gap: 0; }
+.er {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.03);
+  font-family: var(--mono); font-size: .62rem;
+}
+.er:last-child { border-bottom: none; }
+.er-k { min-width: 88px; color: var(--text3); font-size: .57rem; letter-spacing: .05em; flex-shrink: 0; }
+.er-v { color: var(--text); line-height: 1.5; }
+.er-v.ok  { color: var(--green); }
+.er-v.pub { color: var(--amber); }
+.er-v.nil { color: var(--text3); }
+
+.hemail {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 3px;
+  padding: 5px 8px; margin-top: 3px;
+}
+.he-addr { font-family: var(--mono); font-size: .62rem; color: var(--green); flex: 1; }
+.he-meta { font-family: var(--mono); font-size: .53rem; color: var(--text3); }
+.he-copy {
+  height: 18px; padding: 0 6px;
+  background: transparent; border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); font-family: var(--mono); font-size: .5rem;
+  cursor: pointer; transition: all .15s;
+}
+.he-copy:hover { border-color: var(--green); color: var(--green); }
+
+/* ── SAVED DRAWER ────────────────────────────────────────── */
+#saved-drawer {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 310px;
+  background: var(--bg2); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .25s ease;
+  z-index: 500;
+}
+#saved-drawer.open { transform: translateX(0); }
+#sd-head {
+  height: 46px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 14px; gap: 10px; flex-shrink: 0;
+}
+#sd-head-title {
+  font-family: var(--cond); font-weight: 700; font-size: .88rem;
+  letter-spacing: .1em; color: var(--text2); flex: 1;
+}
+#sd-close {
+  width: 26px; height: 26px;
+  background: transparent; border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--text3); font-size: .75rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+#sd-close:hover { color: var(--text); border-color: var(--border); }
+#sd-list { flex: 1; overflow-y: auto; padding: 8px; }
+.sd-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  padding: 9px; margin-bottom: 5px; cursor: pointer; transition: all .15s;
+}
+.sd-card:hover { border-color: var(--border2); }
+.sd-grade {
+  font-family: var(--mono); font-size: .58rem; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px; margin-bottom: 4px; display: inline-block;
+}
+.sd-addr { font-family: var(--cond); font-weight: 600; font-size: .78rem; color: var(--text); margin-bottom: 2px; }
+.sd-ts   { font-family: var(--mono); font-size: .53rem; color: var(--text3); }
+.sd-del  { float: right; background: transparent; border: none; color: var(--text3); font-size: .65rem; cursor: pointer; padding: 0; }
+.sd-del:hover { color: var(--red); }
+#sd-empty { padding: 30px 14px; text-align: center; font-family: var(--mono); font-size: .6rem; color: var(--text3); line-height: 2; }
+
+/* ── STATUS BAR ──────────────────────────────────────────── */
+#sbar {
+  height: 23px; flex-shrink: 0;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 12px; gap: 14px;
+  font-family: var(--mono); font-size: .57rem; color: var(--text3);
+}
+#sbar-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#sbar-timer { color: var(--amber); min-width: 40px; text-align: right; }
+
+/* ── TOAST ───────────────────────────────────────────────── */
+#toast-container {
+  position: fixed; bottom: 34px; right: 14px;
+  display: flex; flex-direction: column; gap: 5px;
+  pointer-events: none; z-index: 9000;
+}
+.toast-item {
+  font-family: var(--mono); font-size: .62rem;
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); padding: 7px 13px; border-radius: 5px;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .2s, transform .2s;
+  max-width: 280px;
+}
+.toast-item.show { opacity: 1; transform: translateY(0); }
+
 </style>
 </head>
 <body>
+
+<!-- HEADER -->
 <div id="hdr">
   <div id="logo">PERMIT <em>//</em> INTEL</div>
   <div class="hsep"></div>
@@ -241,55 +655,56 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
     <span id="conn-label">CONNECTING…</span>
   </div>
   <div class="hsep"></div>
-  <div class="hstat" id="hdr-model">GROQ</div>
+  <div class="hstat" id="hdr-model">GROQ 70B+8B</div>
   <div class="hsep"></div>
   <div class="hstat" id="hdr-leads">—</div>
   <div class="hsp"></div>
-  <button class="hbtn" onclick="checkHealth()" title="Health">HEALTH</button>
+  <button class="hbtn" onclick="checkHealth()" title="H">HEALTH</button>
   <button class="hbtn" id="btn-saved" onclick="toggleDrawer()">SAVED (0)</button>
-  <button class="hbtn on" id="btn-auto" onclick="toggleAuto()" title="Auto-run top asset after fetch">AUTO-SCORE</button>
+  <button class="hbtn on" id="btn-auto" onclick="toggleAuto()" title="Auto-pipeline top lead on fetch">AUTO-SCORE</button>
 </div>
 
 <div id="layout">
+
+  <!-- LEFT: LEAD LIST -->
   <div id="left">
     <div id="city-tabs">
       <button class="ctab on" onclick="selectCity('chicago',this)">CHI</button>
-      <button class="ctab" onclick="selectCity('seattle',this)">SEA</button>
-      <button class="ctab" onclick="selectCity('cincinnati',this)">CIN</button>
-      <button class="ctab" onclick="selectCity('denver',this)">DEN</button>
-      <button class="ctab" onclick="selectCity('austin',this)">AUS</button>
+      <button class="ctab"    onclick="selectCity('seattle',this)">SEA</button>
+      <button class="ctab"    onclick="selectCity('cincinnati',this)">CIN</button>
+      <button class="ctab"    onclick="selectCity('denver',this)">DEN</button>
+      <button class="ctab"    onclick="selectCity('austin',this)">AUS</button>
     </div>
-
     <div id="frow">
       <span>MIN</span>
-      <input type="range" id="score-slider" min="0" max="90" value="50"/>
+      <input type="range" id="score-slider" min="0" max="90" value="50"
+        oninput="document.getElementById('score-val').textContent=this.value;renderLeads()"/>
       <span id="score-val">50</span>
       <button id="fetch-btn" onclick="fetchLeads()">FETCH</button>
     </div>
-
     <div id="lmeta">
-      <span id="lmeta-label" class="hstat">0 INTEL ASSETS</span>
-      <button id="batch-btn" onclick="runBatch()" title="Auto-score top 3 assets">⚡ BATCH TOP 3</button>
+      <span id="lmeta-label" class="hstat">0 LEADS</span>
+      <button id="batch-btn" onclick="runBatch()" title="Auto-score top 3 leads">&#x26A1; BATCH TOP 3</button>
     </div>
-
     <div id="leads-list">
-      <div class="empty-msg">SELECT A CITY<br/>THEN FETCH PUBLIC PERMITS<br/><br/>RUN PIPELINE ON ANY ASSET<br/>TO GENERATE A SELLABLE BRIEF</div>
+      <div class="empty-msg">SELECT A CITY<br/>THEN FETCH PERMITS<br/><br/>RUN PIPELINE ON ANY<br/>LEAD TO GENERATE A BRIEF</div>
     </div>
   </div>
 
+  <!-- RIGHT: BRIEF -->
   <div id="right">
     <div id="rph">
       <div id="rph-title">INTELLIGENCE BRIEF</div>
       <div id="rph-actions">
-        <button class="abtn save" onclick="saveBrief()">SAVE</button>
-        <button class="abtn" onclick="copyBrief()">COPY</button>
-        <button class="abtn dork" id="btn-dork" onclick="runDork()">🔎 DORK</button>
-        <button class="abtn enrich" id="btn-enrich" onclick="runEnrich()">⬡ ENRICH</button>
+        <button class="abtn save"   onclick="saveBrief()">SAVE</button>
+        <button class="abtn"        onclick="copyBrief()">COPY</button>
+        <button class="abtn dork"   id="btn-dork"   onclick="runDork()">&#x1F50E; DORK</button>
+        <button class="abtn enrich" id="btn-enrich" onclick="runEnrich()">&#x2B21; ENRICH</button>
         <button class="abtn export" onclick="exportBrief()">EXPORT</button>
       </div>
     </div>
-
     <div id="rpb">
+
       <div id="welcome">
         <div class="wl-mark">// INTEL v3.5</div>
         <div class="wl-steps">
@@ -297,33 +712,36 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
           <div class="wl-step"><div class="wl-n">2</div>PIPELINE</div>
           <div class="wl-step"><div class="wl-n">3</div>DORK</div>
           <div class="wl-step"><div class="wl-n">4</div>ENRICH</div>
-          <div class="wl-step"><div class="wl-n">5</div>MONETIZE</div>
+          <div class="wl-step"><div class="wl-n">5</div>SELL</div>
         </div>
         <div style="margin-top:24px;font-family:var(--mono);font-size:.57rem;color:var(--text3);line-height:2">
           <span style="color:var(--border2)">KEYS:</span>&nbsp;
-          <span style="color:var(--text3)">E</span> ENRICH &nbsp;·&nbsp;
-          <span style="color:var(--text3)">D</span> DORK &nbsp;·&nbsp;
-          <span style="color:var(--text3)">S</span> SAVE &nbsp;·&nbsp;
+          <span style="color:var(--text3)">E</span> ENRICH &nbsp;&#xB7;&nbsp;
+          <span style="color:var(--text3)">D</span> DORK &nbsp;&#xB7;&nbsp;
+          <span style="color:var(--text3)">S</span> SAVE &nbsp;&#xB7;&nbsp;
           <span style="color:var(--text3)">C</span> COPY
         </div>
       </div>
 
+      <!-- PIPELINE RUNNING VIEW -->
       <div id="pipeline-view">
         <div class="pv-head">RUNNING PIPELINE</div>
         <div class="pv-addr" id="pv-addr"></div>
         <div class="agents-row">
-          <div class="agcard" id="ag-triage"><div class="agc-icon">🔍</div><div class="agc-name">TRIAGE</div><div class="agc-stat" id="ags-triage">WAITING</div></div>
-          <div class="agcard" id="ag-extract"><div class="agc-icon">⚙️</div><div class="agc-name">EXTRACT</div><div class="agc-stat" id="ags-extract">WAITING</div></div>
-          <div class="agcard" id="ag-score"><div class="agc-icon">📊</div><div class="agc-name">SCORE</div><div class="agc-stat" id="ags-score">WAITING</div></div>
-          <div class="agcard" id="ag-buyer"><div class="agc-icon">🎯</div><div class="agc-name">BUYER</div><div class="agc-stat" id="ags-buyer">WAITING</div></div>
-          <div class="agcard" id="ag-brief"><div class="agc-icon">📄</div><div class="agc-name">BRIEF</div><div class="agc-stat" id="ags-brief">WAITING</div></div>
-          <div class="agcard" id="ag-monetize"><div class="agc-icon">💵</div><div class="agc-name">MONETIZE</div><div class="agc-stat" id="ags-monetize">WAITING</div></div>
+          <div class="agcard" id="ag-triage">  <div class="agc-icon">&#x1F50D;</div><div class="agc-name">TRIAGE</div>  <div class="agc-stat" id="ags-triage">WAITING</div></div>
+          <div class="agcard" id="ag-extract"> <div class="agc-icon">&#x2699;&#xFE0F;</div><div class="agc-name">EXTRACT</div> <div class="agc-stat" id="ags-extract">WAITING</div></div>
+          <div class="agcard" id="ag-score">   <div class="agc-icon">&#x1F4CA;</div><div class="agc-name">SCORE</div>   <div class="agc-stat" id="ags-score">WAITING</div></div>
+          <div class="agcard" id="ag-buyer">   <div class="agc-icon">&#x1F3AF;</div><div class="agc-name">BUYER</div>   <div class="agc-stat" id="ags-buyer">WAITING</div></div>
+          <div class="agcard" id="ag-brief">   <div class="agc-icon">&#x1F4C4;</div><div class="agc-name">BRIEF</div>   <div class="agc-stat" id="ags-brief">WAITING</div></div>
+          <div class="agcard" id="ag-monetize"><div class="agc-icon">&#x1F4B5;</div><div class="agc-name">MONETIZE</div><div class="agc-stat" id="ags-monetize">WAITING</div></div>
         </div>
         <div id="pipe-log"></div>
       </div>
 
+      <!-- BRIEF DOCUMENT -->
       <div id="brief-doc"></div>
-    </div>
+
+    </div><!-- /rpb -->
 
     <div id="sbar">
       <span id="sbar-msg">READY</span>
@@ -331,373 +749,258 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
       <span style="color:var(--border2)">permit-intel-proxy.trev-tce.workers.dev</span>
     </div>
   </div>
-</div>
 
+</div><!-- /layout -->
+
+<!-- SAVED DRAWER -->
 <div id="saved-drawer">
   <div id="sd-head">
     <div id="sd-head-title">SAVED BRIEFS</div>
-    <button id="sd-close" onclick="toggleDrawer()">✕</button>
+    <button id="sd-close" onclick="toggleDrawer()">&#x2715;</button>
   </div>
-  <div id="sd-list"><div id="sd-empty">No saved briefs.<br/>Run pipeline → click SAVE.</div></div>
+  <div id="sd-list"><div id="sd-empty">No saved briefs.<br/>Run pipeline &#x2192; click SAVE.</div></div>
 </div>
 
+<!-- TOAST -->
 <div id="toast-container"></div>
 
 <script>
+// =============================================================================
+// CONFIG
+// =============================================================================
 const WORKER = 'https://permit-intel-proxy.trev-tce.workers.dev';
 
-let city = 'chicago';
-let allLeads = [];
-let selLead = null;
-let pResults = {};
-let enrichCache = {};
-let dorkCache = {};
-let saved = [];
-let running = false;
-let autoScore = true;
-let timerRef = null;
+// =============================================================================
+// STATE
+// =============================================================================
+let city        = 'chicago';
+let allLeads    = [];
+let selLead     = null;
+let pResults    = {};   // id → pipeline data
+let enrichCache = {};   // id → enrichment data
+let dorkCache   = {};   // id → dork data
+let saved       = [];
+let running     = false;
+let autoScore   = true;
+let timerRef    = null;
 
-let capabilityState = {
-  ai_groq: false, app_token: false, hunter_active: false,
-  enrich: true, dork_pass: true, geocode: true, census: true, edgar: true
-};
-
-document.getElementById('score-slider').addEventListener('input', e => {
-  document.getElementById('score-val').textContent = e.target.value;
-  renderLeads();
-});
-
+// =============================================================================
+// INIT
+// =============================================================================
 loadSaved();
 checkHealth();
 
 document.addEventListener('keydown', e => {
-  const tag = (e.target?.tagName || '').toUpperCase();
-  const typing = ['INPUT','TEXTAREA','SELECT'].includes(tag) || e.target?.isContentEditable;
-  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
-
-  if (e.key === 'Escape') {
-    document.getElementById('saved-drawer').classList.remove('open');
-    return;
-  }
-  if (document.getElementById('saved-drawer').classList.contains('open')) return;
-
-  if ((e.key === 'f' || e.key === 'F') && !running) fetchLeads();
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'f' || e.key === 'F') fetchLeads();
   if (e.key === 'h' || e.key === 'H') checkHealth();
+  if (e.key === 'Escape') document.getElementById('saved-drawer').classList.remove('open');
   if ((e.key === 'd' || e.key === 'D') && selLead && pResults[selLead.id]) runDork();
   if ((e.key === 'e' || e.key === 'E') && selLead && pResults[selLead.id]) runEnrich();
   if ((e.key === 's' || e.key === 'S') && selLead && pResults[selLead.id]) saveBrief();
-  if ((e.key === 'c' || e.key === 'C') && selLead && pResults[selLead.id]) copyBrief();
+  if ((e.key === 'c' || e.key === 'C') && selLead && pResults[selLead.id] && !e.ctrlKey && !e.metaKey) copyBrief();
 });
 
-async function api(path, opts = {}) {
-  let res;
-  try {
-    res = await fetch(`${WORKER}${path}`, opts);
-  } catch (e) {
-    throw new Error(`Network failure: ${e.message}`);
-  }
-
-  let payload;
-  try {
-    payload = await res.json();
-  } catch {
-    throw new Error(`Invalid JSON from ${path} (${res.status})`);
-  }
-
-  if (!payload || typeof payload.ok !== 'boolean') {
-    throw new Error(`Invalid API contract from ${path}`);
-  }
-
-  if (!res.ok || !payload.ok) {
-    throw new Error(payload.error || `HTTP ${res.status}`);
-  }
-
-  return payload;
-}
-
-function setStatus(msg) {
-  document.getElementById('sbar-msg').textContent = msg;
-}
-
-function fmt(v) {
-  const n = parseFloat(v);
-  if (!Number.isFinite(n)) return '—';
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
-  return `$${n.toLocaleString()}`;
-}
-
-function gradeClass(g) {
-  if (g === 'A+') return 'gAp';
-  if (g === 'A') return 'gA';
-  if (g === 'B') return 'gB';
-  if (g === 'C') return 'gC';
-  return 'gD';
-}
-
-function esc(s) {
-  if (s == null) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/`/g,'&#96;')
-    .replace(/\${/g,'&#36;{');
-}
-function safeArray(v){ return Array.isArray(v) ? v : []; }
-function safeObj(v){ return v && typeof v === 'object' ? v : {}; }
-
-function copyTxt(text) {
-  const value = String(text || '');
-  if (!value) return;
-  navigator.clipboard.writeText(value).catch(() => {
-    const t = document.createElement('textarea');
-    t.value = value;
-    t.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(t);
-    t.select();
-    document.execCommand('copy');
-    t.remove();
-  });
-}
-
-function toast(msg) {
-  const c = document.getElementById('toast-container');
-  const el = document.createElement('div');
-  el.className = 'toast-item';
-  el.textContent = String(msg || '');
-  c.appendChild(el);
-  requestAnimationFrame(() => el.classList.add('show'));
-  setTimeout(() => {
-    el.classList.remove('show');
-    setTimeout(() => el.remove(), 250);
-  }, 2800);
-}
-
-function toggleRaw(el) {
-  const d = el.nextElementSibling;
-  if (!d) return;
-  const open = d.style.display === 'block';
-  d.style.display = open ? 'none' : 'block';
-  el.textContent = open ? '▸ RAW PERMIT DATA' : '▾ RAW PERMIT DATA';
-}
-
+// =============================================================================
+// HEALTH
+// =============================================================================
 async function checkHealth() {
   const dot = document.getElementById('conn-dot');
   const lbl = document.getElementById('conn-label');
-
   try {
-    const res = await api('/api/health');
-    const d = res.data || {};
-    capabilityState = safeObj(d.capabilities);
-
-    dot.className = 'hdot live';
-    lbl.textContent = 'CONNECTED';
-    lbl.style.color = '';
-
-    document.getElementById('hdr-model').textContent = d.model || 'GROQ';
-    setStatus(`v${d.version || '—'} // GROQ:${capabilityState.ai_groq ? '✓' : '✗'} DORK:${capabilityState.dork_pass ? '✓' : '✗'} ENRICH:${capabilityState.enrich ? '✓' : '✗'} HUNTER:${capabilityState.hunter_active ? 'ACTIVE' : 'OFF'}`);
-  } catch (e) {
-    dot.className = 'hdot dead';
-    lbl.textContent = 'OFFLINE';
-    lbl.style.color = 'var(--red)';
+    const d = await fetch(`${WORKER}/api/health`).then(r => r.json());
+    if (d.ok) {
+      const h = d.data || d; // v3.5 nests under data; v3.4 was flat
+      dot.className = 'hdot live'; lbl.textContent = 'CONNECTED'; lbl.style.color = '';
+      const modelEl = document.getElementById('hdr-model');
+      if (modelEl) modelEl.textContent = h.model?.includes('→') ? 'GROQ 70B+8B' : (h.model || 'GROQ');
+      const caps = h.capabilities || h;
+      setStatus(`v${h.version} // GROQ:${caps.ai_groq?'✓':'✗'} DORK:✓ ENRICH:✓ HUNTER:${caps.hunter_active?'ACTIVE':'—'} CITIES:${(h.sources||[]).map(s=>s.id.toUpperCase()).join(',')}`);
+    } else {
+      dot.className = 'hdot warn'; lbl.textContent = 'DEGRADED';
+    }
+  } catch(e) {
+    dot.className = 'hdot dead'; lbl.textContent = 'OFFLINE'; lbl.style.color = 'var(--red)';
     setStatus(`WORKER OFFLINE: ${e.message}`);
   }
 }
 
+// =============================================================================
+// CITY SELECT
+// =============================================================================
 function selectCity(c, el) {
   city = c;
   document.querySelectorAll('.ctab').forEach(t => t.classList.remove('on'));
-  if (el) el.classList.add('on');
-
-  allLeads = [];
-  pResults = {};
-  enrichCache = {};
-  dorkCache = {};
-  selLead = null;
-
-  renderLeads();
-  showWelcome();
+  el.classList.add('on');
+  allLeads = []; pResults = {}; enrichCache = {}; dorkCache = {}; selLead = null;
+  renderLeads(); showWelcome();
   setStatus(`CITY: ${c.toUpperCase()} — PRESS FETCH`);
 }
 
+// =============================================================================
+// FETCH
+// =============================================================================
 async function fetchLeads() {
   const btn = document.getElementById('fetch-btn');
-  btn.disabled = true;
-  btn.textContent = '…';
+  btn.disabled = true; btn.textContent = '…';
   setStatus(`FETCHING ${city.toUpperCase()}…`);
-
   try {
-    const res = await api(`/api/permits?source=${encodeURIComponent(city)}&limit=30`);
-    const d = res.data || {};
-    allLeads = safeArray(d.permits);
-
-    document.getElementById('hdr-leads').textContent = `${allLeads.length} ${city.toUpperCase()} ASSETS`;
-    renderLeads();
-
-    try { localStorage.setItem(`pi:${city}`, JSON.stringify(allLeads)); } catch {}
-
-    if (res.warning) {
-      setStatus(`⚠ ${res.warning}`);
-      toast(res.warning);
+    const d = await fetch(`${WORKER}/api/permits?source=${city}&limit=30`).then(r => r.json());
+    if (!d.ok) throw new Error(d.error || 'fetch failed');
+    const pd = d.data || d; allLeads = pd.permits || [];
+    const hdrLeads = document.getElementById('hdr-leads');
+    if (hdrLeads) hdrLeads.textContent = `${allLeads.length} ${city.toUpperCase()} LEADS`;
+    // Show warning if soft-fail (e.g. Denver endpoint down)
+    if (d.warning) {
+      setStatus(`⚠ ${d.warning}`);
+      toast(`⚠ ${d.warning.slice(0, 60)}`);
     } else {
-      setStatus(`${allLeads.length} PUBLIC PERMITS FROM ${city.toUpperCase()}`);
-      toast(`${allLeads.length} assets loaded`);
+      setStatus(`${allLeads.length} PERMITS FROM ${city.toUpperCase()}`);
+      toast(`${allLeads.length} permits loaded`);
     }
-
+    renderLeads();
+    try { localStorage.setItem(`pi:${city}`, JSON.stringify(allLeads)); } catch(_) {}
     if (autoScore && allLeads.length) {
-      const top = [...allLeads].sort((a,b) => (b.raw_score||0)-(a.raw_score||0))[0];
+      const top = [...allLeads].sort((a,b) => b.raw_score - a.raw_score)[0];
       if (top) setTimeout(() => runPipeline(top.id), 300);
     }
-  } catch (e) {
+  } catch(e) {
     setStatus(`FETCH ERROR: ${e.message}`);
     try {
-      const cached = JSON.parse(localStorage.getItem(`pi:${city}`) || 'null');
-      if (Array.isArray(cached)) {
-        allLeads = cached;
-        renderLeads();
-        toast('Loaded cached assets');
-      }
-    } catch {}
+      const c = JSON.parse(localStorage.getItem(`pi:${city}`) || 'null');
+      if (c) { allLeads = c; renderLeads(); toast('Loaded from cache'); }
+    } catch(_) {}
     toast(`Error: ${e.message}`);
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'FETCH';
+    btn.disabled = false; btn.textContent = 'FETCH';
   }
 }
 
+// =============================================================================
+// RENDER LEADS
+// =============================================================================
 function renderLeads() {
   const list = document.getElementById('leads-list');
-  const min = parseInt(document.getElementById('score-slider').value, 10) || 0;
-  const vis = allLeads.filter(l => (l?.raw_score || 0) >= min);
+  const min  = parseInt(document.getElementById('score-slider').value);
+  const vis  = allLeads.filter(l => l.raw_score >= min);
 
-  document.getElementById('lmeta-label').textContent = `${vis.length} INTEL ASSETS · ${city.toUpperCase()}`;
+  document.getElementById('lmeta-label').textContent = `${vis.length} LEADS${city ? ' · ' + city.toUpperCase() : ''}`;
 
   if (!vis.length) {
     list.innerHTML = allLeads.length
-      ? '<div class="empty-msg">NO ASSETS ABOVE FILTER</div>'
+      ? '<div class="empty-msg">NO LEADS ABOVE FILTER</div>'
       : '<div class="empty-msg">PRESS FETCH</div>';
     return;
   }
 
   list.innerHTML = vis.map(lead => {
-    const ai = pResults[lead.id];
-    const grade = ai?.grade || ai?.pipeline?.scored?.grade || '';
-    const gc = gradeClass(grade);
+    const ai    = pResults[lead.id];
+    const grade = ai?.pipeline?.scored?.grade || '';
+    const gc    = gradeClass(grade);
     const badge = grade
       ? `<span class="lc-badge ${gc}">${grade}</span>`
-      : `<span class="lc-badge raw">${lead.raw_score ?? '—'}</span>`;
+      : `<span class="lc-badge raw">${lead.raw_score}</span>`;
 
-    const run = running && selLead?.id === lead.id;
-    const done = !!ai;
-    const cc = `lcard${selLead?.id === lead.id ? ' sel' : ''}${done ? ' done' : ''}${run ? ' running' : ''}`;
-    const btnTxt = run ? '● RUNNING…' : done ? '✓ VIEW BRIEF' : '▶ GENERATE INTEL';
-    const btnCls = `lc-run${run ? ' running' : done ? ' done' : ''}`;
+    const run    = running && selLead?.id === lead.id;
+    const done   = !!ai;
+    const cc     = `lcard${selLead?.id===lead.id?' sel':''}${done?' done':''}${run?' running':''}`;
+    const btnTxt = run ? '&#x25CF; RUNNING&#x2026;' : done ? '&#x2713; VIEW BRIEF' : '&#x25B6; RUN PIPELINE';
+    const btnCls = `lc-run${run?' running':done?' done':''}`;
 
-    const valTag = lead.value ? `<span class="lc-tag val">${fmt(lead.value)}</span>` : '';
-    const typeTag = lead.permit_type ? `<span class="lc-tag">${esc(String(lead.permit_type).slice(0, 22))}</span>` : '';
+    const valTag  = lead.value ? `<span class="lc-tag val">${fmt(lead.value)}</span>` : '';
+    const typeTag = lead.permit_type ? `<span class="lc-tag">${esc(lead.permit_type.slice(0,22))}</span>` : '';
     const cityTag = lead.city
-      ? `<span class="lc-tag city">${esc(String(lead.city).toUpperCase())}</span>`
-      : `<span class="lc-tag">${esc(String(lead.source || '').toUpperCase())}</span>`;
+      ? `<span class="lc-tag city">${esc(lead.city.toUpperCase())}</span>`
+      : `<span class="lc-tag">${lead.source.toUpperCase()}</span>`;
 
     return `<div class="${cc}" onclick="selectLead('${lead.id}')">
-      <div class="lc-row1"><div class="lc-addr">${esc(lead.address || '(address unavailable)')}</div>${badge}</div>
-      <div class="lc-tags">${cityTag}${typeTag}${valTag}</div>
-      <button class="${btnCls}" onclick="event.stopPropagation();runPipeline('${lead.id}')" ${run ? 'disabled' : ''}>${btnTxt}</button>
-    </div>`;
+  <div class="lc-row1"><div class="lc-addr">${esc(lead.address)}</div>${badge}</div>
+  <div class="lc-tags">${cityTag}${typeTag}${valTag}</div>
+  <button class="${btnCls}" onclick="event.stopPropagation();runPipeline('${lead.id}')" ${run?'disabled':''}>
+    ${btnTxt}
+  </button>
+</div>`;
   }).join('');
 }
 
+// =============================================================================
+// SELECT LEAD
+// =============================================================================
 function selectLead(id) {
-  selLead = allLeads.find(l => l.id === id) || selLead;
+  selLead = allLeads.find(l => l.id === id) || null;
   renderLeads();
-
   const ai = pResults[id];
-  if (!ai || !ai.pipeline) {
-    showWelcome();
-    return;
-  }
-
+  if (!ai) { showWelcome(); return; }
   try {
-    renderBrief(ai, selLead || ai._lead || null);
-  } catch (e) {
+    renderBrief(ai, selLead);
+  } catch(e) {
     document.getElementById('welcome').style.display = 'none';
     document.getElementById('pipeline-view').style.display = 'none';
     document.getElementById('brief-doc').style.display = '';
-    document.getElementById('brief-doc').innerHTML = `<div style="padding:24px;font-family:var(--mono);font-size:.7rem;color:var(--red)">⚠ RENDER ERROR: ${esc(e.message)}<br/><br/>Try re-running pipeline.</div>`;
+    document.getElementById('brief-doc').innerHTML = `<div style="padding:24px;font-family:var(--mono);font-size:.7rem;color:var(--red)">&#x26A0; RENDER ERROR: ${esc(e.message)}<br/><br/>Try re-running the pipeline for this lead.</div>`;
     document.getElementById('rph-title').textContent = 'RENDER ERROR';
+    console.error('renderBrief failed:', e);
   }
 }
 
+// =============================================================================
+// PIPELINE
+// =============================================================================
 async function runPipeline(id) {
   if (running) { toast('Pipeline already running'); return; }
-  const lead = allLeads.find(l => l.id === id) || (saved.find(s => s.id === id)?.lead ?? null);
-  if (!lead) { toast('Asset not found'); return; }
+  const lead = allLeads.find(l => l.id === id);
+  if (!lead) return;
 
   selLead = lead;
   running = true;
-
   const t0 = Date.now();
   timerRef = setInterval(() => {
-    document.getElementById('sbar-timer').textContent = `${((Date.now() - t0) / 1000).toFixed(1)}s`;
+    document.getElementById('sbar-timer').textContent = `${((Date.now()-t0)/1000).toFixed(1)}s`;
   }, 100);
 
-  renderLeads();
-  showPipelineView(lead);
-  setStatus(`PIPELINE: ${lead.address || 'selected asset'}`);
-  agSet('triage', 'RUNNING…');
+  renderLeads(); showPipelineView(lead);
+  setStatus(`PIPELINE: ${lead.address}`);
+  agSet('triage','RUNNING…');
 
   try {
-    const res = await api('/api/pipeline', {
+    const d = await fetch(`${WORKER}/api/pipeline`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ permit: lead._raw || lead, source: lead.source || city })
-    });
+      body: JSON.stringify({ permit: lead._raw || lead, source: lead.source }),
+    }).then(r => r.json());
 
-    const d = res.data || {};
-    const p = safeObj(d.pipeline);
+    // v3.5 wraps payload under d.data; v3.4 was flat — support both
+    const pd = d.data || d;
+    if (pd.skipped) {
+      agDone('triage'); agSkip(['extract','score','buyer','brief','monetize']);
+      logPipe(`&#x26A0; TRIAGE: ${pd.pipeline?.triage?.reason || pd.triage?.reason}`);
+      setStatus('TRIAGE: SKIPPED'); toast('Lead skipped by triage');
+    } else if (d.ok) {
+      const p = pd.pipeline;
+      agDone('triage');    agSet('extract','RUNNING…');
+      logPipe(`&#x2713; TRIAGE: ${p.triage?.permit_category} — ${p.triage?.value_tier}`);
+      agDone('extract');   agSet('score','RUNNING…');
+      logPipe(`&#x2713; EXTRACT: ${p.extracted?.business_name||p.extracted?.applicant_name||'unnamed'} @ ${p.extracted?.address_clean}`);
+      agDone('score');     agSet('buyer','RUNNING…');
+      logPipe(`&#x2713; SCORE: ${p.scored?.total_score}/100 — Grade ${p.scored?.grade} — ${(p.scored?.urgency||'').toUpperCase()}`);
+      agDone('buyer');     agSet('brief','RUNNING…');
+      logPipe(`&#x2713; BUYERS: ${p.buyers?.primary_buyer} · ${(p.buyers?.buyers||[]).length} segments`);
+      agDone('brief');     agSet('monetize','RUNNING…');
+      logPipe(`&#x2713; BRIEF: "${p.brief?.headline}"`);
+      agDone('monetize');
+      logPipe(`&#x2713; MONETIZE: ${p.monetize?.best_channel_to_sell||'—'} · ${p.monetize?.lead_price_range||'—'}`);
 
-    if (d.skipped) {
-      agDone('triage');
-      agSkip(['extract','score','buyer','brief','monetize']);
-      logPipe(`⚠ TRIAGE: ${p?.triage?.reason || p?.deterministic_gate?.reason || 'skipped'}`);
-      setStatus('TRIAGE: SKIPPED');
-      toast('Asset skipped by gate');
-      pResults[id] = { ...d, _lead: lead };
-      renderLeads();
-      return;
+      pResults[id] = d;
+      renderLeads(); renderBrief(d, lead);
+      setStatus(`COMPLETE — GRADE ${pd.grade} — ${pd.score}/100 — ${(pd.elapsed_ms/1000).toFixed(1)}s`);
+      toast(`Grade ${pd.grade} brief ready`);
+      document.getElementById('rph-actions').style.display = 'flex';
+    } else {
+      throw new Error(d.error || 'Unknown pipeline error');
     }
-
-    agDone('triage'); agSet('extract','RUNNING…');
-    logPipe(`✓ TRIAGE: ${p?.triage?.permit_category || 'commercial'} — ${p?.triage?.value_tier || 'unknown'}`);
-
-    agDone('extract'); agSet('score','RUNNING…');
-    logPipe(`✓ EXTRACT: ${(p?.extracted?.business_name || p?.extracted?.applicant_name || 'unnamed')} @ ${p?.extracted?.address_clean || lead.address || '—'}`);
-
-    agDone('score'); agSet('buyer','RUNNING…');
-    logPipe(`✓ SCORE: ${p?.scored?.total_score ?? '—'}/100 — Grade ${p?.scored?.grade || '—'} — ${(p?.scored?.urgency || '').toUpperCase()}`);
-
-    agDone('buyer'); agSet('brief','RUNNING…');
-    logPipe(`✓ BUYERS: ${p?.buyers?.primary_buyer || '—'} · ${safeArray(p?.buyers?.buyers).length} segments`);
-
-    agDone('brief'); agSet('monetize','RUNNING…');
-    logPipe(`✓ BRIEF: "${p?.brief?.headline || 'Untitled'}"`);
-
-    agDone('monetize');
-    logPipe(`✓ MONETIZE: ${p?.monetize?.best_channel_to_sell || '—'} · ${p?.monetize?.lead_price_range || '—'}`);
-
-    pResults[id] = { ...d, _lead: lead };
-    renderLeads();
-    renderBrief(pResults[id], lead);
-
-    setStatus(`COMPLETE — GRADE ${d.grade || '—'} — ${d.score ?? '—'}/100 — ${((d.elapsed_ms || 0) / 1000).toFixed(1)}s`);
-    toast(`Grade ${d.grade || '—'} brief ready`);
-    document.getElementById('rph-actions').style.display = 'flex';
-  } catch (e) {
+  } catch(e) {
     setStatus(`ERROR: ${e.message}`);
-    logPipe(`✗ ${e.message}`);
+    logPipe(`&#x2717; ${e.message}`);
     toast(`Error: ${e.message}`);
   } finally {
     running = false;
@@ -707,26 +1010,38 @@ async function runPipeline(id) {
   }
 }
 
+// =============================================================================
+// BATCH
+// =============================================================================
 async function runBatch() {
   if (running) { toast('Pipeline running — wait'); return; }
-  if (!allLeads.length) { toast('Fetch assets first'); return; }
-
-  const leads = [...allLeads]
-    .filter(l => !pResults[l.id])
-    .sort((a,b) => (b.raw_score||0) - (a.raw_score||0))
-    .slice(0,3);
-
-  if (!leads.length) { toast('All visible assets already processed'); return; }
-
-  toast(`⚡ Batch starting: ${leads.length} assets`);
-  for (const lead of leads) {
-    await runPipeline(lead.id);
-    await sleep(3000);
+  if (!allLeads.length) { toast('Fetch leads first'); return; }
+  const leads = [...allLeads].filter(l => !pResults[l.id]).sort((a,b) => b.raw_score - a.raw_score).slice(0,3);
+  if (!leads.length) { toast('All leads already processed'); return; }
+  toast(`&#x26A1; Batch: ${leads.length} leads — running sequentially…`);
+  let rateLimitHits = 0;
+  for (const l of leads) {
+    await runPipeline(l.id);
+    const d = pResults[l.id];
+    const pd2 = d?.data || d;
+    const wasRateLimited = !d || (typeof pd2?.score === 'undefined' && !pd2?.grade);
+    if (wasRateLimited) {
+      rateLimitHits++;
+      const backoff = Math.min(rateLimitHits * 25000, 60000);
+      toast(`Rate limited — waiting ${Math.round(backoff/1000)}s before next…`);
+      await sleep(backoff);
+    } else {
+      rateLimitHits = 0;
+      await sleep(4000);
+    }
   }
   toast('Batch complete');
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// =============================================================================
+// VIEWS
+// =============================================================================
 function showWelcome() {
   document.getElementById('welcome').style.display = '';
   document.getElementById('pipeline-view').style.display = 'none';
@@ -740,38 +1055,29 @@ function showPipelineView(lead) {
   document.getElementById('pipeline-view').style.display = '';
   document.getElementById('brief-doc').style.display = 'none';
   document.getElementById('rph-title').textContent = 'RUNNING PIPELINE…';
-  document.getElementById('pv-addr').textContent = lead?.address || '(address unavailable)';
+  document.getElementById('pv-addr').textContent = lead.address;
   document.getElementById('pipe-log').innerHTML = '';
-
   ['triage','extract','score','buyer','brief','monetize'].forEach(n => {
-    const card = document.getElementById(`ag-${n}`);
-    const stat = document.getElementById(`ags-${n}`);
-    if (card) card.className = 'agcard';
-    if (stat) stat.textContent = 'WAITING';
+    document.getElementById(`ag-${n}`).className = 'agcard';
+    document.getElementById(`ags-${n}`).textContent = 'WAITING';
   });
 }
 
 function agSet(n, s) {
-  const c = document.getElementById(`ag-${n}`);
-  const stat = document.getElementById(`ags-${n}`);
-  if (!c || !stat) return;
+  const c = document.getElementById(`ag-${n}`); if(!c) return;
   c.className = 'agcard running';
-  stat.textContent = s;
+  document.getElementById(`ags-${n}`).textContent = s;
 }
 function agDone(n) {
-  const c = document.getElementById(`ag-${n}`);
-  const stat = document.getElementById(`ags-${n}`);
-  if (!c || !stat) return;
+  const c = document.getElementById(`ag-${n}`); if(!c) return;
   c.className = 'agcard done';
-  stat.textContent = 'DONE';
+  document.getElementById(`ags-${n}`).textContent = 'DONE';
 }
-function agSkip(names) {
-  names.forEach(n => {
-    const c = document.getElementById(`ag-${n}`);
-    const stat = document.getElementById(`ags-${n}`);
-    if (!c || !stat) return;
+function agSkip(ns) {
+  ns.forEach(n => {
+    const c = document.getElementById(`ag-${n}`); if(!c) return;
     c.className = 'agcard skip';
-    stat.textContent = 'SKIPPED';
+    document.getElementById(`ags-${n}`).textContent = 'SKIPPED';
   });
 }
 function logPipe(msg) {
@@ -780,596 +1086,599 @@ function logPipe(msg) {
   el.scrollTop = el.scrollHeight;
 }
 
+// =============================================================================
+// RENDER BRIEF
+// =============================================================================
 function renderBrief(data, lead) {
-  const p = safeObj(data?.pipeline);
-  const ex = safeObj(p.extracted);
-  const sc = safeObj(p.scored);
-  const by = safeObj(p.buyers);
-  const br = safeObj(p.brief);
-  const bk = safeObj(sc.breakdown);
-  const mn = safeObj(p.monetize);
-  const gate = safeObj(p.deterministic_gate);
-
-  const enr = enrichCache[lead?.id];
-  const dork = dorkCache[lead?.id];
+  const pd = data.data || data; // v3.5 nests under data; v3.4 was flat
+  const p  = pd.pipeline || data.pipeline;
+  const ex = p.extracted || {};
+  const sc = p.scored    || {};
+  const by = p.buyers    || {};
+  const br = p.brief     || {};
+  const bk = sc.breakdown || {};
+  const mn = p.monetize  || {};
 
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('pipeline-view').style.display = 'none';
   document.getElementById('brief-doc').style.display = '';
-  document.getElementById('rph-title').textContent = `BRIEF // GRADE ${sc.grade || '—'}`;
+  document.getElementById('rph-title').textContent = `BRIEF // GRADE ${sc.grade||'?'}`;
   document.getElementById('rph-actions').style.display = 'flex';
 
   const gc = gradeClass(sc.grade);
 
+  // Score strip
   const srows = [
-    { l:'IDENTITY', v:bk.identity || 0, m:25 },
-    { l:'SCALE', v:bk.scale || 0, m:25 },
-    { l:'INTENT', v:bk.commercial_intent || 0, m:25 },
-    { l:'CONTACT', v:bk.contact_richness || 0, m:15 },
-    { l:'TIMING', v:bk.timing || 0, m:10 }
+    { l:'IDENTITY', v:bk.identity||0, m:25 },
+    { l:'SCALE',    v:bk.scale||0,    m:25 },
+    { l:'INTENT',   v:bk.commercial_intent||0, m:25 },
+    { l:'CONTACT',  v:bk.contact_richness||0,  m:15 },
+    { l:'TIMING',   v:bk.timing||0,   m:10 },
   ];
-
   const stripHtml = srows.map(r => {
-    const pct = r.m ? Math.round((r.v / r.m) * 100) : 0;
-    const tier = pct >= 80 ? 'hi' : pct >= 50 ? 'md' : 'lo';
+    const pct  = r.m ? Math.round(r.v/r.m*100) : 0;
+    const tier = pct>=80?'hi':pct>=50?'md':'lo';
     return `<div class="ss-col ${tier}">
-      <div class="ss-lbl">${r.l}</div>
-      <div class="ss-val">${r.v}</div>
-      <div class="ss-max">/${r.m}</div>
-      <div class="ss-bar"><div class="ss-fill" style="width:${pct}%"></div></div>
-    </div>`;
+  <div class="ss-lbl">${r.l}</div>
+  <div class="ss-val">${r.v}</div>
+  <div class="ss-max">/${r.m}</div>
+  <div class="ss-bar"><div class="ss-fill" style="width:${pct}%"></div></div>
+</div>`;
   }).join('');
 
-  const buyerHtml = safeArray(by.buyers).slice(0,4).map(b => `
-    <div class="buyer-card">
-      <div class="bc-type">${esc(b.type || '')}</div>
-      <div class="bc-meta">FIT: ${b.fit_score ?? '—'}/100 · ${esc(b.time_window || '')}</div>
-      <div class="bc-why">${esc(b.why || '')}</div>
-      <div class="bc-pitch">${esc(b.pitch_angle || '')}</div>
-    </div>
-  `).join('');
+  // Buyers grid
+  const buyerHtml = (by.buyers||[]).slice(0,4).map(b => `
+<div class="buyer-card">
+  <div class="bc-type">${esc(b.type||'')}</div>
+  <div class="bc-meta">FIT: ${b.fit_score||'—'}/100 &middot; ${esc(b.time_window||'')}</div>
+  <div class="bc-why">${esc(b.why||'')}</div>
+  <div class="bc-pitch">${esc(b.pitch_angle||'')}</div>
+</div>`).join('');
 
-  const subjHtml = safeArray(br.subject_lines).slice(0,5).map((s,i) => `
-    <li class="subj-item">
-      <span class="subj-n">${i+1}</span>
-      <span class="subj-txt">${esc(s)}</span>
-      <button class="subj-copy" onclick="copyTxt(${JSON.stringify(String(s))})">COPY</button>
-    </li>
-  `).join('');
+  // Subject lines
+  const subjHtml = (br.subject_lines||[]).slice(0,5).map((s,i) => `
+<li class="subj-item">
+  <span class="subj-n">${i+1}</span>
+  <span class="subj-txt">${esc(s)}</span>
+  <button class="subj-copy" onclick="copyTxt(${JSON.stringify(s)})">COPY</button>
+</li>`).join('');
 
-  const flagsHtml = safeArray(ex.special_flags).map(f => `<span class="bd-flag">${esc(f)}</span>`).join('');
+  // Flags + red flags
+  const flagsHtml = (ex.special_flags||[]).map(f => `<span class="bd-flag">${esc(f)}</span>`).join('');
+  const redfHtml  = (sc.red_flags||[]).length
+    ? `<div style="margin-top:8px;font-family:var(--mono);font-size:.6rem;color:var(--red)">&#x26A0; ${esc((sc.red_flags||[]).join(' · '))}</div>` : '';
 
-  const redfHtml = safeArray(sc.red_flags).length
-    ? `<div style="margin-top:8px;font-family:var(--mono);font-size:.6rem;color:var(--red)">⚠ ${esc(safeArray(sc.red_flags).join(' · '))}</div>`
-    : '';
-
-  const mtargetHtml = safeArray(mn.target_buyers).slice(0,4).map(t => {
+  // Monetization targets
+  const mtargetHtml = (mn.target_buyers||[]).slice(0,4).map(t => {
     const ch = t.outreach_channel ? `<span style="font-family:var(--mono);font-size:.57rem;color:var(--blue);margin-left:6px">${esc(t.outreach_channel)}</span>` : '';
     return `<div class="mtarget">
-      <div class="mt-type">${esc(t.buyer_type || '')}${ch}</div>
-      <div class="mt-why">${esc(t.why_they_pay || '')}</div>
-      <div class="mt-find">📍 ${esc(t.how_to_find_them || '')}</div>
-      <div class="mt-pitch">"${esc(t.pitch_hook || '')}"</div>
-      <div class="mt-urgency">⏱ ${esc(t.urgency_to_buyer || '')}</div>
-    </div>`;
+  <div class="mt-type">${esc(t.buyer_type||'')}${ch}</div>
+  <div class="mt-why">${esc(t.why_they_pay||'')}</div>
+  <div class="mt-find">&#x1F4CD; ${esc(t.how_to_find_them||'')}</div>
+  <div class="mt-pitch">"${esc(t.pitch_hook||'')}"</div>
+  <div class="mt-urgency">&#x23F1; ${esc(t.urgency_to_buyer||'')}</div>
+</div>`;
   }).join('');
 
+  // Enrichment / dork sections (pre-loaded if already run)
+  const enr  = enrichCache[lead.id];
+  const dork = dorkCache[lead.id];
+
   document.getElementById('brief-doc').innerHTML = `
-    <div class="bd-hero">
-      <div class="bd-grade-row">
-        <div class="bd-grade ${gc}">${sc.grade || '—'}</div>
-        <div class="bd-headline">${esc(br.headline || 'UNTITLED')}</div>
-      </div>
-      <div class="bd-tldr">${esc(br.tldr || '')}</div>
-      <div class="bd-meta">
-        <div class="bd-mi"><span class="bd-ml">PERMIT</span><span class="bd-mv">${esc(ex.permit_number || lead?.permit_number || '—')}</span></div>
-        <div class="bd-mi"><span class="bd-ml">ADDRESS</span><span class="bd-mv">${esc(ex.address_clean || lead?.address || '—')}</span></div>
-        <div class="bd-mi"><span class="bd-ml">VALUE</span><span class="bd-mv">${ex.estimated_value ? fmt(ex.estimated_value) : '—'}</span></div>
-        <div class="bd-mi"><span class="bd-ml">SCORE</span><span class="bd-mv">${sc.total_score ?? '—'}/100</span></div>
-        <div class="bd-mi"><span class="bd-ml">URGENCY</span><span class="bd-mv">${esc(String(sc.urgency || '—').toUpperCase())}</span></div>
-        <div class="bd-mi"><span class="bd-ml">SELL TO</span><span class="bd-mv">${esc(by.primary_buyer || '—')}</span></div>
-      </div>
-      ${flagsHtml ? `<div class="bd-flags">${flagsHtml}</div>` : ''}
-    </div>
+<div class="bd-hero">
+  <div class="bd-grade-row">
+    <div class="bd-grade ${gc}">${sc.grade||'?'}</div>
+    <div class="bd-headline">${esc(br.headline||'UNTITLED')}</div>
+  </div>
+  <div class="bd-tldr">${esc(br.tldr||'')}</div>
+  <div class="bd-meta">
+    <div class="bd-mi"><span class="bd-ml">PERMIT</span>  <span class="bd-mv">${esc(ex.permit_number||lead.permit_number||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">ADDRESS</span> <span class="bd-mv">${esc(ex.address_clean||lead.address||'&#x2014;')}</span></div>
+    <div class="bd-mi"><span class="bd-ml">VALUE</span>   <span class="bd-mv">${ex.estimated_value?fmt(ex.estimated_value):'&#x2014;'}</span></div>
+    <div class="bd-mi"><span class="bd-ml">SCORE</span>   <span class="bd-mv">${sc.total_score||'&#x2014;'}/100</span></div>
+    <div class="bd-mi"><span class="bd-ml">URGENCY</span> <span class="bd-mv">${(sc.urgency||'&#x2014;').toUpperCase()}</span></div>
+    <div class="bd-mi"><span class="bd-ml">SELL TO</span> <span class="bd-mv">${esc(by.primary_buyer||'&#x2014;')}</span></div>
+  </div>
+  ${flagsHtml?`<div class="bd-flags">${flagsHtml}</div>`:''}
+</div>
 
-    <div class="score-strip">${stripHtml}</div>
+<div class="score-strip">${stripHtml}</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">🧭</span>SCORING TRANSPARENCY</div>
-      <div class="bsec-body">
-        Deterministic gate score: <strong style="color:var(--amber)">${gate.gate_score ?? '—'}</strong><br/>
-        Positive signals: ${esc(safeArray(gate.signals).join(' · ') || '—')}<br/>
-        Disqualifiers checked: ${esc(safeArray(gate.disqualifiers).join(' · ') || 'none recorded')}
-      </div>
+<div class="monetize-sec">
+  <div class="monetize-hd">&#x1F4B5; MONETIZATION PLAYBOOK &#x2014; HOW TO SELL THIS INTEL</div>
+  <div class="monetize-summary">${esc(mn.monetization_summary||'Run pipeline to generate monetization strategy.')}</div>
+  ${mn.lead_price_range ? `<div class="monetize-price">PRICE THIS LEAD AT: ${esc(mn.lead_price_range)}</div>` : ''}
+  <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.07em;margin-bottom:8px">WHO WILL BUY THIS INTEL FROM YOU</div>
+  <div class="monetize-grid">${mtargetHtml||'<div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">No monetization data &#x2014; run pipeline</div>'}</div>
+  <div class="monetize-meta">
+    <div class="mm-item">
+      <div class="mm-label">BEST CHANNEL TO SELL</div>
+      <div class="mm-val amber">${esc(mn.best_channel_to_sell||'&#x2014;')}</div>
     </div>
+    <div class="mm-item">
+      <div class="mm-label">TIME TO MONETIZE</div>
+      <div class="mm-val">${esc(mn.time_to_monetize||'&#x2014;')}</div>
+    </div>
+    ${mn.bundle_opportunity ? `<div class="mm-item"><div class="mm-label">BUNDLE OPPORTUNITY</div><div class="mm-val">${esc(mn.bundle_opportunity)}</div></div>` : ''}
+    ${mn.recurring_revenue_angle ? `<div class="mm-item"><div class="mm-label">RECURRING REVENUE</div><div class="mm-val amber">${esc(mn.recurring_revenue_angle)}</div></div>` : ''}
+    <div class="mm-item" style="grid-column:1/-1">
+      <div class="mm-label">YOUR COMPETITIVE MOAT</div>
+      <div class="mm-val">${esc(mn.competitive_moat||'&#x2014;')}</div>
+    </div>
+  </div>
+</div>
 
-    <div class="monetize-sec">
-      <div class="monetize-hd">💵 BROKER MONETIZATION PLAYBOOK — HOW TO SELL THIS INTEL</div>
-      <div class="monetize-summary">${esc(mn.monetization_summary || 'Run pipeline to generate monetization strategy.')}</div>
-      ${mn.lead_price_range ? `<div class="monetize-price">PRICE THIS ASSET AT: ${esc(mn.lead_price_range)}</div>` : ''}
-      <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.07em;margin-bottom:8px">WHO WILL BUY THIS INTEL FROM YOU</div>
-      <div class="monetize-grid">${mtargetHtml || '<div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">No monetization data — run pipeline</div>'}</div>
-      <div class="monetize-meta">
-        <div class="mm-item">
-          <div class="mm-label">BEST CHANNEL TO SELL</div>
-          <div class="mm-val amber">${esc(mn.best_channel_to_sell || '—')}</div>
-        </div>
-        <div class="mm-item">
-          <div class="mm-label">TIME TO MONETIZE</div>
-          <div class="mm-val">${esc(mn.time_to_monetize || '—')}</div>
-        </div>
-        ${mn.bundle_opportunity ? `<div class="mm-item"><div class="mm-label">BUNDLE OPPORTUNITY</div><div class="mm-val">${esc(mn.bundle_opportunity)}</div></div>` : ''}
-        ${mn.recurring_revenue_angle ? `<div class="mm-item"><div class="mm-label">RECURRING REVENUE</div><div class="mm-val amber">${esc(mn.recurring_revenue_angle)}</div></div>` : ''}
-        <div class="mm-item" style="grid-column:1/-1">
-          <div class="mm-label">YOUR COMPETITIVE MOAT</div>
-          <div class="mm-val">${esc(mn.competitive_moat || '—')}</div>
-        </div>
-      </div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4CB;</span>PROJECT OVERVIEW</div>
+  <div class="bsec-body">${esc(br.project_overview||ex.project_description||'&#x2014;')}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">📄</span>INTELLIGENCE BRIEF — BUYER-FACING</div>
-      <div class="bsec-body">${esc(br.project_overview || ex.project_description || '—')}</div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4A1;</span>WHY THIS INTEL IS WORTH BUYING</div>
+  <div class="bsec-body">${esc(br.opportunity_analysis||'')}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">💡</span>WHY THIS INTEL IS WORTH BUYING</div>
-      <div class="bsec-body">${esc(br.opportunity_analysis || '—')}</div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F3AF;</span>KEY INTEL SIGNAL</div>
+  <div class="bsec-body hl">${esc(by.key_insight||'')}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">🎯</span>KEY INTEL SIGNAL</div>
-      <div class="bsec-body hl">${esc(by.key_insight || '—')}</div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4DE;</span>OUTREACH OPENER (FOR YOUR BUYER TO USE)</div>
+  <div class="bsec-body bsec-opener">${esc(br.outreach_opener||'')}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">📞</span>BUYER OUTREACH OPENER (FOR THE BUYER TO USE)</div>
-      <div class="bsec-body bsec-opener">${esc(br.outreach_opener || '—')}</div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F3E2;</span>INTEL BUYER SEGMENTS (${Math.min((by.buyers||[]).length,4)})</div>
+  <div class="buyers-grid">${buyerHtml||'<div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">No buyer data</div>'}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">🏢</span>INTEL BUYER SEGMENTS (${Math.min(safeArray(by.buyers).length, 4)})</div>
-      <div class="buyers-grid">${buyerHtml || '<div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">No buyer data</div>'}</div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x2709;&#xFE0F;</span>SUBJECT LINES (FOR BUYER&#x2019;S OUTREACH)</div>
+  <ul class="subj-list">${subjHtml}</ul>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">✉️</span>SUBJECT LINES (FOR BUYER OUTREACH)</div>
-      <ul class="subj-list">${subjHtml}</ul>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x26A1;</span>BUYER ACTION BRIEF</div>
+  <div class="bsec-body">${esc(br.buyer_action||'')}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">⚡</span>BUYER ACTION BRIEF</div>
-      <div class="bsec-body">${esc(br.buyer_action || '—')}</div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F4B0;</span>BUYER REVENUE POTENTIAL &middot; EXPIRATION</div>
+  <div class="bsec-body">
+    <strong style="color:var(--amber)">${esc(br.estimated_revenue_opportunity||'&#x2014;')}</strong><br/>
+    ${esc(br.expiration_note||'')}${redfHtml}
+  </div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">💰</span>BUYER REVENUE POTENTIAL · EXPIRATION</div>
-      <div class="bsec-body">
-        <strong style="color:var(--amber)">${esc(br.estimated_revenue_opportunity || '—')}</strong><br/>
-        ${esc(br.expiration_note || '')}${redfHtml}
-      </div>
-    </div>
+<div class="bsec">
+  <div class="bsec-hd"><span class="bsec-ico">&#x1F50E;</span>AI REASONING</div>
+  <div class="bsec-body" style="font-size:.76rem;color:var(--text3)">${esc(sc.reasoning||'')}</div>
+  <div class="raw-toggle" onclick="toggleRaw(this)">&#x25B8; RAW PERMIT DATA</div>
+  <div class="raw-data">${esc(JSON.stringify(lead._raw||lead,null,2))}</div>
+</div>
 
-    <div class="bsec">
-      <div class="bsec-hd"><span class="bsec-ico">🔎</span>AI REASONING</div>
-      <div class="bsec-body" style="font-size:.76rem;color:var(--text3)">${esc(sc.reasoning || '')}</div>
-      <div class="raw-toggle" onclick="toggleRaw(this)">▸ RAW PERMIT DATA</div>
-      <div class="raw-data">${esc(JSON.stringify(lead?._raw || lead || {}, null, 2))}</div>
-    </div>
+<div class="dork-sec" id="dork-sec">
+  ${dork ? buildDorkHtml(dork) : `
+  <div class="bsec-hd" style="margin-bottom:8px">
+    <span class="bsec-ico">&#x1F50E;</span>OSINT DORK PASS
+    <span id="dork-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">&#x2014; press &#x1F50E; DORK to generate queries</span>
+  </div>
+  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">STAGE A &#x2192; Domain discovery &#xB7; LinkedIn &#xB7; Contact pages &#xB7; PDF/bid docs &#xB7; SEC signals</div>
+  `}
+</div>
 
-    <div class="dork-sec" id="dork-sec">
-      ${dork ? buildDorkHtml(dork) : `
-        <div class="bsec-hd" style="margin-bottom:8px">
-          <span class="bsec-ico">🔎</span>OSINT DORK PASS
-          <span style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">— press 🔎 DORK to generate queries</span>
-        </div>
-        <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">STAGE A → domain discovery · LinkedIn · contact pages · PDF/bid docs · SEC signals</div>
-      `}
-    </div>
-
-    <div class="enrich-sec" id="enrich-sec">
-      ${enr ? buildEnrichHtml(enr) : `
-        <div class="bsec-hd" style="margin-bottom:8px">
-          <span class="bsec-ico">🌐</span>OSINT ENRICHMENT
-          <span style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">— press ⬡ ENRICH to run</span>
-        </div>
-        <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">STAGE B: Nominatim geocode · Census/FCC block — STAGE C: SEC EDGAR · optional Hunter</div>
-      `}
-    </div>
-  `;
+<div class="enrich-sec" id="enrich-sec">
+  ${enr ? buildEnrichHtml(enr) : `
+  <div class="bsec-hd" style="margin-bottom:8px">
+    <span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
+    <span id="enrich-status" style="font-weight:400;color:var(--text3);margin-left:8px;font-size:.58rem">&#x2014; press &#x2B21; ENRICH to run</span>
+  </div>
+  <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">STAGE B: Nominatim geocode &middot; Census/FCC block &mdash; STAGE C: SEC EDGAR &middot; Hunter.io emails</div>
+  `}
+</div>`;
 }
 
+// =============================================================================
+// DORK PASS
+// =============================================================================
 async function runDork() {
   if (!selLead) return;
-  const ai = pResults[selLead.id];
-  if (!ai?.pipeline) { toast('Run pipeline first'); return; }
+  const ai  = pResults[selLead.id];
+  if (!ai) { toast('Run pipeline first'); return; }
 
-  const ex = safeObj(ai.pipeline.extracted);
+  const aiPd = ai.data || ai; const ex  = aiPd.pipeline?.extracted || {};
   const btn = document.getElementById('btn-dork');
+  btn.textContent = '&#x1F50E; DORKING…'; btn.disabled = true;
+
   const sec = document.getElementById('dork-sec');
-
-  const target = ex.business_name || ex.contractor_name || ex.applicant_name || '';
-  if (!target) { toast('No named entity to dork'); return; }
-
-  const address = `${ex.address_clean || selLead.address || ''}, ${ex.city || selLead.city || ''} ${ex.state || selLead.state || ''}`.trim();
-
-  btn.textContent = '🔎 DORKING…'; btn.disabled = true;
-  if (sec) sec.innerHTML = `<div class="bsec-hd" style="margin-bottom:10px"><span class="bsec-ico">🔎</span>OSINT DORK PASS <span style="font-weight:400;color:var(--blue);margin-left:8px;font-size:.58rem">RUNNING STAGE A…</span></div>
-  <div class="enrich-running"><div class="espin"></div>Generating query bundle · Domain inference…</div>`;
+  if (sec) sec.innerHTML = `
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F50E;</span>OSINT DORK PASS
+  <span style="font-weight:400;color:var(--blue);margin-left:8px;font-size:.58rem">RUNNING STAGE A…</span>
+</div>
+<div class="enrich-running"><div class="espin"></div>Generating query bundle &middot; Domain inference…</div>`;
 
   try {
+    const target  = ex.business_name || ex.contractor_name || ex.applicant_name || '';
+    const address = `${ex.address_clean||selLead.address||''}, ${ex.city||selLead.city||''} ${ex.state||selLead.state||''}`.trim();
+
+    if (!target) { toast('No company name to dork — extract data first'); btn.textContent = '&#x1F50E; DORK'; btn.disabled = false; return; }
+
     const params = new URLSearchParams({ target, address });
-    const res = await api(`/api/dork?${params.toString()}`);
-    dorkCache[selLead.id] = res.data || {};
-    if (sec) sec.innerHTML = buildDorkHtml(dorkCache[selLead.id]);
-    toast(`Dork pass ready: ${safeArray(dorkCache[selLead.id]?.queries).length} queries`);
-  } catch (e) {
-    if (sec) sec.innerHTML = `<div class="bsec-hd">🔎 OSINT DORK PASS <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
+    const d = await fetch(`${WORKER}/api/dork?${params}`).then(r => r.json());
+
+    if (!d.ok) throw new Error(d.error || 'Dork failed');
+
+    const dd = d.data || d; // v3.5 nests under data
+    dorkCache[selLead.id] = dd;
+    if (sec) sec.innerHTML = buildDorkHtml(dd);
+    toast(`Dork pass: ${dd.queries.length} queries · ${dd.domain_candidates.length} domain candidates`);
+  } catch(e) {
+    if (sec) sec.innerHTML = `<div class="bsec-hd">&#x1F50E; OSINT DORK PASS <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
     toast(`Dork error: ${e.message}`);
   } finally {
-    btn.textContent = '🔎 DORK'; btn.disabled = false;
+    btn.textContent = '&#x1F50E; DORK'; btn.disabled = false;
   }
 }
 
 function buildDorkHtml(d) {
   if (!d) return '';
   const stageLabel = d.confirmed_domain
-    ? `<span class="dork-stage confirmed">✓ DOMAIN CONFIRMED</span>`
+    ? `<span class="dork-stage confirmed">&#x2713; DOMAIN CONFIRMED</span>`
     : `<span class="dork-stage unconfirmed">DOMAIN UNCONFIRMED</span>`;
 
   const domainHtml = d.confirmed_domain
-    ? `<div class="dork-domain">✓ ${esc(d.confirmed_domain)}</div>`
-    : `<div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-bottom:10px">Candidates: ${safeArray(d.domain_candidates).map(c => `<code style="color:var(--text2)">${esc(c)}</code>`).join(' · ') || '—'}</div>`;
+    ? `<div class="dork-domain">&#x2713; ${esc(d.confirmed_domain)}</div>`
+    : `<div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-bottom:10px">Candidates: ${(d.domain_candidates||[]).map(c=>`<code style="color:var(--text2)">${esc(c)}</code>`).join(' · ')}</div>`;
 
-  const rows = safeArray(d.queries).map(q => {
-    const gUrl = `https://www.google.com/search?q=${encodeURIComponent(q.query || '')}`;
+  const rows = (d.queries||[]).map(q => {
+    const gUrl = `https://www.google.com/search?q=${encodeURIComponent(q.query)}`;
     return `<div class="dq-row">
-      <span class="dq-lbl">${esc(q.label || '')}</span>
-      <span class="dq-q" title="${esc(q.query || '')}">${esc(q.query || '')}</span>
-      <button class="dq-copy" onclick="copyTxt(${JSON.stringify(String(q.query || ''))})">COPY</button>
-      <a class="dq-open" href="${gUrl}" target="_blank" rel="noopener">SEARCH</a>
-    </div>`;
+  <span class="dq-lbl">${esc(q.label)}</span>
+  <span class="dq-q" title="${esc(q.query)}">${esc(q.query)}</span>
+  <button class="dq-copy" onclick="copyTxt(${JSON.stringify(q.query)})">COPY</button>
+  <a class="dq-open" href="${gUrl}" target="_blank" rel="noopener">SEARCH</a>
+</div>`;
   }).join('');
 
-  return `<div class="bsec-hd" style="margin-bottom:10px">
-    <span class="bsec-ico">🔎</span>OSINT DORK PASS — STAGE A ${stageLabel}
-    <span style="font-weight:400;color:var(--text3);font-size:.58rem;margin-left:4px">TARGET: ${esc(d.target || '—')}</span>
-  </div>
-  ${domainHtml}
-  <div style="font-family:var(--mono);font-size:.57rem;color:var(--text3);margin-bottom:8px;letter-spacing:.06em">QUERY BUNDLE — COPY OR CLICK SEARCH</div>
-  <div class="dork-queries">${rows}</div>
-  ${d.note ? `<div style="font-family:var(--mono);font-size:.57rem;color:var(--text3);margin-top:8px">ℹ ${esc(d.note)}</div>` : ''}`;
+  return `
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F50E;</span>OSINT DORK PASS &#x2014; STAGE A
+  ${stageLabel}
+  <span style="font-weight:400;color:var(--text3);font-size:.58rem;margin-left:4px">TARGET: ${esc(d.target||'—')}</span>
+</div>
+${domainHtml}
+<div style="font-family:var(--mono);font-size:.57rem;color:var(--text3);margin-bottom:8px;letter-spacing:.06em">QUERY BUNDLE — COPY OR CLICK SEARCH TO RUN IN GOOGLE</div>
+<div class="dork-queries">${rows}</div>
+${d.note ? `<div style="font-family:var(--mono);font-size:.57rem;color:var(--text3);margin-top:8px">&#x2139;&#xFE0F; ${esc(d.note)}</div>` : ''}`;
 }
 
+// =============================================================================
+// OSINT ENRICHMENT
+// =============================================================================
 async function runEnrich() {
   if (!selLead) return;
   const ai = pResults[selLead.id];
-  if (!ai?.pipeline) { toast('Run pipeline first'); return; }
+  if (!ai) { toast('Run pipeline first'); return; }
 
-  const ex = safeObj(ai.pipeline.extracted);
-  const sc = safeObj(ai.pipeline.scored);
-
+  const aiPd = ai.data || ai; const ex  = aiPd.pipeline?.extracted || {}; const sc  = aiPd.pipeline?.scored    || {};
   const btn = document.getElementById('btn-enrich');
-  const sec = document.getElementById('enrich-sec');
+  btn.textContent = '&#x2B21; ENRICHING…'; btn.disabled = true;
 
-  btn.textContent = '⬡ ENRICHING…'; btn.disabled = true;
-  if (sec) sec.innerHTML = `<div class="bsec-hd" style="margin-bottom:10px"><span class="bsec-ico">🌐</span>OSINT ENRICHMENT <span style="font-weight:400;color:var(--purple);margin-left:8px;font-size:.58rem">RUNNING…</span></div>
-  <div class="enrich-running"><div class="espin"></div>Nominatim → Census → EDGAR → conditional Hunter</div>`;
+  const sec = document.getElementById('enrich-sec');
+  if (sec) sec.innerHTML = `
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
+  <span style="font-weight:400;color:var(--purple);margin-left:8px;font-size:.58rem">STAGE B+C RUNNING…</span>
+</div>
+<div class="enrich-running"><div class="espin"></div>Nominatim &#x2192; Census &#x2192; EDGAR &#x2192; Hunter.io</div>`;
 
   try {
-    const res = await api('/api/enrich', {
+    const d = await fetch(`${WORKER}/api/enrich`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        address: ex.address_clean || selLead.address || '',
-        business_name: ex.business_name || '',
-        contractor_name: ex.contractor_name || selLead.contact || '',
-        quality_hint: sc.total_score || null,
-        estimated_value: ex.estimated_value || selLead.estimated_value || null
-      })
-    });
+        address:         ex.address_clean  || selLead.address || '',
+        business_name:   ex.business_name  || '',
+        contractor_name: ex.contractor_name|| selLead.contact || '',
+        quality_hint:    sc?.total_score   || null,
+        estimated_value: ex.estimated_value|| selLead.value   || null,
+      }),
+    }).then(r => r.json());
 
-    const enrichment = res.data?.enrichment || {};
-    enrichCache[selLead.id] = enrichment;
-
-    if (sec) sec.innerHTML = buildEnrichHtml(enrichment);
-
-    const escalation = enrichment?.escalation || 'none';
-    const escalMsg = escalation === 'hunter_used' ? 'Hunter used' : escalation === 'edgar_only' ? 'EDGAR checked' : 'Free APIs only';
+    enrichCache[selLead.id] = (d.data || d).enrichment;
+    if (sec) sec.innerHTML = buildEnrichHtml((d.data || d).enrichment);
+    const escalation = (d.data || d).enrichment?.escalation || 'none';
+    const escalMsg = escalation === 'hunter_used' ? '&#x26A1; API ESCALATION: Hunter used' : escalation === 'edgar_only' ? 'EDGAR checked · Hunter skipped' : 'Free APIs only';
     toast(`Enrichment complete · ${escalMsg}`);
-  } catch (e) {
-    if (sec) sec.innerHTML = `<div class="bsec-hd">🌐 OSINT ENRICHMENT <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
+  } catch(e) {
+    if (sec) sec.innerHTML = `<div class="bsec-hd">&#x1F310; OSINT ENRICHMENT <span style="color:var(--red);font-weight:400;margin-left:8px">${esc(e.message)}</span></div>`;
     toast(`Enrich error: ${e.message}`);
   } finally {
-    btn.textContent = '⬡ ENRICH'; btn.disabled = false;
+    btn.textContent = '&#x2B21; ENRICH'; btn.disabled = false;
   }
 }
 
 function buildEnrichHtml(e) {
-  if (!e) return '<div class="bsec-hd">🌐 OSINT ENRICHMENT</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--text3);padding:6px 0">No enrichment data returned</div>';
+  if (!e) return '<div class="bsec-hd">&#x1F310; OSINT ENRICHMENT</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--text3);padding:6px 0">No data returned</div>';
+  const g = e.geocode, c = e.census, ed = e.edgar, h = e.hunter, dp = e.dork_pass;
+  let rows = [];
 
-  const g = safeObj(e.geocode);
-  const c = safeObj(e.census);
-  const ed = safeObj(e.edgar);
-  const h = safeObj(e.hunter);
-  const dp = safeObj(e.dork_pass);
-  const stages = safeObj(e.stages);
-  const caps = safeObj(e.capabilities);
-
-  const rows = [];
-
-  if (dp.target || dp.confirmed_domain || safeArray(dp.domain_candidates).length) {
+  // Dork pass domain result embedded in enrichment
+  if (dp) {
     const domainTxt = dp.confirmed_domain
-      ? `<span class="er-v ok">✓ ${esc(dp.confirmed_domain)} (domain confirmed)</span>`
-      : `<span class="er-v nil">Unconfirmed — candidates: ${safeArray(dp.domain_candidates).slice(0, 2).map(d => esc(d)).join(', ') || '—'}</span>`;
-    rows.push(`<div class="er"><span class="er-k">🔎 DORK DOMAIN</span>${domainTxt}</div>`);
+      ? `<span class="er-v ok">&#x2713; ${esc(dp.confirmed_domain)} (domain confirmed)</span>`
+      : `<span class="er-v nil">Unconfirmed — candidates: ${(dp.domain_candidates||[]).slice(0,2).map(d=>esc(d)).join(', ')}</span>`;
+    rows.push(`<div class="er"><span class="er-k">&#x1F50E; DORK DOMAIN</span>${domainTxt}</div>`);
   }
 
-  if (g.display_name) {
-    rows.push(`<div class="er"><span class="er-k">📍 GEOCODE</span><span class="er-v ok">${esc(g.display_name)}</span></div>`);
-    rows.push(`<div class="er"><span class="er-k">LAT / LNG</span><span class="er-v">${esc(g.lat)}, ${esc(g.lng)}</span></div>`);
-    if (g.neighborhood || g.county || g.postcode) {
-      rows.push(`<div class="er"><span class="er-k">AREA</span><span class="er-v">${esc(g.neighborhood || '')}${g.county ? ' · ' + esc(g.county) : ''}${g.postcode ? ' (' + esc(g.postcode) + ')' : ''}</span></div>`);
-    }
+  if (g) {
+    rows.push(`<div class="er"><span class="er-k">&#x1F4CD; GEOCODE</span><span class="er-v ok">${esc(g.display_name||'—')}</span></div>`);
+    rows.push(`<div class="er"><span class="er-k">LAT / LNG</span><span class="er-v">${g.lat}, ${g.lng}</span></div>`);
+    if (g.neighborhood||g.county) rows.push(`<div class="er"><span class="er-k">AREA</span><span class="er-v">${esc(g.neighborhood||'')} ${g.county?'· '+esc(g.county):''} ${g.postcode?'('+esc(g.postcode)+')':''}</span></div>`);
   } else {
-    rows.push(`<div class="er"><span class="er-k">📍 GEOCODE</span><span class="er-v nil">${stages?.geocode?.error ? 'Lookup failed' : 'Not found'}</span></div>`);
+    rows.push(`<div class="er"><span class="er-k">&#x1F4CD; GEOCODE</span><span class="er-v nil">Not found</span></div>`);
   }
 
-  if (c.county_name) {
-    rows.push(`<div class="er"><span class="er-k">🗺 CENSUS</span><span class="er-v">${esc(c.county_name)} · FIPS ${esc(c.county_fips || '—')} · Block ${esc(c.block_fips || '—')}</span></div>`);
-  } else if (stages?.census?.error) {
-    rows.push(`<div class="er"><span class="er-k">🗺 CENSUS</span><span class="er-v nil">Lookup failed</span></div>`);
-  }
+  if (c?.county_name) rows.push(`<div class="er"><span class="er-k">&#x1F5FA; CENSUS</span><span class="er-v">${esc(c.county_name)} · FIPS ${esc(c.county_fips||'—')} · Block ${esc(c.block_fips||'—')}</span></div>`);
 
-  if (Object.keys(ed).length) {
+  if (ed) {
     if (ed.public_company) {
-      rows.push(`<div class="er"><span class="er-k">📈 EDGAR</span><span class="er-v pub">PUBLIC — ${esc(ed.entity_name || '—')} · ${esc(ed.filings_found || '—')} filings · Latest ${esc(ed.latest_filing || '—')}</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x1F4CA; EDGAR</span><span class="er-v pub">PUBLIC — ${esc(ed.entity_name||'—')} · ${ed.filings_found} filings · Latest ${esc(ed.latest_filing||'—')}</span></div>`);
     } else {
-      rows.push(`<div class="er"><span class="er-k">📈 EDGAR</span><span class="er-v nil">No public filings</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x1F4CA; EDGAR</span><span class="er-v nil">No public filings</span></div>`);
     }
-  } else if (stages?.edgar?.error) {
-    rows.push(`<div class="er"><span class="er-k">📈 EDGAR</span><span class="er-v nil">Lookup failed</span></div>`);
   }
 
-  const escMode = e.escalation || 'none';
-  const escLabel = escMode === 'hunter_used' ? 'Hunter API used' : escMode === 'edgar_only' ? 'EDGAR only' : 'Free APIs only';
-  rows.push(`<div class="er"><span class="er-k">📶 ESCALATION</span><span class="er-v ${escMode === 'hunter_used' ? 'pub' : 'nil'}">${escLabel}</span></div>`);
+  // Escalation status
+  const esc2 = e.escalation || 'none';
+  const escLabel = esc2 === 'hunter_used' ? '&#x26A1; Hunter API used' : esc2 === 'edgar_only' ? 'EDGAR only · Hunter skipped (no key)' : 'STAGE C skipped';
+  rows.push(`<div class="er"><span class="er-k">&#x1F4F6; ESCALATION</span><span class="er-v ${esc2==='hunter_used'?'pub':'nil'}">${escLabel}</span></div>`);
 
-  if (h.domain || h.emails_found != null) {
-    if ((h.emails_found || 0) > 0) {
-      rows.push(`<div class="er"><span class="er-k">✉ HUNTER</span><span class="er-v ok">${h.emails_found} email(s) @ ${esc(h.domain || '—')} [${esc(h.domain_source || 'inferred')}]</span></div>`);
-      rows.push(`<div style="padding-top:4px">${safeArray(h.emails).map(em => `
-        <div class="hemail">
-          <span class="he-addr">${esc(em.email || '')}</span>
-          <span class="he-meta">${esc(em.name || '')} · ${esc(em.position || em.type || '')} · ${esc(em.confidence || '?')}%</span>
-          <button class="he-copy" onclick="copyTxt(${JSON.stringify(String(em.email || ''))})">COPY</button>
-        </div>`).join('')}</div>`);
+  if (h) {
+    if (h.emails_found > 0) {
+      rows.push(`<div class="er"><span class="er-k">&#x2709; HUNTER</span><span class="er-v ok">${h.emails_found} email(s) @ ${esc(h.domain||'—')} [${esc(h.domain_source||'inferred')}]</span></div>`);
+      const elist = h.emails.map(em => `
+<div class="hemail">
+  <span class="he-addr">${esc(em.email)}</span>
+  <span class="he-meta">${esc(em.name||'')} · ${esc(em.position||em.type||'')} · ${em.confidence||'?'}%</span>
+  <button class="he-copy" onclick="copyTxt(${JSON.stringify(em.email)})">COPY</button>
+</div>`).join('');
+      rows.push(`<div style="padding-top:4px">${elist}</div>`);
     } else {
-      rows.push(`<div class="er"><span class="er-k">✉ HUNTER</span><span class="er-v nil">No emails @ ${esc(h.domain || '—')}</span></div>`);
+      rows.push(`<div class="er"><span class="er-k">&#x2709; HUNTER</span><span class="er-v nil">No emails @ ${esc(h.domain||'—')}</span></div>`);
     }
-  } else {
-    const hunterMsg = caps.hunter_configured ? 'Not used — signal threshold not met' : 'Not configured';
-    rows.push(`<div class="er"><span class="er-k">✉ HUNTER</span><span class="er-v nil">${esc(hunterMsg)}</span></div>`);
+  } else if (!env?.HUNTER_API_KEY) {
+    rows.push(`<div class="er"><span class="er-k">&#x2709; HUNTER</span><span class="er-v nil">HUNTER_API_KEY not set</span></div>`);
   }
 
-  if (stages?.hunter?.error) rows.push(`<div class="er"><span class="er-k">HUNTER ERR</span><span class="er-v nil">${esc(stages.hunter.error)}</span></div>`);
-
-  return `<div class="bsec-hd" style="margin-bottom:10px">
-    <span class="bsec-ico">🌐</span>OSINT ENRICHMENT
-    <span style="font-weight:400;color:var(--green);margin-left:8px;font-size:.58rem">— done ${new Date().toLocaleTimeString()}</span>
-  </div>
-  <div class="enrich-rows">${rows.join('')}</div>`;
+  return `
+<div class="bsec-hd" style="margin-bottom:10px">
+  <span class="bsec-ico">&#x1F310;</span>OSINT ENRICHMENT
+  <span style="font-weight:400;color:var(--green);margin-left:8px;font-size:.58rem">— done ${new Date().toLocaleTimeString()}</span>
+</div>
+<div class="enrich-rows">${rows.join('')}</div>`;
 }
 
-// ===== SAVE / LOAD =====
+// =============================================================================
+// SAVE / LOAD BRIEFS
+// =============================================================================
 function saveBrief() {
-  if (!selLead || !pResults[selLead.id]) { toast('Nothing to save'); return; }
-  const grade = pResults[selLead.id]?.grade || pResults[selLead.id]?.pipeline?.scored?.grade || '—';
-
+  if (!selLead || !pResults[selLead.id]) return;
   const entry = {
-    id: selLead.id,
+    id:      selLead.id,
     address: selLead.address,
-    grade,
-    ts: Date.now(),
-    data: pResults[selLead.id],
-    lead: selLead,
-    enrich: enrichCache[selLead.id] || null,
-    dork: dorkCache[selLead.id] || null,
+    grade:   pResults[selLead.id].grade,
+    ts:      Date.now(),
+    data:    pResults[selLead.id],
+    lead:    selLead,
+    enrich:  enrichCache[selLead.id] || null,
+    dork:    dorkCache[selLead.id]   || null,
   };
-
   saved = saved.filter(b => b.id !== entry.id);
   saved.unshift(entry);
-  try { localStorage.setItem('pi:saved', JSON.stringify(saved)); } catch (e) { toast(`Save failed: ${e.message}`); return; }
-  renderSaved();
-  toast('Brief saved');
+  try { localStorage.setItem('pi:saved', JSON.stringify(saved)); } catch(_) {}
+  renderSaved(); toast('Brief saved');
 }
 
 function loadSaved() {
-  try {
-    const raw = JSON.parse(localStorage.getItem('pi:saved') || '[]');
-    saved = Array.isArray(raw) ? raw.filter(x => x && x.id && x.data && x.lead) : [];
-  } catch { saved = []; }
+  try { saved = JSON.parse(localStorage.getItem('pi:saved') || '[]'); } catch(_) { saved = []; }
   renderSaved();
 }
 
 function renderSaved() {
   document.getElementById('btn-saved').textContent = `SAVED (${saved.length})`;
   const list = document.getElementById('sd-list');
-  if (!saved.length) { list.innerHTML = '<div id="sd-empty">No saved briefs.<br/>Run pipeline → click SAVE.</div>'; return; }
-
+  if (!saved.length) { list.innerHTML = '<div id="sd-empty">No saved briefs.<br/>Run pipeline &#x2192; click SAVE.</div>'; return; }
   list.innerHTML = saved.map(b => {
     const gc = gradeClass(b.grade);
     return `<div class="sd-card" onclick="loadSaved2('${b.id}')">
-      <button class="sd-del" onclick="event.stopPropagation();deleteSaved('${b.id}')">✕</button>
-      <span class="sd-grade ${gc}">${esc(b.grade || '—')}</span>
-      <div class="sd-addr">${esc(b.address || '—')}</div>
-      <div class="sd-ts">${new Date(b.ts).toLocaleString()}</div>
-    </div>`;
+  <button class="sd-del" onclick="event.stopPropagation();deleteSaved('${b.id}')">&#x2715;</button>
+  <span class="sd-grade ${gc}">${b.grade}</span>
+  <div class="sd-addr">${esc(b.address||'—')}</div>
+  <div class="sd-ts">${new Date(b.ts).toLocaleString()}</div>
+</div>`;
   }).join('');
 }
 
 function loadSaved2(id) {
-  const b = saved.find(x => x.id === id);
-  if (!b) return;
-
-  pResults[id] = b.data;
+  const b = saved.find(x => x.id === id); if(!b) return;
   if (b.enrich) enrichCache[id] = b.enrich;
-  if (b.dork) dorkCache[id] = b.dork;
-
-  if (!allLeads.some(l => l.id === id) && b.lead) allLeads.unshift(b.lead);
+  if (b.dork)   dorkCache[id]   = b.dork;
   selLead = b.lead;
-
-  renderLeads();
   renderBrief(b.data, b.lead);
-  toggleDrawer();
-  toast('Brief loaded');
+  toggleDrawer(); toast('Brief loaded');
 }
 
 function deleteSaved(id) {
   saved = saved.filter(b => b.id !== id);
-  try { localStorage.setItem('pi:saved', JSON.stringify(saved)); } catch {}
+  try { localStorage.setItem('pi:saved', JSON.stringify(saved)); } catch(_) {}
   renderSaved();
 }
 
-function toggleDrawer(){ document.getElementById('saved-drawer').classList.toggle('open'); }
-function toggleAuto(){ autoScore = !autoScore; document.getElementById('btn-auto').classList.toggle('on', autoScore); toast(`Auto-score ${autoScore ? 'ON' : 'OFF'}`); }
+function toggleDrawer() { document.getElementById('saved-drawer').classList.toggle('open'); }
+function toggleAuto()   {
+  autoScore = !autoScore;
+  document.getElementById('btn-auto').classList.toggle('on', autoScore);
+  toast(`Auto-score ${autoScore?'ON':'OFF'}`);
+}
 
-// ===== COPY / EXPORT =====
+// =============================================================================
+// COPY / EXPORT
+// =============================================================================
 function copyBrief() {
-  if (!selLead || !pResults[selLead.id]) { toast('Nothing to copy'); return; }
+  if (!selLead || !pResults[selLead.id]) return;
   copyTxt(buildPlainBrief(pResults[selLead.id], selLead));
   toast('Brief copied');
 }
 
 function exportBrief() {
-  if (!selLead || !pResults[selLead.id]) { toast('Nothing to export'); return; }
+  if (!selLead || !pResults[selLead.id]) return;
   const text = buildPlainBrief(pResults[selLead.id], selLead);
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-  a.download = `permit-intel-${selLead.permit_number || selLead.id}.txt`;
+  a.download = `permit-brief-${selLead.permit_number||selLead.id}.txt`;
   a.click();
   toast('Exported');
 }
 
 function buildPlainBrief(data, lead) {
-  const p = safeObj(data?.pipeline);
-  const ex = safeObj(p.extracted);
-  const sc = safeObj(p.scored);
-  const by = safeObj(p.buyers);
-  const br = safeObj(p.brief);
-  const mn = safeObj(p.monetize);
-  const gate = safeObj(p.deterministic_gate);
-
-  const enr = enrichCache[lead.id];
+  const pd = data.data || data; // v3.5 nests under data; v3.4 was flat
+  const p  = pd.pipeline || data.pipeline;
+  const ex = p.extracted||{}, sc = p.scored||{}, by = p.buyers||{}, br = p.brief||{}, mn = p.monetize||{};
+  const enr  = enrichCache[lead.id];
   const dork = dorkCache[lead.id];
-  const sep = '─'.repeat(42);
+  const sep  = '─'.repeat(42);
 
   const lines = [
     'PERMIT INTEL // COMMERCIAL INTELLIGENCE BRIEF',
-    `Grade: ${sc.grade || '—'} · Score: ${sc.total_score ?? '—'}/100 · Urgency: ${String(sc.urgency || '').toUpperCase() || '—'}`,
+    `Grade: ${sc.grade} · Score: ${sc.total_score}/100 · Urgency: ${(sc.urgency||'').toUpperCase()}`,
     `Generated: ${new Date().toISOString()}`,
-    '',
-    br.headline || '',
-    br.tldr || '',
-    '',
-    'SCORING TRANSPARENCY',
-    sep,
-    `Deterministic Gate Score: ${gate.gate_score ?? '—'}`,
-    `Signals: ${(safeArray(gate.signals).join(' · ') || '—')}`,
-    `Disqualifiers: ${(safeArray(gate.disqualifiers).join(' · ') || 'none')}`,
-    '',
-    'PROJECT DETAILS',
-    sep,
-    `Address:    ${ex.address_clean ? `${ex.address_clean}, ${ex.city || lead.city || ''} ${ex.state || lead.state || ''}`.trim() : (lead.address || '—')}`,
-    `Permit #:   ${ex.permit_number || '—'}`,
-    `Work Type:  ${ex.work_type_clean || '—'}`,
-    `Value:      ${ex.estimated_value ? fmt(ex.estimated_value) : '—'}`,
-    `Business:   ${ex.business_name || ex.applicant_name || '—'}`,
-    `Contractor: ${ex.contractor_name || '—'}`,
-    `Phone:      ${ex.contact_phone || '—'}`,
+    '', br.headline||'', br.tldr||'',
+    '', 'PROJECT DETAILS', sep,
+    `Address:    ${ex.address_clean ? `${ex.address_clean}, ${ex.city||lead.city||''} ${ex.state||lead.state||''}`.trim() : lead.address||'—'}`,
+    `Permit #:   ${ex.permit_number||'—'}`,
+    `Work Type:  ${ex.work_type_clean||'—'}`,
+    `Value:      ${ex.estimated_value?fmt(ex.estimated_value):'—'}`,
+    `Business:   ${ex.business_name||ex.applicant_name||'—'}`,
+    `Contractor: ${ex.contractor_name||'—'}`,
+    `Phone:      ${ex.contact_phone||'—'}`,
     '',
     '════════════════════════════════════════════',
-    '  BROKER MONETIZATION PLAYBOOK',
+    '  MONETIZATION PLAYBOOK — HOW TO SELL THIS INTEL',
     '════════════════════════════════════════════',
-    mn.monetization_summary || '',
-    mn.lead_price_range ? `\nPRICE THIS ASSET AT: ${mn.lead_price_range}` : '',
-    '',
-    'WHO WILL BUY THIS INTEL FROM YOU',
-    sep,
-    ...safeArray(mn.target_buyers).slice(0,4).map(t =>
-      `· ${t.buyer_type} [${t.outreach_channel || '—'}]\n  WHY: ${t.why_they_pay}\n  FIND THEM: ${t.how_to_find_them}\n  PITCH: "${t.pitch_hook}"\n  URGENCY: ${t.urgency_to_buyer}`
+    mn.monetization_summary||'',
+    mn.lead_price_range ? `\nPRICE THIS LEAD AT: ${mn.lead_price_range}` : '',
+    '', 'WHO WILL BUY THIS INTEL FROM YOU', sep,
+    ...(mn.target_buyers||[]).slice(0,4).map(t =>
+      `· ${t.buyer_type} [${t.outreach_channel||'—'}]\n  WHY: ${t.why_they_pay}\n  FIND THEM: ${t.how_to_find_them}\n  PITCH: "${t.pitch_hook}"\n  URGENCY: ${t.urgency_to_buyer}`
     ),
     mn.best_channel_to_sell ? `\nBEST CHANNEL TO SELL: ${mn.best_channel_to_sell}` : '',
-    mn.time_to_monetize ? `TIME TO MONETIZE: ${mn.time_to_monetize}` : '',
-    mn.bundle_opportunity ? `BUNDLE OPPORTUNITY: ${mn.bundle_opportunity}` : '',
+    mn.time_to_monetize     ? `TIME TO MONETIZE: ${mn.time_to_monetize}` : '',
+    mn.bundle_opportunity   ? `BUNDLE OPPORTUNITY: ${mn.bundle_opportunity}` : '',
     mn.recurring_revenue_angle ? `RECURRING REVENUE: ${mn.recurring_revenue_angle}` : '',
-    mn.competitive_moat ? `COMPETITIVE MOAT: ${mn.competitive_moat}` : '',
+    mn.competitive_moat     ? `COMPETITIVE MOAT: ${mn.competitive_moat}` : '',
     '',
     '════════════════════════════════════════════',
-    '  BUYER-FACING INTELLIGENCE BRIEF',
+    '  INTELLIGENCE BRIEF',
     '════════════════════════════════════════════',
-    '',
-    'PROJECT OVERVIEW',
-    sep,
-    br.project_overview || '',
-    '',
-    'WHY THIS INTEL IS WORTH BUYING',
-    sep,
-    br.opportunity_analysis || '',
-    '',
-    'KEY INTEL SIGNAL',
-    sep,
-    by.key_insight || '',
-    '',
-    'BUYER OUTREACH OPENER',
-    sep,
-    br.outreach_opener || '',
-    '',
-    'INTEL BUYER SEGMENTS',
-    sep,
-    ...safeArray(by.buyers).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100)\n  ${b.why}\n  PITCH: ${b.pitch_angle}\n  Window: ${b.time_window}`),
-    '',
-    'SUBJECT LINES',
-    sep,
-    ...safeArray(br.subject_lines).map((s,i) => `${i+1}. ${s}`),
-    '',
-    'BUYER ACTION BRIEF',
-    sep,
-    br.buyer_action || '',
-    '',
-    'BUYER REVENUE POTENTIAL · EXPIRATION',
-    sep,
-    br.estimated_revenue_opportunity || '—',
-    br.expiration_note || '',
-    ...(safeArray(sc.red_flags).length ? ['', `⚠ RED FLAGS: ${safeArray(sc.red_flags).join(' · ')}`] : []),
+    '', 'PROJECT OVERVIEW', sep, br.project_overview||'',
+    '', 'WHY THIS INTEL IS WORTH BUYING', sep, br.opportunity_analysis||'',
+    '', 'KEY INTEL SIGNAL', sep, by.key_insight||'',
+    '', 'OUTREACH OPENER (FOR YOUR BUYER)', sep, br.outreach_opener||'',
+    '', 'INTEL BUYER SEGMENTS', sep,
+    ...(by.buyers||[]).slice(0,4).map(b => `· ${b.type} (${b.fit_score}/100)\n  ${b.why}\n  PITCH: ${b.pitch_angle}\n  Window: ${b.time_window}`),
+    '', 'SUBJECT LINES', sep,
+    ...(br.subject_lines||[]).map((s,i) => `${i+1}. ${s}`),
+    '', 'BUYER ACTION BRIEF', sep, br.buyer_action||'',
+    '', 'BUYER REVENUE POTENTIAL · EXPIRATION', sep,
+    br.estimated_revenue_opportunity||'—', br.expiration_note||'',
+    ...(sc.red_flags?.length ? ['', `⚠ RED FLAGS: ${sc.red_flags.join(' · ')}`] : []),
   ];
 
   if (dork) {
     lines.push('', 'OSINT DORK PASS — STAGE A', sep);
-    lines.push(`Target: ${dork.target || '—'}`);
+    lines.push(`Target: ${dork.target}`);
     if (dork.confirmed_domain) lines.push(`Confirmed Domain: ${dork.confirmed_domain}`);
-    else lines.push(`Domain Candidates: ${safeArray(dork.domain_candidates).join(', ') || '—'}`);
+    else lines.push(`Domain Candidates: ${(dork.domain_candidates||[]).join(', ')}`);
     lines.push('Query Bundle:');
-    safeArray(dork.queries).forEach(q => lines.push(`  [${q.label}] ${q.query}`));
+    (dork.queries||[]).forEach(q => lines.push(`  [${q.label}] ${q.query}`));
   }
 
   if (enr) {
     lines.push('', 'OSINT ENRICHMENT — STAGE B+C', sep);
-    if (enr.geocode?.display_name) {
-      lines.push(`Geocode: ${enr.geocode.display_name}`);
-      lines.push(`Lat/Lng: ${enr.geocode.lat}, ${enr.geocode.lng}`);
+    if (enr.geocode) { lines.push(`Geocode: ${enr.geocode.display_name||'—'}`); lines.push(`Lat/Lng: ${enr.geocode.lat}, ${enr.geocode.lng}`); }
+    if (enr.census?.county_name) lines.push(`County:  ${enr.census.county_name} (FIPS ${enr.census.county_fips})`);
+    if (enr.edgar?.public_company) lines.push(`EDGAR:   PUBLIC — ${enr.edgar.entity_name||'—'} (${enr.edgar.filings_found} filings)`);
+    if (enr.hunter?.emails_found > 0) {
+      lines.push(`Hunter:  ${enr.hunter.emails_found} email(s) @ ${enr.hunter.domain}`);
+      (enr.hunter.emails||[]).forEach(e => lines.push(`  ${e.email}  ${e.name||''} ${e.position||''} (${e.confidence}%)`));
     }
-    if (enr.census?.county_name) lines.push(`County: ${enr.census.county_name} (FIPS ${enr.census.county_fips || '—'})`);
-    if (enr.edgar?.public_company) lines.push(`EDGAR: PUBLIC — ${enr.edgar.entity_name || '—'} (${enr.edgar.filings_found || '—'} filings)`);
-    if ((enr.hunter?.emails_found || 0) > 0) {
-      lines.push(`Hunter: ${enr.hunter.emails_found} email(s) @ ${enr.hunter.domain}`);
-      safeArray(enr.hunter.emails).forEach(e => lines.push(`  ${e.email}  ${e.name || ''} ${e.position || ''} (${e.confidence || '?' }%)`));
-    }
-    lines.push(`Escalation: ${enr.escalation || 'none'}`);
+    lines.push(`Escalation: ${enr.escalation||'none'}`);
   }
 
   lines.push('', `PERMIT INTEL v3.5 · ${new Date().toLocaleDateString()}`);
   return lines.join('\n');
+}
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+function setStatus(msg) { document.getElementById('sbar-msg').textContent = msg; }
+
+function fmt(v) {
+  if (!v || isNaN(v)) return '—';
+  const n = parseFloat(v);
+  if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n/1e3).toFixed(0)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+function gradeClass(g) {
+  if (g === 'A+') return 'gAp';
+  if (g === 'A')  return 'gA';
+  if (g === 'B')  return 'gB';
+  if (g === 'C')  return 'gC';
+  return 'gD';
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/`/g,'&#96;')
+    .replace(/\${/g,'&#36;{');
+}
+
+function copyTxt(text) {
+  navigator.clipboard.writeText(text).catch(() => {
+    const t = document.createElement('textarea');
+    t.value = text; t.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(t); t.select();
+    document.execCommand('copy'); t.remove();
+  });
+}
+
+function toast(msg) {
+  const c  = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className   = 'toast-item';
+  el.textContent = msg;
+  c.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 250); }, 2600);
+}
+
+function toggleRaw(el) {
+  const d = el.nextElementSibling; if (!d) return;
+  const open = d.style.display === 'block';
+  d.style.display = open ? 'none' : 'block';
+  el.textContent  = open ? '▸ RAW PERMIT DATA' : '▾ RAW PERMIT DATA';
 }
 </script>
 </body>
