@@ -1,0 +1,21 @@
+{
+  "name": "@permit-intel/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@permit-intel/shared": "*",
+    "@permit-intel/db": "*",
+    "@permit-intel/pipeline": "*",
+    "@permit-intel/export": "*"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "typescript": "^5.4.0"
+  }
+}

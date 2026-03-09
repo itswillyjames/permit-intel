@@ -1,0 +1,28 @@
+name = "permit-intel-worker"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Override in environment secrets:
+# API_KEY = "your-secret"
+# OPENAI_API_KEY = "sk-..."
+# ANTHROPIC_API_KEY = "sk-ant-..."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "permit-intel"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[queues.consumers]]
+queue = "permit-intel-pipeline"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[queues.producers]]
+queue = "permit-intel-pipeline"
+binding = "PIPELINE_QUEUE"
+
+[dev]
+port = 8787
+local_protocol = "http"

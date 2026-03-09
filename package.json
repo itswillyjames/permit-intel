@@ -1,0 +1,23 @@
+{
+  "name": "permit-intel",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev --parallel",
+    "db:migrate": "node packages/db/scripts/migrate.js",
+    "db:seed": "node packages/db/scripts/seed.js",
+    "demo": "node scripts/demo.js"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.2.0",
+    "eslint": "^8.57.0"
+  },
+  "engines": { "node": ">=20.0.0" }
+}
