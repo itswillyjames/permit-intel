@@ -1,0 +1,11 @@
+{
+  "name": "@permit-intel/export",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@permit-intel/shared": "*",
+    "@permit-intel/db": "*"
+  }
+}

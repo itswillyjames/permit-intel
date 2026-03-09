@@ -1,0 +1,35 @@
+name = "permit-intel-worker"
+main = "apps/worker/src/index.ts"
+compatibility_date = "2024-03-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+PROMPT_VERSION = "1.0.0"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "permit-intel"
+database_id = "local"
+
+[[queues.producers]]
+binding = "QUEUE"
+queue = "permit-intel-jobs"
+
+[[queues.consumers]]
+queue = "permit-intel-jobs"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+
+[[kv_namespaces]]
+binding = "KV"
+id = "local"
+
+# Optional R2 — toggle by removing comments
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "permit-intel-artifacts"
+
+[env.development]
+[env.development.vars]
+PROMPT_VERSION = "1.0.0"

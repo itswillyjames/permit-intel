@@ -1,0 +1,142 @@
+/**
+ * Dossier HTML template (versioned).
+ * Generates canonical HTML string from DossierComposeOutput + permit data.
+ */
+import type { DossierComposeOutput } from '@permit-intel/shared/src/schemas/stages.js';
+
+export const TEMPLATE_VERSION = 'v1';
+
+function esc(s: string | null | undefined): string {
+  if (!s) return '';
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function renderDossierHtml(
+  output: DossierComposeOutput,
+  meta: {
+    reportVersionId: string;
+    exportId: string;
+    renderedAt: string;
+    templateVersion: string;
+  },
+): string {
+  const { dossier, playbook } = output;
+
+  const entityRows = dossier.key_entities
+    .map(
+      (e) => `
+    <tr>
+      <td>${esc(e.role)}</td>
+      <td><strong>${esc(e.canonical_name)}</strong></td>
+      <td>${(e.contacts ?? []).map(esc).join('<br>')}</td>
+      <td>${Math.round(e.confidence * 100)}%</td>
+    </tr>`,
+    )
+    .join('');
+
+  const nextSteps = dossier.recommended_next_steps
+    .map((s) => `<li>${esc(s)}</li>`)
+    .join('');
+
+  const positioning = playbook.positioning.map((p) => `<li>${esc(p)}</li>`).join('');
+  const buyerTargets = playbook.buyer_targets.map((b) => `<li>${esc(b)}</li>`).join('');
+  const pricingLogic = playbook.pricing_logic.map((p) => `<li>${esc(p)}</li>`).join('');
+  const objections = playbook.objections_and_rebuttals
+    .map((o) => `<li>${esc(o)}</li>`)
+    .join('');
+
+  const evidenceRows = dossier.evidence_index
+    .map(
+      (e) => `
+    <tr>
+      <td><code>${esc(e.evidence_id.slice(0, 8))}…</code></td>
+      <td>${esc(e.title)}</td>
+      <td><a href="${esc(e.source)}">${esc(e.source)}</a></td>
+      <td>${esc(e.retrieved_at)}</td>
+    </tr>`,
+    )
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${esc(dossier.headline)} — Permit Intel Dossier</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #222; }
+    h1 { font-size: 1.6rem; color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.2rem; color: #1a3a5c; margin-top: 2rem; }
+    h3 { font-size: 1rem; color: #444; }
+    .meta { font-size: 0.8rem; color: #888; margin-bottom: 1.5rem; }
+    .project-card { background: #f5f7fa; border-left: 4px solid #1a3a5c; padding: 1rem; margin: 1rem 0; }
+    .project-card dt { font-weight: bold; color: #555; }
+    .project-card dd { margin: 0 0 0.5rem 1rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th { background: #1a3a5c; color: white; padding: 0.5rem; text-align: left; }
+    td { padding: 0.5rem; border-bottom: 1px solid #ddd; }
+    ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+    li { margin-bottom: 0.4rem; }
+    .playbook { background: #fff8e1; border: 1px solid #f0c040; padding: 1rem; margin: 1rem 0; }
+    .footer { font-size: 0.75rem; color: #aaa; margin-top: 3rem; border-top: 1px solid #eee; padding-top: 1rem; }
+    code { font-size: 0.85em; background: #f0f0f0; padding: 0.1em 0.3em; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>${esc(dossier.headline)}</h1>
+  <p class="meta">
+    Export ID: <code>${esc(meta.exportId)}</code> |
+    Report Version: <code>${esc(meta.reportVersionId)}</code> |
+    Template: ${esc(meta.templateVersion)} |
+    Rendered: ${esc(meta.renderedAt)}
+  </p>
+
+  <h2>Executive Summary</h2>
+  ${dossier.summary.split('\n\n').map(p => `<p>${esc(p)}</p>`).join('')}
+
+  <h2>Project Details</h2>
+  <div class="project-card">
+    <dl>
+      <dt>Address</dt><dd>${esc(dossier.project.address)}</dd>
+      <dt>City</dt><dd>${esc(dossier.project.city)}</dd>
+      <dt>Work Type</dt><dd>${esc(dossier.project.work_type)}</dd>
+      <dt>Valuation</dt><dd>${dossier.project.valuation ? `$${dossier.project.valuation.toLocaleString()}` : 'N/A'}</dd>
+      <dt>Filed</dt><dd>${esc(dossier.project.timeline.filed_date)}</dd>
+      <dt>Issued</dt><dd>${esc(dossier.project.timeline.issued_date)}</dd>
+    </dl>
+  </div>
+
+  <h2>Key Entities</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Name</th><th>Contacts</th><th>Confidence</th></tr></thead>
+    <tbody>${entityRows}</tbody>
+  </table>
+
+  <h2>Recommended Next Steps</h2>
+  <ul>${nextSteps}</ul>
+
+  <div class="playbook">
+    <h2>Resale Playbook</h2>
+    <h3>Positioning</h3><ul>${positioning}</ul>
+    <h3>Buyer Targets</h3><ul>${buyerTargets}</ul>
+    <h3>Pricing Logic</h3><ul>${pricingLogic}</ul>
+    <h3>Objections & Rebuttals</h3><ul>${objections}</ul>
+  </div>
+
+  <h2>Evidence Index</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Source</th><th>Retrieved</th></tr></thead>
+    <tbody>${evidenceRows || '<tr><td colspan="4">No evidence indexed</td></tr>'}</tbody>
+  </table>
+
+  <div class="footer">
+    Generated by Permit Intel | Single-operator intelligence workbench | Not for redistribution
+  </div>
+</body>
+</html>`;
+}
