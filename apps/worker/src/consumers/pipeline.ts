@@ -16,12 +16,10 @@ import { runPipeline } from "@permit-intel/pipeline/src/orchestrator/index.js";
 import { LLMClient } from "@permit-intel/pipeline/src/providers/client.js";
 import { OpenAIProvider } from "@permit-intel/pipeline/src/providers/openai.js";
 import { AnthropicProvider } from "@permit-intel/pipeline/src/providers/anthropic.js";
-import { logger } from "@permit-intel/shared/src/utils/index";
-import type { Env } from "../index.js";
-
-// NEW: OpenRouter + Groq providers (OpenAI-compatible endpoints)
 import { OpenRouterProvider } from "@permit-intel/pipeline/src/providers/openrouter.js";
 import { GroqProvider } from "@permit-intel/pipeline/src/providers/groq.js";
+import { logger } from "@permit-intel/shared/src/utils/index";
+import type { Env } from "../index.js";
 
 interface PipelineMessage {
   type: "run_pipeline";
@@ -33,16 +31,15 @@ interface PipelineMessage {
  * Builds provider chain based on available env vars.
  * This avoids "required secret" behavior in Deploy-from-Git.
  */
-function buildProviders(env: Env): any[] {
+function buildProviders(env: Env) {
   const providers: any[] = [];
 
   // 1) OpenRouter primary
   if (env.OPENROUTER_API_KEY) {
     providers.push(
-      new OpenRouterProvider({
-        apiKey: env.OPENROUTER_API_KEY,
+      new OpenRouterProvider(env.OPENROUTER_API_KEY, {
         baseUrl: env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
-        model: env.OPENROUTER_MODEL || "openrouter/free",
+        defaultModel: env.OPENROUTER_MODEL || "openrouter/free",
         appName: env.OPENROUTER_APP_NAME || "permit-intel",
       }),
     );
@@ -51,10 +48,9 @@ function buildProviders(env: Env): any[] {
   // 2) Groq fallback
   if (env.GROQ_API_KEY) {
     providers.push(
-      new GroqProvider({
-        apiKey: env.GROQ_API_KEY,
+      new GroqProvider(env.GROQ_API_KEY, {
         baseUrl: env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
-        model: env.GROQ_MODEL || "llama-3.1-70b-versatile",
+        defaultModel: env.GROQ_MODEL || "llama-3.1-70b-versatile",
       }),
     );
   }
