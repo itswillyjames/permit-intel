@@ -12,7 +12,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "permit-intel"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "e0ee4904-230d-4535-8a84-7e0b6b04bbe9"
 
 [[queues.consumers]]
 queue = "permit-intel-pipeline"

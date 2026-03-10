@@ -1,5 +1,5 @@
 import type { Db } from '../client.js';
-import { newId, nowIso } from '@permit-intel/shared/utils/index.js';
+import { newId, nowIso } from '@permit-intel/shared/src/utils/index';
 
 export type EvidenceType = 'web_page' | 'registry' | 'pdf' | 'image' | 'note' | 'model_response';
 export type EvidenceLinkType = 'permit' | 'entity' | 'report_version' | 'export';

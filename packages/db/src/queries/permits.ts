@@ -1,5 +1,5 @@
 import type { Db, DbRow } from '../client.js';
-import { newId, nowIso } from '@permit-intel/shared/utils/index.js';
+import { newId, nowIso } from '@permit-intel/shared/src/utils/index';
 
 export type PermitStatus = 'new' | 'normalized' | 'prequalified' | 'shortlisted' | 'rejected' | 'archived';
 
