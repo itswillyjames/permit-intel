@@ -22,7 +22,13 @@ max_batch_timeout = 30
 [[queues.producers]]
 queue = "permit-intel-pipeline"
 binding = "PIPELINE_QUEUE"
+[[r2_buckets]]
+binding = "EXPORTS_BUCKET"
+bucket_name = "permit-intel-exports"
 
+[[r2_buckets]]
+binding = "EVIDENCE_BUCKET"
+bucket_name = "permit-intel-evidence"
 [dev]
 port = 8787
 local_protocol = "http"
