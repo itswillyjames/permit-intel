@@ -1,0 +1,5 @@
+
+# Local artifacts
+node_modules/
+.wrangler/
+apps/worker/.wrangler/
