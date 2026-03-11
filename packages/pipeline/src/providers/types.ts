@@ -42,5 +42,5 @@ export interface RetryPolicy {
 export const DEFAULT_RETRY_POLICY: RetryPolicy = {
   maxAttempts: 3,
   backoffMs: [1000, 3000, 9000],
-  fallbackProviders: ['openai', 'anthropic'],
+  fallbackProviders: ['openrouter', 'groq'],
 };

@@ -10,13 +10,17 @@ import { handlePermits } from "./routes/permits.js";
 import { handleReports } from "./routes/reports.js";
 import { handleEntities } from "./routes/entities.js";
 import { handleExports } from "./routes/exports.js";
-import { logger } from "@permit-intel/shared/src/utils/index";
+import { logger } from "@permit-intel/shared/src/utils/index.js";
 import { handlePipelineQueue } from "./consumers/pipeline.js";
 import { handleSeedPermits } from "./routes/seed.js";
 
 export interface Env {
   DB: D1Database;
   PIPELINE_QUEUE: Queue;
+
+  // R2 storage (required for durable exports/evidence)
+  EXPORTS_BUCKET: R2Bucket;
+  EVIDENCE_BUCKET: R2Bucket;
 
   // Single-operator auth
   API_KEY: string;
@@ -60,7 +64,7 @@ export default {
     const path = url.pathname;
 
     try {
-      // Seed route uses env.DB directly (no db wrapper required)
+      // Seed route (bootstrap)
       if (path === "/api/permits/seed") {
         return corsResponse(await handleSeedPermits(request, env));
       }
