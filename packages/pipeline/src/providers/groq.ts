@@ -25,7 +25,7 @@ export class GroqProvider implements LLMProvider {
   ) {
     this.apiKey = apiKey;
     this.baseUrl = (opts?.baseUrl || "https://api.groq.com/openai/v1").replace(/\/+$/, "");
-    this.defaultModel = opts?.defaultModel || "llama-3.1-70b-versatile";
+    this.defaultModel = opts?.defaultModel || "llama-3.3-70b-versatile";
   }
 
   async call(req: LLMRequest): Promise<LLMResponse> {

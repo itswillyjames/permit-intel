@@ -27,7 +27,7 @@ export class OpenRouterProvider implements LLMProvider {
   ) {
     this.apiKey = apiKey;
     this.baseUrl = (opts?.baseUrl || "https://openrouter.ai/api/v1").replace(/\/+$/, "");
-    this.defaultModel = opts?.defaultModel || "openrouter/free";
+    this.defaultModel = opts?.defaultModel || "nvidia/nemotron-3-super-120b-a12b-20230311:free";
     this.appName = opts?.appName;
   }
 
