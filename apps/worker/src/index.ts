@@ -1,6 +1,7 @@
 /**
  * Cloudflare Worker entrypoint.
  * Routes: /api/permits, /api/reports, /api/entities, /api/exports
+ * Extra: POST /api/permits/seed (bootstrap)
  * Queue consumer: PIPELINE_QUEUE
  */
 
@@ -15,51 +16,84 @@ import { handleSeedPermits } from "./routes/seed.js";
 
 export interface Env {
   DB: D1Database;
-  OPENAI_API_KEY: string;
-  ANTHROPIC_API_KEY: string;
-  API_KEY: string;
   PIPELINE_QUEUE: Queue;
-  // Optional: set as a Worker var/secret to disable seeding in prod
+
+  // Single-operator auth
+  API_KEY: string;
+
+  // Provider keys (optional; do not require these at deploy time)
+  OPENROUTER_API_KEY?: string;
+  OPENROUTER_BASE_URL?: string;
+  OPENROUTER_MODEL?: string;
+  OPENROUTER_APP_NAME?: string;
+
+  GROQ_API_KEY?: string;
+  GROQ_BASE_URL?: string;
+  GROQ_MODEL?: string;
+
+  OPENAI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
+
+  // Ops safety
   DISABLE_SEED?: string;
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    // Allow CORS preflight unauthenticated
+    if (request.method === "OPTIONS") {
+      return corsResponse(new Response(null, { status: 204 }));
+    }
+
     // Auth check (single operator)
     const apiKey = request.headers.get("x-api-key");
     if (apiKey !== env.API_KEY) {
-      // Allow OPTIONS without auth (CORS preflight)
-      if (request.method === "OPTIONS") return corsResponse(new Response(null, { status: 204 }));
-      return corsResponse(new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 }));
+      return corsResponse(
+        new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     }
 
     const url = new URL(request.url);
-    const db = createDb(env.DB);
+    const path = url.pathname;
 
     try {
-      let response: Response;
-      const path = url.pathname;
-
-      // Seed route (bootstrap)
+      // Seed route uses env.DB directly (no db wrapper required)
       if (path === "/api/permits/seed") {
-        response = await handleSeedPermits(request, env);
-      } else if (path.startsWith("/api/permits")) {
-        response = await handlePermits(request, db, env);
-      } else if (path.startsWith("/api/reports")) {
-        response = await handleReports(request, db, env);
-      } else if (path.startsWith("/api/entities")) {
-        response = await handleEntities(request, db, env);
-      } else if (path.startsWith("/api/exports")) {
-        response = await handleExports(request, db, env);
-      } else {
-        response = new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+        return corsResponse(await handleSeedPermits(request, env));
       }
 
-      return corsResponse(response);
-    } catch (err) {
-      logger.error("Unhandled worker error", { path: url.pathname, err: String(err) });
+      // For all other routes, create db wrapper once
+      const db = createDb(env.DB);
+
+      if (path.startsWith("/api/permits")) {
+        return corsResponse(await handlePermits(request, db, env));
+      }
+      if (path.startsWith("/api/reports")) {
+        return corsResponse(await handleReports(request, db, env));
+      }
+      if (path.startsWith("/api/entities")) {
+        return corsResponse(await handleEntities(request, db, env));
+      }
+      if (path.startsWith("/api/exports")) {
+        return corsResponse(await handleExports(request, db, env));
+      }
+
       return corsResponse(
-        new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 }),
+        new Response(JSON.stringify({ error: "Not found" }), {
+          status: 404,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    } catch (err) {
+      logger.error("Unhandled worker error", { path, err: String(err) });
+      return corsResponse(
+        new Response(JSON.stringify({ error: "Internal server error" }), {
+          status: 500,
+          headers: { "content-type": "application/json" },
+        }),
       );
     }
   },
