@@ -3,12 +3,12 @@
  * Receives messages from PIPELINE_QUEUE and runs the orchestrator.
  *
  * Production-ready provider strategy:
- * 1) OpenRouter (primary)
- * 2) Groq (fallback)
- * 3) OpenAI (optional fallback)
- * 4) Anthropic (optional fallback)
+ * 1) OpenRouter (primary)  — default: nvidia/nemotron-3-super-120b-a12b-20230311:free
+ * 2) Groq (fallback)       — default: llama-3.3-70b-versatile
+ * 3) OpenAI (optional)
+ * 4) Anthropic (optional)
  *
- * No provider is required at deploy time; pipeline jobs will be ACKed if none are configured.
+ * No provider is required at deploy time.
  */
 
 import { createDb } from "@permit-intel/db/src/client.js";
@@ -27,10 +27,6 @@ interface PipelineMessage {
   report_version_id: string;
 }
 
-/**
- * Builds provider chain based on available env vars.
- * This avoids "required secret" behavior in Deploy-from-Git.
- */
 function buildProviders(env: Env) {
   const providers: any[] = [];
 
@@ -39,7 +35,7 @@ function buildProviders(env: Env) {
     providers.push(
       new OpenRouterProvider(env.OPENROUTER_API_KEY, {
         baseUrl: env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
-        defaultModel: env.OPENROUTER_MODEL || "openrouter/free",
+        defaultModel: env.OPENROUTER_MODEL || "nvidia/nemotron-3-super-120b-a12b-20230311:free",
         appName: env.OPENROUTER_APP_NAME || "permit-intel",
       }),
     );
@@ -50,12 +46,11 @@ function buildProviders(env: Env) {
     providers.push(
       new GroqProvider(env.GROQ_API_KEY, {
         baseUrl: env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
-        defaultModel: env.GROQ_MODEL || "llama-3.1-70b-versatile",
+        defaultModel: env.GROQ_MODEL || "llama-3.3-70b-versatile",
       }),
     );
   }
 
-  // 3/4) Optional fallbacks if you later add them
   if (env.OPENAI_API_KEY) providers.push(new OpenAIProvider(env.OPENAI_API_KEY));
   if (env.ANTHROPIC_API_KEY) providers.push(new AnthropicProvider(env.ANTHROPIC_API_KEY));
 
@@ -67,16 +62,12 @@ export async function handlePipelineQueue(
   env: Env,
 ): Promise<void> {
   const db = createDb(env.DB);
-
   const providers = buildProviders(env);
 
-  // If no providers are configured, ack to avoid infinite retries.
   if (providers.length === 0) {
     logger.error(
       "No LLM providers configured; ACKing pipeline jobs. Configure OPENROUTER_API_KEY or GROQ_API_KEY.",
-      {
-        hint: "Set OPENROUTER_API_KEY for primary routing; set GROQ_API_KEY for fallback.",
-      },
+      { hint: "Set OPENROUTER_API_KEY for primary routing; set GROQ_API_KEY for fallback." },
     );
     for (const message of batch.messages) message.ack();
     return;
@@ -111,7 +102,6 @@ export async function handlePipelineQueue(
   }
 }
 
-// Required type stubs for Queue consumer
 declare global {
   interface MessageBatch<T> {
     messages: Array<Message<T>>;
