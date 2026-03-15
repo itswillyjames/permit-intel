@@ -54,12 +54,20 @@ export function ExportPage() {
   const [exports, setExports] = useState<Map<string, ExportRecord>>(new Map());
   const [working, setWorking] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ exportId: string; url: string } | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
+    setErrorMsg('');
     api.reports.list()
       .then(d => setReports(d.reports as Report[]))
-      .catch(console.error);
+      .catch((e) => {
+        console.error(e);
+        const msg = e instanceof Error ? e.message : String(e);
+        setErrorMsg(msg.includes('401')
+          ? 'Authentication failed (401). Update API key in Config, save, and reload.'
+          : `Failed to load reports: ${msg}`);
+      });
   }, []);
 
   const generateExport = async (r: Report) => {
@@ -97,6 +105,25 @@ export function ExportPage() {
   return (
     <div>
       <div style={S.h2}>// dossier exports</div>
+
+      <div style={{ ...S.meta, marginBottom: '0.75rem' }}>
+        Preview uses <code>?key=</code> for <code>GET /api/exports/:id/html</code>; all other calls use the <code>x-api-key</code> header.
+      </div>
+
+      {errorMsg && (
+        <div style={{
+          marginBottom: '0.75rem',
+          padding: '0.55rem 0.7rem',
+          borderRadius: 4,
+          border: '1px solid #7f1d1d',
+          background: '#450a0a',
+          color: '#fecaca',
+          fontFamily: 'monospace',
+          fontSize: '0.74rem',
+        }}>
+          {errorMsg}
+        </div>
+      )}
 
       {completedReports.length === 0 && (
         <div style={{ ...S.meta, color: '#334155' }}>

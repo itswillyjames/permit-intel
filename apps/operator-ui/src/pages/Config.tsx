@@ -31,7 +31,7 @@ const S = {
     outline: 'none',
     marginBottom: '1rem',
   } as React.CSSProperties,
-  row: { display: 'flex', gap: '0.75rem', marginTop: '0.5rem' } as React.CSSProperties,
+  row: { display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' as const } as React.CSSProperties,
   btn: {
     padding: '0.5rem 1.25rem',
     background: '#1d4ed8',
@@ -46,6 +46,34 @@ const S = {
   btnSave: {
     padding: '0.5rem 1.25rem',
     background: '#0f766e',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 4,
+    cursor: 'pointer',
+    fontFamily: 'monospace',
+    fontSize: '0.8rem',
+    letterSpacing: '0.05em',
+  } as React.CSSProperties,
+
+  runtimeCard: {
+    background: '#06111a',
+    border: '1px solid #1e3448',
+    borderRadius: 4,
+    padding: '0.75rem',
+    marginTop: '1rem',
+  } as React.CSSProperties,
+  runtimeRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '0.75rem',
+    fontFamily: 'monospace',
+    fontSize: '0.74rem',
+    color: '#94a3b8',
+    marginBottom: '0.35rem',
+  } as React.CSSProperties,
+  btnReset: {
+    padding: '0.5rem 1.25rem',
+    background: '#7f1d1d',
     color: '#fff',
     border: 'none',
     borderRadius: 4,
@@ -83,11 +111,12 @@ export function Config() {
   const [connMsg, setConnMsg] = useState('');
   const [saved, setSaved] = useState(false);
 
+  const envWorkerUrl = (import.meta as any).env?.VITE_DEFAULT_WORKER_URL || '';
+
   useEffect(() => {
-    setWorkerUrl(localStorage.getItem('workerUrl') ||
-      (import.meta as any).env?.VITE_DEFAULT_WORKER_URL || '');
+    setWorkerUrl(localStorage.getItem('workerUrl') || envWorkerUrl);
     setApiKey(localStorage.getItem('apiKey') || '');
-  }, []);
+  }, [envWorkerUrl]);
 
   const save = () => {
     localStorage.setItem('workerUrl', workerUrl.trim().replace(/\/$/, ''));
@@ -96,6 +125,25 @@ export function Config() {
     setConnStatus(null);
     setTimeout(() => setSaved(false), 2000);
   };
+
+  const clearAndReload = () => {
+    localStorage.removeItem('workerUrl');
+    localStorage.removeItem('apiKey');
+    setWorkerUrl(envWorkerUrl);
+    setApiKey('');
+    setConnStatus(null);
+    setConnMsg('');
+    setSaved(false);
+    window.location.reload();
+  };
+
+  const runtimeWorkerUrl = (localStorage.getItem('workerUrl') || envWorkerUrl)
+    .trim()
+    .replace(/\/$/, '');
+  const runtimeApiKey = localStorage.getItem('apiKey') || '';
+  const maskedApiKey = runtimeApiKey
+    ? `${'*'.repeat(Math.min(runtimeApiKey.length, 8))} (${runtimeApiKey.length} chars)`
+    : 'not set';
 
   const testConnection = async () => {
     setConnStatus(null);
@@ -127,6 +175,8 @@ export function Config() {
 
         <label style={S.label}>Worker URL</label>
         <input
+          id="worker-url"
+          name="workerUrl"
           style={S.input}
           value={workerUrl}
           onChange={e => setWorkerUrl(e.target.value)}
@@ -136,6 +186,8 @@ export function Config() {
 
         <label style={S.label}>API Key</label>
         <input
+          id="api-key"
+          name="apiKey"
           style={S.input}
           type="password"
           value={apiKey}
@@ -151,11 +203,26 @@ export function Config() {
           <button style={S.btn} onClick={testConnection}>
             Test Connection
           </button>
+          <button style={S.btnReset} onClick={clearAndReload}>
+            Clear / Reset
+          </button>
         </div>
 
         {connMsg && (
           <div style={S.status(connStatus)}>{connMsg}</div>
         )}
+
+        <div style={S.runtimeCard}>
+          <div style={{ ...S.label, marginBottom: '0.6rem' }}>Active Runtime Config</div>
+          <div style={S.runtimeRow}>
+            <span>Worker URL</span>
+            <code>{runtimeWorkerUrl || '(empty)'}</code>
+          </div>
+          <div style={S.runtimeRow}>
+            <span>API Key</span>
+            <code>{maskedApiKey}</code>
+          </div>
+        </div>
       </div>
 
       <div style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: '#334155', lineHeight: 1.8 }}>

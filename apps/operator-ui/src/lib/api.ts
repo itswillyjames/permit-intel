@@ -11,13 +11,13 @@ function getConfig() {
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const { url, key } = getConfig();
+  const headers = new Headers(opts.headers ?? {});
+  headers.set('Content-Type', 'application/json');
+  headers.set('x-api-key', key);
+
   const resp = await fetch(`${url}${path}`, {
     ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      ...(opts.headers ?? {}),
-    },
+    headers,
   });
   if (!resp.ok) {
     const body = await resp.text();
