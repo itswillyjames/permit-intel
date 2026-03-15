@@ -1,70 +1,192 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../lib/api';
 
-interface Report { id: string; status: string; active_version_id: string | null; permit_id: string; }
-interface ExportRecord { id: string; status: string; checksum_html: string | null; created_at: string; }
+interface Report {
+  id: string;
+  status: string;
+  active_version_id: string | null;
+  permit_id: string;
+}
+
+interface ExportRecord {
+  id: string;
+  status: string;
+  checksum_html: string | null;
+  html_storage_ref: string | null;
+  created_at: string;
+}
+
+const S: Record<string, React.CSSProperties> = {
+  h2: { marginTop: 0, fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.15em',
+        color: '#4a9eff', textTransform: 'uppercase', borderBottom: '1px solid #0f2236',
+        paddingBottom: '0.5rem', marginBottom: '1rem' },
+  card: { background: '#0a1520', border: '1px solid #0f2236', borderRadius: 4,
+          padding: '0.75rem 1rem', marginBottom: '0.5rem' },
+  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' },
+  meta: { fontFamily: 'monospace', fontSize: '0.72rem', color: '#475569' },
+  badge: (s: string): React.CSSProperties => ({
+    fontFamily: 'monospace', fontSize: '0.65rem', padding: '2px 7px', borderRadius: 3,
+    background: s === 'completed' || s === 'partial' ? '#064e3b' : '#1e3448',
+    color: s === 'completed' || s === 'partial' ? '#34d399' : '#94a3b8',
+    border: `1px solid ${s === 'completed' ? '#065f46' : '#1e3448'}`,
+  }),
+  ref: { fontFamily: 'monospace', fontSize: '0.65rem', color: '#22c55e',
+         marginTop: '0.35rem', wordBreak: 'break-all' },
+  btnRow: { display: 'flex', gap: '0.5rem', flexShrink: 0 },
+  btn: (variant: 'primary'|'green'|'dim'): React.CSSProperties => ({
+    padding: '0.35rem 0.85rem', border: 'none', borderRadius: 3, cursor: 'pointer',
+    fontFamily: 'monospace', fontSize: '0.72rem', letterSpacing: '0.04em',
+    background: variant === 'primary' ? '#1d4ed8' : variant === 'green' ? '#065f46' : '#1e3448',
+    color: variant === 'dim' ? '#64748b' : '#fff',
+  }),
+  iframeWrap: {
+    marginTop: '1.25rem', border: '1px solid #0f2236', borderRadius: 4, overflow: 'hidden',
+  },
+  iframeBar: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '0.4rem 0.75rem', background: '#060d14', borderBottom: '1px solid #0f2236',
+    fontFamily: 'monospace', fontSize: '0.65rem', color: '#334155',
+  },
+};
 
 export function ExportPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [exports, setExports] = useState<Map<string, ExportRecord>>(new Map());
   const [working, setWorking] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ exportId: string; url: string } | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    api.reports.list().then(d => setReports(d.reports as Report[])).catch(console.error);
+    api.reports.list()
+      .then(d => setReports(d.reports as Report[]))
+      .catch(console.error);
   }, []);
 
   const generateExport = async (r: Report) => {
-    if (!r.active_version_id) return alert('No active report version. Run the report first.');
+    if (!r.active_version_id) {
+      alert('No active report version. Run the report first.');
+      return;
+    }
     setWorking(r.id);
     try {
       const { export_id } = await api.exports.create(r.id, r.active_version_id);
       const { export: exportRec } = await api.exports.get(export_id) as { export: ExportRecord };
       setExports(prev => new Map(prev).set(r.id, exportRec));
-    } catch (e) { alert(`Export failed: ${e}`); }
+      // Auto-open preview
+      setPreview({ exportId: export_id, url: api.exports.htmlUrl(export_id) });
+    } catch (e) {
+      alert(`Export failed: ${e}`);
+    }
     setWorking(null);
   };
 
-  const viewHtml = (exportId: string) => {
-    window.open(api.exports.htmlUrl(exportId), '_blank');
+  const openPreview = (exp: ExportRecord) => {
+    setPreview({ exportId: exp.id, url: api.exports.htmlUrl(exp.id) });
   };
 
-  const completedReports = reports.filter(r => r.status === 'completed' || r.status === 'partial');
+  const openTab = (exp: ExportRecord) => {
+    window.open(api.exports.htmlUrl(exp.id), '_blank');
+  };
+
+  const copy = (text: string) => navigator.clipboard.writeText(text).catch(() => {});
+
+  const completedReports = reports.filter(
+    r => r.status === 'completed' || r.status === 'partial',
+  );
 
   return (
     <div>
-      <h2 style={{ marginTop: 0 }}>Dossier Exports</h2>
-      <p style={{ color: '#555', fontSize: '0.9rem' }}>Generate and download HTML dossiers for completed reports.</p>
-      {completedReports.length === 0 && <p style={{ color: '#888' }}>No completed reports yet.</p>}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {completedReports.map(r => {
-          const exp = exports.get(r.id);
-          return (
-            <div key={r.id} style={{ background: 'white', borderRadius: 8, padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>Report <strong>{r.id.slice(0,8)}…</strong></div>
-                <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.25rem' }}>Status: {r.status} | Version: {r.active_version_id?.slice(0,8) ?? 'none'}…</div>
-                {exp && <div style={{ fontSize: '0.8rem', color: '#22c55e', marginTop: '0.25rem' }}>Export ready — checksum: <code>{exp.checksum_html?.slice(0,16)}…</code></div>}
+      <div style={S.h2}>// dossier exports</div>
+
+      {completedReports.length === 0 && (
+        <div style={{ ...S.meta, color: '#334155' }}>
+          No completed reports. Run a pipeline from Shortlist first.
+        </div>
+      )}
+
+      {completedReports.map(r => {
+        const exp = exports.get(r.id);
+        return (
+          <div key={r.id} style={S.card}>
+            <div style={S.row}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ ...S.meta, display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <span style={S.badge(r.status)}>{r.status}</span>
+                  <span>report <code>{r.id.slice(0, 12)}…</code></span>
+                  <span style={{ color: '#1e3448' }}>|</span>
+                  <span>permit <code>{r.permit_id.slice(0, 8)}…</code></span>
+                  <button
+                    title="Copy report ID"
+                    style={{ ...S.btn('dim'), padding: '1px 6px', fontSize: '0.65rem' }}
+                    onClick={() => copy(r.id)}
+                  >⎘</button>
+                </div>
+                {exp && (
+                  <>
+                    <div style={S.ref}>
+                      ✓ export {exp.id.slice(0, 12)}… | {exp.status}
+                    </div>
+                    {exp.html_storage_ref && (
+                      <div style={{ ...S.ref, color: '#4a9eff' }}>
+                        ref: {exp.html_storage_ref}
+                      </div>
+                    )}
+                    {exp.checksum_html && (
+                      <div style={{ ...S.meta, marginTop: '0.2rem' }}>
+                        sha256: {exp.checksum_html.slice(0, 24)}…
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={S.btnRow}>
                 <button
-                  style={{ ...btnStyle, opacity: working === r.id ? 0.6 : 1 }}
+                  style={{ ...S.btn('primary'), opacity: working === r.id ? 0.5 : 1 }}
                   disabled={working === r.id}
                   onClick={() => generateExport(r)}
                 >
-                  {working === r.id ? 'Generating…' : '⬇ Generate Dossier'}
+                  {working === r.id ? 'generating…' : '⬇ generate'}
                 </button>
                 {exp && (
-                  <button style={{ ...btnStyle, background: '#22c55e' }} onClick={() => viewHtml(exp.id)}>
-                    🔗 View HTML
-                  </button>
+                  <>
+                    <button style={S.btn('green')} onClick={() => openPreview(exp)}>
+                      ▣ preview
+                    </button>
+                    <button style={S.btn('dim')} onClick={() => openTab(exp)}>
+                      ↗ tab
+                    </button>
+                    <button
+                      title="Copy export ID"
+                      style={{ ...S.btn('dim'), padding: '0.35rem 0.5rem' }}
+                      onClick={() => copy(exp.id)}
+                    >⎘</button>
+                  </>
                 )}
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
+
+      {preview && (
+        <div style={S.iframeWrap}>
+          <div style={S.iframeBar}>
+            <span>preview: {preview.exportId.slice(0, 16)}…</span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button style={S.btn('dim')} onClick={() => copy(preview.url)}>⎘ copy url</button>
+              <button style={S.btn('dim')} onClick={() => window.open(preview.url, '_blank')}>↗ tab</button>
+              <button style={S.btn('dim')} onClick={() => setPreview(null)}>✕ close</button>
+            </div>
+          </div>
+          <iframe
+            ref={iframeRef}
+            src={preview.url}
+            style={{ width: '100%', height: '60vh', border: 'none', background: '#fff' }}
+            title="Dossier Preview"
+            sandbox="allow-same-origin allow-scripts"
+          />
+        </div>
+      )}
     </div>
   );
 }
-
-const btnStyle: React.CSSProperties = { padding: '0.5rem 1rem', background: '#1a3a5c', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' };

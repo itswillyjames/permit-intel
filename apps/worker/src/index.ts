@@ -3,6 +3,11 @@
  * Routes: /api/permits, /api/reports, /api/entities, /api/exports
  * Extra: POST /api/permits/seed (bootstrap)
  * Queue consumer: PIPELINE_QUEUE
+ *
+ * Auth rules:
+ *   - OPTIONS: always 204, no auth
+ *   - GET /api/exports/:id/html: accepts ?key= query param OR x-api-key header
+ *   - ALL other endpoints: x-api-key header only
  */
 
 import { createDb } from "@permit-intel/db/src/client.js";
@@ -49,9 +54,21 @@ export default {
       return corsResponse(new Response(null, { status: 204 }));
     }
 
-    // Auth check (single operator)
-    const apiKey = request.headers.get("x-api-key");
-    if (apiKey !== env.API_KEY) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    // Scoped query-key exception: GET /api/exports/:id/html only
+    // Matches exactly: /api/exports/<id>/html
+    const isExportsHtmlGet =
+      request.method === "GET" &&
+      /^\/api\/exports\/[^/]+\/html$/.test(path);
+
+    // Resolve API key: header always works; ?key= only for the scoped path
+    const headerKey = request.headers.get("x-api-key");
+    const queryKey = isExportsHtmlGet ? url.searchParams.get("key") : null;
+    const resolvedKey = headerKey ?? queryKey;
+
+    if (resolvedKey !== env.API_KEY) {
       return corsResponse(
         new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
@@ -59,9 +76,6 @@ export default {
         }),
       );
     }
-
-    const url = new URL(request.url);
-    const path = url.pathname;
 
     try {
       // Seed route (bootstrap)
@@ -102,7 +116,7 @@ export default {
     }
   },
 
-  // Cloudflare Queues consumer handler (required when [[queues.consumers]] is configured)
+  // Cloudflare Queues consumer handler
   async queue(batch: any, env: Env): Promise<void> {
     await handlePipelineQueue(batch, env);
   },

@@ -1,12 +1,21 @@
-const BASE_URL = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:8787';
-const API_KEY = (import.meta as any).env?.VITE_API_KEY ?? 'dev-key';
+// Runtime config — never baked into the build bundle.
+// Falls back to VITE_DEFAULT_WORKER_URL env var (set in Pages) or localhost.
+function getConfig() {
+  const url =
+    localStorage.getItem('workerUrl') ||
+    (import.meta as any).env?.VITE_DEFAULT_WORKER_URL ||
+    'http://localhost:8787';
+  const key = localStorage.getItem('apiKey') || '';
+  return { url: url.replace(/\/$/, ''), key };
+}
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const resp = await fetch(`${BASE_URL}${path}`, {
+  const { url, key } = getConfig();
+  const resp = await fetch(`${url}${path}`, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': API_KEY,
+      'x-api-key': key,
       ...(opts.headers ?? {}),
     },
   });
@@ -31,7 +40,10 @@ export const api = {
     list: () => request<{ reports: unknown[] }>('/api/reports'),
     get: (id: string) => request<{ report: unknown }>(`/api/reports/${id}`),
     create: (permitId: string) =>
-      request<{ report: unknown }>('/api/reports', { method: 'POST', body: JSON.stringify({ permit_id: permitId }) }),
+      request<{ report: unknown }>('/api/reports', {
+        method: 'POST',
+        body: JSON.stringify({ permit_id: permitId }),
+      }),
     run: (reportId: string) =>
       request<{ report_version: unknown }>(`/api/reports/${reportId}/run`, { method: 'POST' }),
     stages: (reportId: string) =>
@@ -40,9 +52,15 @@ export const api = {
   entities: {
     suggestions: () => request<{ suggestions: unknown[] }>('/api/entities'),
     merge: (winnerId: string, mergedId: string) =>
-      request('/api/entities/merge', { method: 'POST', body: JSON.stringify({ winner_id: winnerId, merged_id: mergedId }) }),
+      request('/api/entities/merge', {
+        method: 'POST',
+        body: JSON.stringify({ winner_id: winnerId, merged_id: mergedId }),
+      }),
     unmerge: (mergeLedgerId: string, note?: string) =>
-      request('/api/entities/unmerge', { method: 'POST', body: JSON.stringify({ merge_ledger_id: mergeLedgerId, note }) }),
+      request('/api/entities/unmerge', {
+        method: 'POST',
+        body: JSON.stringify({ merge_ledger_id: mergeLedgerId, note }),
+      }),
   },
   exports: {
     create: (reportId: string, reportVersionId: string) =>
@@ -51,6 +69,10 @@ export const api = {
         body: JSON.stringify({ report_id: reportId, report_version_id: reportVersionId }),
       }),
     get: (id: string) => request<{ export: unknown }>(`/api/exports/${id}`),
-    htmlUrl: (id: string) => `${BASE_URL}/api/exports/${id}/html`,
+    // ?key= is accepted by the worker ONLY for this specific path
+    htmlUrl: (id: string) => {
+      const { url, key } = getConfig();
+      return `${url}/api/exports/${id}/html?key=${encodeURIComponent(key)}`;
+    },
   },
 };
