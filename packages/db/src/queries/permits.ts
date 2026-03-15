@@ -50,16 +50,16 @@ export async function upsertPermit(db: Db, input: UpsertPermitInput): Promise<Pe
         status, prequal_score, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', 0, ?, ?)
       ON CONFLICT(city, source_permit_id) DO UPDATE SET
-        filed_date = excluded.filed_date,
-        issued_date = excluded.issued_date,
-        address_raw = excluded.address_raw,
-        address_norm = excluded.address_norm,
-        work_type = excluded.work_type,
-        description_raw = excluded.description_raw,
-        valuation = excluded.valuation,
-        applicant_raw = excluded.applicant_raw,
-        contractor_raw = excluded.contractor_raw,
-        owner_raw = excluded.owner_raw,
+        filed_date = COALESCE(excluded.filed_date, permits.filed_date),
+        issued_date = COALESCE(excluded.issued_date, permits.issued_date),
+        address_raw = COALESCE(excluded.address_raw, permits.address_raw),
+        address_norm = COALESCE(excluded.address_norm, permits.address_norm),
+        work_type = COALESCE(excluded.work_type, permits.work_type),
+        description_raw = COALESCE(excluded.description_raw, permits.description_raw),
+        valuation = COALESCE(excluded.valuation, permits.valuation),
+        applicant_raw = COALESCE(excluded.applicant_raw, permits.applicant_raw),
+        contractor_raw = COALESCE(excluded.contractor_raw, permits.contractor_raw),
+        owner_raw = COALESCE(excluded.owner_raw, permits.owner_raw),
         updated_at = excluded.updated_at`,
     )
     .bind(

@@ -27,7 +27,6 @@ export function PermitList() {
       const params: Record<string, string> = {};
       if (city) params['city'] = city;
       if (minScore) params['min_score'] = minScore;
-      params['status'] = 'shortlisted';
       const data = await api.permits.list(params);
       setPermits(data.permits as Permit[]);
     } catch (e) {
