@@ -1,7 +1,6 @@
 /**
  * Cloudflare Worker entrypoint.
  * Routes: /api/permits, /api/reports, /api/entities, /api/exports
- * Extra: POST /api/permits/seed (bootstrap)
  * Queue consumer: PIPELINE_QUEUE
  *
  * Auth rules:
@@ -17,7 +16,6 @@ import { handleEntities } from "./routes/entities.js";
 import { handleExports } from "./routes/exports.js";
 import { logger } from "@permit-intel/shared/src/utils/index.js";
 import { handlePipelineQueue } from "./consumers/pipeline.js";
-import { handleSeedPermits } from "./routes/seed.js";
 
 export interface Env {
   DB: D1Database;
@@ -78,11 +76,6 @@ export default {
     }
 
     try {
-      // Seed route (bootstrap)
-      if (path === "/api/permits/seed") {
-        return corsResponse(await handleSeedPermits(request, env));
-      }
-
       // For all other routes, create db wrapper once
       const db = createDb(env.DB);
 
