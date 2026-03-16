@@ -20,9 +20,11 @@ export function PermitList() {
   const [city, setCity] = useState('');
   const [minScore, setMinScore] = useState('');
   const [selected, setSelected] = useState<Permit | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const load = async () => {
     setLoading(true);
+    setErrorMsg('');
     try {
       const params: Record<string, string> = {};
       if (city) params['city'] = city;
@@ -31,6 +33,10 @@ export function PermitList() {
       setPermits(data.permits as Permit[]);
     } catch (e) {
       console.error(e);
+      const msg = e instanceof Error ? e.message : String(e);
+      setErrorMsg(msg.includes('401')
+        ? 'Authentication failed (401). Update API key in Config, save, and reload.'
+        : `Failed to load permits: ${msg}`);
     }
     setLoading(false);
   };
@@ -54,6 +60,22 @@ export function PermitList() {
                    paddingBottom: '0.5rem' }}>
         // permit shortlist
       </h2>
+
+      {errorMsg && (
+        <div style={{
+          marginBottom: '0.75rem',
+          padding: '0.55rem 0.7rem',
+          borderRadius: 4,
+          border: '1px solid #7f1d1d',
+          background: '#450a0a',
+          color: '#fecaca',
+          fontFamily: 'monospace',
+          fontSize: '0.74rem',
+        }}>
+          {errorMsg}
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
         <select value={city} onChange={e => setCity(e.target.value)} style={inputStyle}>
           <option value="">All Cities</option>
