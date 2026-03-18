@@ -54,7 +54,17 @@ const S = {
     fontSize: '0.8rem',
     letterSpacing: '0.05em',
   } as React.CSSProperties,
-
+  btnReset: {
+    padding: '0.5rem 1.25rem',
+    background: '#7f1d1d',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 4,
+    cursor: 'pointer',
+    fontFamily: 'monospace',
+    fontSize: '0.8rem',
+    letterSpacing: '0.05em',
+  } as React.CSSProperties,
   runtimeCard: {
     background: '#06111a',
     border: '1px solid #1e3448',
@@ -70,17 +80,6 @@ const S = {
     fontSize: '0.74rem',
     color: '#94a3b8',
     marginBottom: '0.35rem',
-  } as React.CSSProperties,
-  btnReset: {
-    padding: '0.5rem 1.25rem',
-    background: '#7f1d1d',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 4,
-    cursor: 'pointer',
-    fontFamily: 'monospace',
-    fontSize: '0.8rem',
-    letterSpacing: '0.05em',
   } as React.CSSProperties,
   status: (ok: boolean | null) => ({
     fontFamily: 'monospace',
@@ -137,9 +136,8 @@ export function Config() {
     window.location.reload();
   };
 
-  const runtimeWorkerUrl = (localStorage.getItem('workerUrl') || envWorkerUrl)
-    .trim()
-    .replace(/\/$/, '');
+  // Show what the API client will actually use (localStorage/env), not unsaved input state.
+  const runtimeWorkerUrl = (localStorage.getItem('workerUrl') || envWorkerUrl).trim().replace(/\/$/, '');
   const runtimeApiKey = localStorage.getItem('apiKey') || '';
   const maskedApiKey = runtimeApiKey
     ? `${'*'.repeat(Math.min(runtimeApiKey.length, 8))} (${runtimeApiKey.length} chars)`
