@@ -185,3 +185,22 @@ export async function insertPermitSource(
     )
     .run();
 }
+
+
+export interface PermitSourceRow {
+  id: string;
+  permit_id: string;
+  source_name: string;
+  source_url: string | null;
+  raw_payload_json: string;
+  retrieved_at: string;
+  hash: string;
+}
+
+export async function listPermitSources(db: Db, permitId: string): Promise<PermitSourceRow[]> {
+  const { results } = await db
+    .prepare('SELECT * FROM permit_sources WHERE permit_id = ? ORDER BY retrieved_at DESC')
+    .bind(permitId)
+    .all<PermitSourceRow>();
+  return results;
+}

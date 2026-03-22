@@ -14,6 +14,7 @@ import { handlePermits } from "./routes/permits.js";
 import { handleReports } from "./routes/reports.js";
 import { handleEntities } from "./routes/entities.js";
 import { handleExports } from "./routes/exports.js";
+import { handleLeads } from "./routes/leads.js";
 import { logger } from "@permit-intel/shared/src/utils/index.js";
 import { handlePipelineQueue } from "./consumers/pipeline.js";
 
@@ -90,6 +91,9 @@ export default {
       }
       if (path.startsWith("/api/exports")) {
         return corsResponse(await handleExports(request, db, env));
+      }
+      if (path.startsWith("/api/leads")) {
+        return corsResponse(await handleLeads(request, db, env));
       }
 
       return corsResponse(

@@ -1,6 +1,6 @@
 // Runtime config — never baked into the build bundle.
 // Falls back to VITE_DEFAULT_WORKER_URL env var (set in Pages) or localhost.
-function getConfig() {
+export function getConfig() {
   const url =
     localStorage.getItem('workerUrl') ||
     (import.meta as any).env?.VITE_DEFAULT_WORKER_URL ||
@@ -35,6 +35,13 @@ export const api = {
     get: (id: string) => request<{ permit: unknown }>(`/api/permits/${id}`),
     updateStatus: (id: string, status: string) =>
       request(`/api/permits/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  },
+  leads: {
+    assets: (permitId: string) => request<{ permit_id: string; assets: any[] }>(`/api/leads/${permitId}/assets`),
+    generateAssets: (permitId: string) =>
+      request<{ permit_id: string; assets: any[] }>(`/api/leads/${permitId}/assets/generate`, { method: 'POST' }),
+    evidence: (permitId: string) =>
+      request<{ permit_id: string; evidence: any[] }>(`/api/leads/${permitId}/evidence`),
   },
   reports: {
     list: () => request<{ reports: unknown[] }>('/api/reports'),
