@@ -4,11 +4,13 @@ import { ReportQueue } from './pages/ReportQueue';
 import { EntityReview } from './pages/EntityReview';
 import { ExportPage } from './pages/Exports';
 import { Config } from './pages/Config';
+import { LeadsHub } from './pages/LeadsHub';
 
-type Page = 'permits' | 'reports' | 'entities' | 'exports' | 'config';
+type Page = 'permits' | 'leads' | 'reports' | 'entities' | 'exports' | 'config';
 
 const NAV: Array<{ key: Page; label: string }> = [
   { key: 'permits',  label: '⬡ Shortlist'  },
+  { key: 'leads',    label: '⬡ Leads'      },
   { key: 'reports',  label: '⬡ Reports'    },
   { key: 'entities', label: '⬡ Entities'   },
   { key: 'exports',  label: '⬡ Exports'    },
@@ -92,6 +94,7 @@ export function App() {
       </div>
       <div style={S.content}>
         {page === 'permits'  && <PermitList />}
+        {page === 'leads'    && <LeadsHub />}
         {page === 'reports'  && <ReportQueue />}
         {page === 'entities' && <EntityReview />}
         {page === 'exports'  && <ExportPage />}
